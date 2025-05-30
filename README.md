@@ -91,6 +91,24 @@ ZAHAAM/
 │       └── package.json       # Frontend dependencies
 ```
 
+### 📊 Data Flow Architecture
+
+![Data Flow Diagram](https://via.placeholder.com/800x400?text=ZAHAAM+Data+Flow)
+
+ZAHAAM implements a resilient data architecture designed for reliability and performance:
+
+1. **Data Collection**: Real-time stock data is fetched from Yahoo Finance API at regular intervals
+2. **Data Storage**: All fetched data is immediately stored in our database
+3. **Data Distribution**: Frontend applications retrieve data from our database, not directly from external APIs
+4. **Failover Mechanism**: If API calls fail or hit rate limits, the system automatically falls back to the most recently stored data
+5. **Cache Layer**: Frequently accessed data is cached to improve performance
+
+This architecture ensures:
+- **Reliability**: Even if external APIs are unavailable, users still have access to data
+- **Performance**: Multiple users don't trigger redundant API calls
+- **Compliance**: Better control over API rate limits
+- **Data Integrity**: Consistent data across all platform features
+
 ## 📊 Business Model
 
 ZAHAAM operates on a freemium business model with the following tiers:
