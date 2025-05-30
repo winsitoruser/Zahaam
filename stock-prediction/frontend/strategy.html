@@ -55,6 +55,19 @@
                         <span class="slider"></span>
                     </div>
                     
+                    <!-- Notification Component -->
+                    <div class="dropdown me-3">
+                        <a class="btn btn-outline-light position-relative" href="#" role="button" id="notification-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notification-badge">
+                                0
+                            </span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" id="notification-dropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                            <!-- Notifications will be loaded here via JavaScript -->
+                        </div>
+                    </div>
+                    
                     <a href="profile.html" class="btn btn-outline-light me-2">
                         <i class="bi bi-person-circle"></i> <span data-translate="profile">Profil</span>
                     </a>
@@ -438,6 +451,9 @@
                                 <button class="nav-link" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts-content" type="button" role="tab">Chart & Indicators</button>
                             </li>
                             <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="prediction-tab" data-bs-toggle="tab" data-bs-target="#prediction-content" type="button" role="tab">AI Prediction</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tools-tab" data-bs-toggle="tab" data-bs-target="#tools-content" type="button" role="tab">Trading Tools</button>
                             </li>
                         </ul>
@@ -532,6 +548,122 @@
                                     <div id="chartLoadingIndicator" class="spinner-container">
                                         <div class="spinner-zahaam"></div>
                                         <p class="text-muted mt-2">Loading chart data...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Prediction Tab -->
+                            <div class="tab-pane fade" id="prediction-content" role="tabpanel">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="mb-0">Multi-Timeframe Predictions</h5>
+                                        <button id="refreshPredictions" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                                        </button>
+                                    </div>
+                                    <p class="text-muted small mb-3">AI-powered price predictions across multiple timeframes.</p>
+                                </div>
+                                
+                                <!-- Prediction Tabs -->
+                                <ul class="nav nav-pills mb-3" id="prediction-timeframes" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="hour1-tab" data-bs-toggle="pill" data-bs-target="#hour1-content" type="button" role="tab">1 Hour</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="hour3-tab" data-bs-toggle="pill" data-bs-target="#hour3-content" type="button" role="tab">3 Hours</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="hour24-tab" data-bs-toggle="pill" data-bs-target="#hour24-content" type="button" role="tab">24 Hours</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="day7-tab" data-bs-toggle="pill" data-bs-target="#day7-content" type="button" role="tab">7 Days</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="day30-tab" data-bs-toggle="pill" data-bs-target="#day30-content" type="button" role="tab">30 Days</button>
+                                    </li>
+                                </ul>
+                                
+                                <!-- Prediction Tab Contents -->
+                                <div class="tab-content" id="prediction-timeframes-content">
+                                    <!-- Loading Indicator -->
+                                    <div id="predictionLoadingIndicator" class="text-center py-5">
+                                        <div class="spinner-zahaam mb-3"></div>
+                                        <p class="text-muted">Loading prediction data...</p>
+                                    </div>
+                                    
+                                    <!-- 1 Hour Prediction -->
+                                    <div class="tab-pane fade show active" id="hour1-content" role="tabpanel">
+                                        <div class="chart-container" style="position: relative; height: 300px;">
+                                            <div id="hour1-chart"></div>
+                                        </div>
+                                        <div class="row mt-3 mb-2" id="hour1-metrics">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 3 Hours Prediction -->
+                                    <div class="tab-pane fade" id="hour3-content" role="tabpanel">
+                                        <div class="chart-container" style="position: relative; height: 300px;">
+                                            <div id="hour3-chart"></div>
+                                        </div>
+                                        <div class="row mt-3 mb-2" id="hour3-metrics">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 24 Hours Prediction -->
+                                    <div class="tab-pane fade" id="hour24-content" role="tabpanel">
+                                        <div class="chart-container" style="position: relative; height: 300px;">
+                                            <div id="hour24-chart"></div>
+                                        </div>
+                                        <div class="row mt-3 mb-2" id="hour24-metrics">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 7 Days Prediction -->
+                                    <div class="tab-pane fade" id="day7-content" role="tabpanel">
+                                        <div class="chart-container" style="position: relative; height: 300px;">
+                                            <div id="day7-chart"></div>
+                                        </div>
+                                        <div class="row mt-3 mb-2" id="day7-metrics">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 30 Days Prediction -->
+                                    <div class="tab-pane fade" id="day30-content" role="tabpanel">
+                                        <div class="chart-container" style="position: relative; height: 300px;">
+                                            <div id="day30-chart"></div>
+                                        </div>
+                                        <div class="row mt-3 mb-2" id="day30-metrics">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Prediction Comparison -->
+                                <div class="card mt-4">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Multi-Timeframe Analysis</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered" id="prediction-comparison-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Timeframe</th>
+                                                        <th>Predicted Price</th>
+                                                        <th>Change %</th>
+                                                        <th>Signal</th>
+                                                        <th>Confidence</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Will be populated by JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -709,7 +841,7 @@
             <hr class="my-4">
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start">
-                    <p class="small text-muted mb-0">© 2025 ZAHAAM. <span data-translate="all_rights_reserved">Hak cipta dilindungi undang-undang.</span></p>
+                    <p class="small text-muted mb-0"> 2025 ZAHAAM. <span data-translate="all_rights_reserved">Hak cipta dilindungi undang-undang.</span></p>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
                     <ul class="list-inline mb-0">
@@ -744,12 +876,13 @@
         }
     </style>
     
-    <!-- Bootstrap JS -->
+    <!-- JavaScript Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.min.js"></script>
+    <script src="js/notifications.js"></script>
     <!-- Custom JS -->
     <script src="js/strategy-backtest.js"></script>
+    <script src="js/multi-timeframe-prediction.js"></script>
     <script src="js/strategy-chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

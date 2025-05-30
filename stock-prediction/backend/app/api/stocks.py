@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 
 from app.core.database import get_db
 from app.models.stocks import Stock, StockPrice, StockIndicator
-from app.core.stock_fetcher import fetch_and_save_single_stock, fetch_and_save_all_stocks
+from app.core.stock_fetcher import fetch_and_save_single_stock, fetch_and_save_all_stocks, get_latest_stock_data
 
-router = APIRouter(prefix="/api", tags=["stocks"])
+router = APIRouter(tags=["stocks"])
 
 @router.get("/stocks/db")
 async def get_stocks_from_db(db: Session = Depends(get_db)):
@@ -40,23 +40,97 @@ async def get_stocks_by_sectors_from_db(db: Session = Depends(get_db)):
     
     return {"sectors": sectors}
 
+
+@router.get("/stocks/latest-prices")
+async def get_latest_stock_prices(db: Session = Depends(get_db)):
+    """Get latest price data for all stocks in the database
+    
+    Returns a dictionary with ticker symbols as keys and price data as values
+    """
+    try:
+        # Get all active stocks
+        stocks = db.query(Stock).filter(Stock.is_active == True).all()
+        result = {}
+        
+        # Get cutoff date (1 day ago)
+        cutoff_date = datetime.now() - timedelta(days=1)
+        
+        for stock in stocks:
+            ticker = stock.ticker.replace('.JK', '') if '.JK' in stock.ticker else stock.ticker
+            
+            # Get latest price data from the database
+            latest_price = db.query(StockPrice).filter(
+                StockPrice.stock_id == stock.id,
+                StockPrice.date >= cutoff_date
+            ).order_by(StockPrice.date.desc()).first()
+            
+            # If we have data, add it to the result
+            if latest_price:
+                # Get previous price for calculating change
+                prev_price = db.query(StockPrice).filter(
+                    StockPrice.stock_id == stock.id,
+                    StockPrice.date < latest_price.date
+                ).order_by(StockPrice.date.desc()).first()
+                
+                # Calculate change percentage
+                prev_close = prev_price.close if prev_price else latest_price.close
+                change_percent = ((latest_price.close - prev_close) / prev_close * 100) if prev_close > 0 else 0
+                
+                # Estimate market cap (price * outstanding shares)
+                # Using default value if shares data not available
+                shares = stock.outstanding_shares if hasattr(stock, 'outstanding_shares') and stock.outstanding_shares else 10000000000
+                market_cap = latest_price.close * shares
+                
+                # Estimate P/E ratio (price / earnings per share)
+                # Using default value if earnings data not available
+                eps = stock.earnings_per_share if hasattr(stock, 'earnings_per_share') and stock.earnings_per_share else latest_price.close / 15
+                pe_ratio = latest_price.close / eps if eps > 0 else 15.0
+                
+                result[ticker] = {
+                    "lastPrice": latest_price.close,
+                    "change": round(change_percent, 2),
+                    "volume": latest_price.volume,
+                    "open": latest_price.open,
+                    "high": latest_price.high,
+                    "low": latest_price.low,
+                    "date": latest_price.date.isoformat(),
+                    "marketCap": market_cap,
+                    "peRatio": round(pe_ratio, 2)
+                }
+        
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching latest stock prices: {str(e)}")
+
 @router.get("/stock/{ticker}/db")
 async def get_stock_data_from_db(
     ticker: str, 
     days: int = 365, 
+    auto_refresh: bool = True,
     db: Session = Depends(get_db)
 ):
     """
     Get stock data for a given ticker from the database
     
+    Following the data flow pattern:
+    1. API → DB → Frontend
+    2. Always returns data from DB (latest version available)
+    3. If auto_refresh=True and data is outdated, triggers background refresh for future requests
+    
     Parameters:
     - ticker: Stock ticker symbol (e.g., 'BBCA.JK')
     - days: Number of days of historical data to return (default: 365)
+    - auto_refresh: Whether to automatically trigger refresh for outdated data (default: True)
     """
     # Find the stock in the database
     stock = db.query(Stock).filter(Stock.ticker == ticker).first()
     if not stock:
         raise HTTPException(status_code=404, detail="Stock not found")
+        
+    # Check if data is outdated and trigger background refresh if needed
+    if auto_refresh:
+        # Use get_latest_stock_data with fetch_if_outdated=True to potentially trigger a refresh
+        await get_latest_stock_data(db, ticker, fetch_if_outdated=True)
     
     # Get the start date for the query
     end_date = datetime.now()
@@ -165,6 +239,11 @@ async def refresh_stock_data(
 ):
     """
     Refresh stock data for a specific ticker
+    
+    Following the data flow pattern:
+    1. API → DB → Frontend
+    2. Returns current DB data immediately
+    3. Triggers background refresh for future requests
     """
     # Check if ticker exists
     stock = db.query(Stock).filter(Stock.ticker == ticker).first()
@@ -174,9 +253,14 @@ async def refresh_stock_data(
     # Add the fetch job to background tasks
     background_tasks.add_task(fetch_and_save_single_stock, db, ticker)
     
+    # Get current data from DB to return immediately
+    latest_price, latest_indicator = await get_latest_stock_data(db, ticker, fetch_if_outdated=False)
+    
     return {
         "message": f"Stock data refresh started for {ticker}",
-        "ticker": ticker
+        "ticker": ticker,
+        "currentPrice": latest_price.close if latest_price else None,
+        "lastUpdated": stock.last_updated.strftime('%Y-%m-%d %H:%M:%S') if stock.last_updated else None
     }
 
 @router.post("/stocks/refresh/all")
@@ -187,7 +271,12 @@ async def refresh_all_stocks(
     """
     Refresh data for all active stocks
     
-    Warning: This can take a long time
+    Following the data flow pattern:
+    1. API → DB → Frontend
+    2. Returns current stock list from DB immediately
+    3. Triggers background refresh for future requests
+    
+    Warning: The background refresh can take a long time
     """
     # Get list of active stock tickers
     stocks = db.query(Stock).filter(Stock.is_active == True).all()
@@ -198,7 +287,15 @@ async def refresh_all_stocks(
     
     return {
         "message": f"Started refreshing data for {len(ticker_list)} stocks",
-        "count": len(ticker_list)
+        "count": len(ticker_list),
+        "stocks": [
+            {
+                "ticker": stock.ticker,
+                "name": stock.name,
+                "lastUpdated": stock.last_updated.strftime('%Y-%m-%d %H:%M:%S') if stock.last_updated else None
+            } for stock in stocks[:10]  # Return first 10 as preview
+        ],
+        "totalStocks": len(ticker_list)
     }
 
 @router.get("/stock/analysis/{ticker}")

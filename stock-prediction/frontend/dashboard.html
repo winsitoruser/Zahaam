@@ -145,6 +145,19 @@
                     <span class="slider"></span>
                 </div>
                 
+                <!-- Notification Component -->
+                <div class="dropdown me-3">
+                    <a class="btn btn-outline-light position-relative" href="#" role="button" id="notification-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notification-badge">
+                            0
+                        </span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" id="notification-dropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <!-- Notifications will be loaded here via JavaScript -->
+                    </div>
+                </div>
+                
                 <a href="profile.html" class="btn btn-outline-light me-2">
                     <i class="bi bi-person-circle"></i> <span data-translate="profile">Profil</span>
                 </a>
@@ -477,8 +490,47 @@
         </div>
     </div>
     
-    <!-- Top 5 Bullish & Bearish Stocks -->
+    <!-- AI Predictions & Top Stocks -->
     <div class="row mt-4">
+        <!-- Multi-Timeframe Predictions -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">AI Predictions & Signals</h5>
+                    <div>
+                        <select id="dashboardPredictionSymbol" class="form-select form-select-sm d-inline-block me-2" style="width: auto;">
+                            <option value="BBRI">BBRI</option>
+                            <option value="BBCA">BBCA</option>
+                            <option value="TLKM">TLKM</option>
+                            <option value="ASII">ASII</option>
+                            <option value="UNVR">UNVR</option>
+                        </select>
+                        <button id="refreshDashboardPredictions" class="btn btn-sm btn-primary">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="dashboardPredictionLoading" class="text-center py-4">
+                        <div class="spinner-zahaam mb-3"></div>
+                        <p class="text-muted">Loading prediction data...</p>
+                    </div>
+                    <div id="dashboardPredictionContent" style="display: none;">
+                        <!-- Chart for current prediction -->
+                        <div class="chart-container mb-3" style="height: 200px;">
+                            <div id="dashboardPredictionChart"></div>
+                        </div>
+                        
+                        <!-- Multi-timeframe signal cards -->
+                        <div class="row g-2" id="dashboardPredictionSignals">
+                            <!-- Will be populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top 5 Bullish Stocks -->
         <div class="col-lg-6">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -495,35 +547,13 @@
                                 <th style="width: 25%" class="text-end">Sinyal</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="topBullishTableBody">
                             <tr>
-                                <td><strong>BBCA</strong></td>
-                                <td>Bank Central Asia</td>
-                                <td class="text-end">9,525</td>
-                                <td class="text-end">
-                                    <span class="badge bg-success d-inline-flex align-items-center">
-                                        <i class="bi bi-graph-up me-1"></i> Strong
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>TLKM</strong></td>
-                                <td>Telkom Indonesia</td>
-                                <td class="text-end">4,120</td>
-                                <td class="text-end">
-                                    <span class="badge bg-success d-inline-flex align-items-center">
-                                        <i class="bi bi-graph-up me-1"></i> Strong
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>BBRI</strong></td>
-                                <td>Bank Rakyat Indonesia</td>
-                                <td class="text-end">4,570</td>
-                                <td class="text-end">
-                                    <span class="badge bg-success d-inline-flex align-items-center">
-                                        <i class="bi bi-graph-up me-1"></i> Moderate
-                                    </span>
+                                <td colspan="4" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="ms-2">Memuat data sinyal trading...</span>
                                 </td>
                             </tr>
                             <tr>
@@ -567,55 +597,13 @@
                                 <th style="width: 25%" class="text-end">Sinyal</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="topBearishTableBody">
                             <tr>
-                                <td><strong>EXCL</strong></td>
-                                <td>XL Axiata</td>
-                                <td class="text-end">2,150</td>
-                                <td class="text-end">
-                                    <span class="badge bg-danger d-inline-flex align-items-center">
-                                        <i class="bi bi-graph-down me-1"></i> Strong
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>KLBF</strong></td>
-                                <td>Kalbe Farma</td>
-                                <td class="text-end">1,475</td>
-                                <td class="text-end">
-                                    <span class="badge bg-danger d-inline-flex align-items-center">
-                                        <i class="bi bi-graph-down me-1"></i> Strong
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>INDF</strong></td>
-                                <td>Indofood Sukses Makmur</td>
-                                <td class="text-end">6,225</td>
-                                <td class="text-end">
-                                    <span class="badge bg-danger d-inline-flex align-items-center">
-                                        <i class="bi bi-graph-down me-1"></i> Moderate
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>UNVR</strong></td>
-                                <td>Unilever Indonesia</td>
-                                <td class="text-end">3,790</td>
-                                <td class="text-end">
-                                    <span class="badge bg-danger d-inline-flex align-items-center">
-                                        <i class="bi bi-graph-down me-1"></i> Moderate
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>HMSP</strong></td>
-                                <td>HM Sampoerna</td>
-                                <td class="text-end">1,725</td>
-                                <td class="text-end">
-                                    <span class="badge bg-danger d-inline-flex align-items-center">
-                                        <i class="bi bi-graph-down me-1"></i> Moderate
-                                    </span>
+                                <td colspan="4" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="ms-2">Memuat data sinyal trading...</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -1056,8 +1044,11 @@
 
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- ApexCharts -->
-<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.min.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+<!-- Custom Scripts -->
+<script src="js/dashboard-predictions.js"></script>
 <!-- Stock Data and Table -->
 <script src="js/stocks-data.js"></script>
 <script src="js/stocks-table.js"></script>

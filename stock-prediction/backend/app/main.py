@@ -22,6 +22,8 @@ from app.api import stocks as stocks_api
 from app.api import prediction as prediction_api
 from app.api import user_strategies as strategies_api
 from app.api import watchlist as watchlist_api
+from app.api import big_data as big_data_api
+from app.api import notifications as notifications_api
 
 # Configure logging
 logging.basicConfig(
@@ -112,6 +114,8 @@ app.include_router(stocks_api.router)
 app.include_router(prediction_api.router)
 app.include_router(strategies_api.router)
 app.include_router(watchlist_api.router)
+app.include_router(big_data_api.router)
+app.include_router(notifications_api.router)
 
 # List of Indonesian stock tickers (from data/indonesian_stocks.py)
 

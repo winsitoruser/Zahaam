@@ -103,22 +103,34 @@ def fetch_yahoo_data(ticker, period="1y", interval="1d"):
 
 @cache_data(ttl_seconds=300)  # Cache data for 5 minutes
 async def fetch_stock_data(ticker, period="1y", interval="1d", db=None):
-    """Fetch stock data from Yahoo Finance with fallback to database"""
+    """Fetch stock data from Yahoo Finance, save to database, and then distribute.
+    
+    Following the data flow:
+    1. Try to fetch real-time data from Yahoo Finance
+    2. If successful, save it to database first
+    3. Always return data from database (most recent) to frontend
+    4. If API fails or hits limit, return previously stored data from database
+    """
     df = pd.DataFrame()
     company_info = {'name': ticker, 'sector': 'N/A'}
     fetch_success = False
     
+    # If we don't have a database session, we can't implement the desired flow
+    if db is None:
+        logger.warning(f"Database session is required for the data flow - {ticker}")
+        return df, company_info
+    
+    # Step 1: Try to fetch real-time data from Yahoo Finance
     try:
-        # Try to get data from Yahoo Finance
-        df, info = fetch_yahoo_data(ticker, period, interval)
+        yahoo_df, info = fetch_yahoo_data(ticker, period, interval)
         
         # Reset index to include Date as a column
-        df = df.reset_index()
+        yahoo_df = yahoo_df.reset_index()
         
         # Calculate indicators
-        df = calculate_indicators(df)
+        yahoo_df = calculate_indicators(yahoo_df)
         
-        if not df.empty:
+        if not yahoo_df.empty:
             company_info = {
                 'name': info.get('longName', ticker),
                 'sector': info.get('sector', 'N/A'),
@@ -135,88 +147,101 @@ async def fetch_stock_data(ticker, period="1y", interval="1d", db=None):
             }
             fetch_success = True
             logger.info(f"Successfully fetched data from Yahoo Finance for {ticker}")
+            
+            # Step 2: Save newly fetched data to database first
+            await save_stock_data(db, ticker, yahoo_df, company_info)
+            logger.info(f"Saved new data to database for {ticker}")
     except Exception as e:
         logger.warning(f"Failed to fetch data from Yahoo Finance for {ticker}: {str(e)}")
     
-    # If Yahoo fetch failed and we have a database session, try to get latest data from database
-    if not fetch_success and db is not None:
-        try:
-            logger.info(f"Attempting to retrieve latest data from database for {ticker}")
-            # Get stock from database
-            stock = db.query(Stock).filter(Stock.ticker == ticker).first()
+    # Step 3: Always return data from database (either newly saved data or previous data)
+    # This way we implement the flow: API -> DB -> Frontend
+    try:
+        logger.info(f"Attempting to retrieve latest data from database for {ticker}")
+        # Get stock from database
+        stock = db.query(Stock).filter(Stock.ticker == ticker).first()
+        
+        if stock:
+            # Get latest prices (last 365 days or whatever is available)
+            prices = db.query(StockPrice).filter(
+                StockPrice.stock_id == stock.id
+            ).order_by(StockPrice.date.desc()).limit(365).all()
             
-            if stock:
-                # Get latest prices (last 365 days or whatever is available)
-                prices = db.query(StockPrice).filter(
-                    StockPrice.stock_id == stock.id
-                ).order_by(StockPrice.date.desc()).limit(365).all()
+            if prices:
+                # Convert to dataframe
+                price_data = [{
+                    'Date': p.date,
+                    'Open': p.open,
+                    'High': p.high,
+                    'Low': p.low,
+                    'Close': p.close,
+                    'Volume': p.volume
+                } for p in prices]
                 
-                if prices:
-                    # Convert to dataframe
-                    price_data = [{
-                        'Date': p.date,
-                        'Open': p.open,
-                        'High': p.high,
-                        'Low': p.low,
-                        'Close': p.close,
-                        'Volume': p.volume
-                    } for p in prices]
-                    
-                    df = pd.DataFrame(price_data)
-                    df = df.sort_values('Date')  # Sort by date ascending
-                    
-                    # Get the latest indicators
-                    indicators = db.query(StockIndicator).filter(
-                        StockIndicator.stock_id == stock.id
-                    ).order_by(StockIndicator.date.desc()).limit(365).all()
-                    
-                    # If we have indicators, use them
-                    if indicators:
-                        for ind in indicators:
-                            date_match = df['Date'] == ind.date
-                            if any(date_match):
-                                idx = date_match.idxmax()
-                                df.loc[idx, 'sma_20'] = ind.sma_20
-                                df.loc[idx, 'sma_50'] = ind.sma_50
-                                df.loc[idx, 'sma_200'] = ind.sma_200
-                                df.loc[idx, 'ema_12'] = ind.ema_12
-                                df.loc[idx, 'ema_26'] = ind.ema_26
-                                df.loc[idx, 'rsi_14'] = ind.rsi_14
-                                df.loc[idx, 'macd'] = ind.macd
-                                df.loc[idx, 'macd_signal'] = ind.macd_signal
-                                df.loc[idx, 'macd_histogram'] = ind.macd_histogram
-                                df.loc[idx, 'bb_upper'] = ind.bb_upper
-                                df.loc[idx, 'bb_middle'] = ind.bb_middle
-                                df.loc[idx, 'bb_lower'] = ind.bb_lower
-                                df.loc[idx, 'signal'] = ind.signal
-                                df.loc[idx, 'signal_strength'] = ind.signal_strength
-                                df.loc[idx, 'notes'] = ind.notes
-                    else:
-                        # Otherwise calculate them
-                        df = calculate_indicators(df)
-                    
-                    company_info = {
-                        'name': stock.name,
-                        'sector': stock.sector,
-                        'currentPrice': df.iloc[-1]['Close'] if not df.empty else 0
-                    }
-                    
-                    logger.info(f"Successfully retrieved data from database for {ticker}")
+                df = pd.DataFrame(price_data)
+                df = df.sort_values('Date')  # Sort by date ascending
+                
+                # Get the latest indicators
+                indicators = db.query(StockIndicator).filter(
+                    StockIndicator.stock_id == stock.id
+                ).order_by(StockIndicator.date.desc()).limit(365).all()
+                
+                # If we have indicators, use them
+                if indicators:
+                    for ind in indicators:
+                        date_match = df['Date'] == ind.date
+                        if any(date_match):
+                            idx = date_match.idxmax()
+                            df.loc[idx, 'sma_20'] = ind.sma_20
+                            df.loc[idx, 'sma_50'] = ind.sma_50
+                            df.loc[idx, 'sma_200'] = ind.sma_200
+                            df.loc[idx, 'ema_12'] = ind.ema_12
+                            df.loc[idx, 'ema_26'] = ind.ema_26
+                            df.loc[idx, 'rsi_14'] = ind.rsi_14
+                            df.loc[idx, 'macd'] = ind.macd
+                            df.loc[idx, 'macd_signal'] = ind.macd_signal
+                            df.loc[idx, 'macd_histogram'] = ind.macd_histogram
+                            df.loc[idx, 'bb_upper'] = ind.bb_upper
+                            df.loc[idx, 'bb_middle'] = ind.bb_middle
+                            df.loc[idx, 'bb_lower'] = ind.bb_lower
+                            df.loc[idx, 'signal'] = ind.signal
+                            df.loc[idx, 'signal_strength'] = ind.signal_strength
+                            df.loc[idx, 'notes'] = ind.notes
                 else:
-                    logger.warning(f"No price data found in database for {ticker}")
-            else:
-                logger.warning(f"Stock {ticker} not found in database")
+                    # Otherwise calculate them
+                    df = calculate_indicators(df)
                 
-        except Exception as e:
-            logger.error(f"Error retrieving data from database for {ticker}: {str(e)}")
+                company_info = {
+                    'name': stock.name,
+                    'sector': stock.sector,
+                    'currentPrice': df.iloc[-1]['Close'] if not df.empty else 0
+                }
+                
+                logger.info(f"Successfully retrieved data from database for {ticker}")
+            else:
+                logger.warning(f"No price data found in database for {ticker}")
+        else:
+            logger.warning(f"Stock {ticker} not found in database")
+                
+    except Exception as e:
+        logger.error(f"Error retrieving data from database for {ticker}: {str(e)}")
     
     return df, company_info
 
-def save_stock_data(db: Session, ticker: str, df: pd.DataFrame, company_info: dict):
-    """Save stock data and indicators to database"""
+async def save_stock_data(db, ticker, df, company_info):
+    """Save stock data and indicators to database
+    
+    This function saves the data in an atomic way to ensure data consistency.
+    """
+    if df.empty:
+        logger.warning(f"Cannot save empty dataframe for {ticker}")
+        return
+    
     try:
-        # Get or create stock
+        # Check if stock exists
         stock = db.query(Stock).filter(Stock.ticker == ticker).first()
+        
+        # If not, create it
         if not stock:
             stock = Stock(
                 ticker=ticker,
@@ -225,109 +250,204 @@ def save_stock_data(db: Session, ticker: str, df: pd.DataFrame, company_info: di
                 last_updated=datetime.now()
             )
             db.add(stock)
-            db.flush()
+            db.commit()
+            db.refresh(stock)
         else:
+            # Update stock info
+            stock.name = company_info.get('name', stock.name)
+            stock.sector = company_info.get('sector', stock.sector)
             stock.last_updated = datetime.now()
-            db.flush()
-            
-        # Clear cache for this ticker since data has changed
-        clear_cache(prefix=f"get_latest_stock_data-{ticker}")
-        clear_cache(prefix=f"fetch_stock_data-{ticker}")
+            db.commit()
         
-        # Delete existing records for this ticker to avoid duplicates
-        db.query(StockPrice).filter(StockPrice.stock_id == stock.id).delete()
-        db.query(StockIndicator).filter(StockIndicator.stock_id == stock.id).delete()
-        
-        # Add new prices and indicators
+        # Process and save each day's data
         for _, row in df.iterrows():
-            if 'Date' not in row or pd.isna(row['Date']):
-                continue
-                
-            # Convert date to datetime if it's a string
             date = row['Date']
-            if isinstance(date, str):
-                date = datetime.fromisoformat(date.split('T')[0])
-                
-            # Add stock price
-            price = StockPrice(
-                stock_id=stock.id,
-                date=date,
-                open=float(row['Open']) if 'Open' in row and not pd.isna(row['Open']) else None,
-                high=float(row['High']) if 'High' in row and not pd.isna(row['High']) else None,
-                low=float(row['Low']) if 'Low' in row and not pd.isna(row['Low']) else None,
-                close=float(row['Close']) if 'Close' in row and not pd.isna(row['Close']) else None,
-                volume=int(row['Volume']) if 'Volume' in row and not pd.isna(row['Volume']) else 0
-            )
-            db.add(price)
             
-            # Add indicators
-            indicator = StockIndicator(
-                stock_id=stock.id,
-                date=date,
-                sma_20=float(row['sma_20']) if 'sma_20' in row and not pd.isna(row['sma_20']) else None,
-                sma_50=float(row['sma_50']) if 'sma_50' in row and not pd.isna(row['sma_50']) else None,
-                sma_200=float(row['sma_200']) if 'sma_200' in row and not pd.isna(row['sma_200']) else None,
-                ema_12=float(row['ema_12']) if 'ema_12' in row and not pd.isna(row['ema_12']) else None,
-                ema_26=float(row['ema_26']) if 'ema_26' in row and not pd.isna(row['ema_26']) else None,
-                rsi_14=float(row['rsi_14']) if 'rsi_14' in row and not pd.isna(row['rsi_14']) else None,
-                macd=float(row['macd']) if 'macd' in row and not pd.isna(row['macd']) else None,
-                macd_signal=float(row['macd_signal']) if 'macd_signal' in row and not pd.isna(row['macd_signal']) else None,
-                macd_histogram=float(row['macd_histogram']) if 'macd_histogram' in row and not pd.isna(row['macd_histogram']) else None,
-                bb_upper=float(row['bb_upper']) if 'bb_upper' in row and not pd.isna(row['bb_upper']) else None,
-                bb_middle=float(row['bb_middle']) if 'bb_middle' in row and not pd.isna(row['bb_middle']) else None,
-                bb_lower=float(row['bb_lower']) if 'bb_lower' in row and not pd.isna(row['bb_lower']) else None,
-                signal=row['signal'] if 'signal' in row and not pd.isna(row['signal']) else 'HOLD',
-                signal_strength=float(row['signal_strength']) if 'signal_strength' in row and not pd.isna(row['signal_strength']) else 0.5,
-                notes=row['notes'] if 'notes' in row and not pd.isna(row['notes']) else ''
-            )
-            db.add(indicator)
+            # Check if price exists for this date
+            price = db.query(StockPrice).filter(
+                StockPrice.stock_id == stock.id,
+                StockPrice.date == date
+            ).first()
+            
+            # Create or update price
+            if not price:
+                price = StockPrice(
+                    stock_id=stock.id,
+                    date=date,
+                    open=row['Open'],
+                    high=row['High'],
+                    low=row['Low'],
+                    close=row['Close'],
+                    volume=row['Volume']
+                )
+                db.add(price)
+            else:
+                price.open = row['Open']
+                price.high = row['High']
+                price.low = row['Low']
+                price.close = row['Close']
+                price.volume = row['Volume']
+            
+            # Check if indicators exist for this date
+            indicator = db.query(StockIndicator).filter(
+                StockIndicator.stock_id == stock.id,
+                StockIndicator.date == date
+            ).first()
+            
+            # Create or update indicators
+            if not indicator:
+                indicator = StockIndicator(
+                    stock_id=stock.id,
+                    date=date,
+                    sma_20=row.get('sma_20'),
+                    sma_50=row.get('sma_50'),
+                    sma_200=row.get('sma_200'),
+                    ema_12=row.get('ema_12'),
+                    ema_26=row.get('ema_26'),
+                    rsi_14=row.get('rsi_14'),
+                    macd=row.get('macd'),
+                    macd_signal=row.get('macd_signal'),
+                    macd_histogram=row.get('macd_histogram'),
+                    bb_upper=row.get('bb_upper'),
+                    bb_middle=row.get('bb_middle'),
+                    bb_lower=row.get('bb_lower'),
+                    signal=row.get('signal'),
+                    signal_strength=row.get('signal_strength'),
+                    notes=row.get('notes')
+                )
+                db.add(indicator)
+            else:
+                indicator.sma_20 = row.get('sma_20')
+                indicator.sma_50 = row.get('sma_50') 
+                indicator.sma_200 = row.get('sma_200')
+                indicator.ema_12 = row.get('ema_12')
+                indicator.ema_26 = row.get('ema_26')
+                indicator.rsi_14 = row.get('rsi_14')
+                indicator.macd = row.get('macd')
+                indicator.macd_signal = row.get('macd_signal')
+                indicator.macd_histogram = row.get('macd_histogram')
+                indicator.bb_upper = row.get('bb_upper')
+                indicator.bb_middle = row.get('bb_middle')
+                indicator.bb_lower = row.get('bb_lower')
+                indicator.signal = row.get('signal')
+                indicator.signal_strength = row.get('signal_strength')
+                indicator.notes = row.get('notes')
         
         db.commit()
-        return True
+        logger.info(f"Successfully saved {len(df)} records for {ticker}")
+        
     except IntegrityError as e:
-        logger.error(f"Database integrity error for {ticker}: {str(e)}")
         db.rollback()
-        return False
+        logger.error(f"Database integrity error saving {ticker}: {str(e)}")
     except Exception as e:
-        logger.error(f"Error saving data for {ticker}: {str(e)}")
         db.rollback()
-        return False
+        logger.error(f"Error saving {ticker} data: {str(e)}")
 
 @cache_data(ttl_seconds=60)  # Cache results for 1 minute
-def get_latest_stock_data(db: Session, ticker: str, fetch_if_outdated=False):
-    """Get the latest stock data from the database or fetch if outdated"""
+async def get_latest_stock_data(db, ticker, fetch_if_outdated=False):
+    """Get the latest stock data from the database or fetch if outdated
+    
+    This function follows the data flow: API -> DB -> Frontend
+    - Always returns data from DB
+    - If data is outdated, triggers a fetch in background but still returns current DB data
+    - Next request will get the updated data from DB
+    """
     stock = db.query(Stock).filter(Stock.ticker == ticker).first()
+    
     if not stock:
-        # Stock not in database, fetch it
-        if fetch_if_outdated:
-            logger.info(f"Stock {ticker} not found in database, fetching new data")
-            asyncio.run(fetch_and_save_single_stock(db, ticker))
-            clear_cache(prefix=f"get_latest_stock_data-{ticker}")  # Clear cache for this ticker
-            return get_latest_stock_data(db, ticker, False)  # Try again but don't fetch again
-        return None
+        logger.warning(f"Stock {ticker} not found in database")
+        return None, None
     
-    # Get latest price data
-    latest_price = db.query(StockPrice).filter(
-        StockPrice.stock_id == stock.id
-    ).order_by(StockPrice.date.desc()).first()
+    # Check if data is outdated (older than 24 hours for daily data)
+    is_outdated = False
+    if stock.last_updated:
+        time_diff = datetime.now() - stock.last_updated
+        is_outdated = time_diff.total_seconds() > 24 * 60 * 60  # 24 hours
     
-    # Get latest indicators
-    latest_indicators = db.query(StockIndicator).filter(
-        StockIndicator.stock_id == stock.id
-    ).order_by(StockIndicator.date.desc()).first()
+    # If outdated and fetch_if_outdated is True, fetch new data in background
+    # but still return current data immediately
+    if is_outdated and fetch_if_outdated:
+        logger.info(f"Data for {ticker} is outdated, triggering background refresh")
+        # Use create_task to run this asynchronously
+        asyncio.create_task(fetch_and_save_single_stock(db, ticker))
     
-    # Check if data is outdated (last updated more than 24 hours ago)
-    if fetch_if_outdated and latest_price and datetime.now() - latest_price.date > timedelta(hours=24):
-        logger.info(f"Data for {ticker} is outdated, fetching new data")
-        asyncio.run(fetch_and_save_single_stock(db, ticker))
-        clear_cache(prefix=f"get_latest_stock_data-{ticker}")  # Clear cache for this ticker
-        return get_latest_stock_data(db, ticker, False)  # Try again but don't fetch again
+    # Get the latest price
+    latest_price = (
+        db.query(StockPrice)
+        .filter(StockPrice.stock_id == stock.id)
+        .order_by(StockPrice.date.desc())
+        .first()
+    )
     
-    return {
-        'stock': stock,
-        'latest_price': latest_price,
-        'latest_indicators': latest_indicators
-    }
+    # Get the latest indicator
+    latest_indicator = (
+        db.query(StockIndicator)
+        .filter(StockIndicator.stock_id == stock.id)
+        .order_by(StockIndicator.date.desc())
+        .first()
+    )
+    
+    # Always return data from database, regardless of whether a refresh was triggered
+    # This maintains the API -> DB -> Frontend flow
+    return latest_price, latest_indicator
+
+async def fetch_and_save_single_stock(db, ticker):
+    """Fetch and save data for a single stock following the API -> DB -> Frontend flow
+    
+    This function implements the flow where:
+    1. Data is fetched from Yahoo Finance API
+    2. Saved directly to database
+    3. No direct return to frontend (that's handled by separate endpoints)
+    4. If API fails, no action needed as endpoints already return DB data
+    """
+    try:
+        # Fetch data from Yahoo Finance
+        try:
+            df, info = fetch_yahoo_data(ticker, period="1y", interval="1d")
+            
+            # Reset index to include Date as a column
+            df = df.reset_index()
+            
+            # Calculate indicators
+            df = calculate_indicators(df)
+            
+            if not df.empty:
+                company_info = {
+                    'name': info.get('longName', ticker),
+                    'sector': info.get('sector', 'N/A'),
+                    'industry': info.get('industry', 'N/A'),
+                    'marketCap': info.get('marketCap', 0),
+                    'currentPrice': info.get('currentPrice', 0),
+                    'previousClose': info.get('previousClose', 0),
+                    'open': info.get('open', 0),
+                    'dayLow': info.get('dayLow', 0),
+                    'dayHigh': info.get('dayHigh', 0),
+                    'volume': info.get('volume', 0),
+                    'fiftyTwoWeekLow': info.get('fiftyTwoWeekLow', 0),
+                    'fiftyTwoWeekHigh': info.get('fiftyTwoWeekHigh', 0),
+                }
+                
+                # Save directly to database
+                await save_stock_data(db, ticker, df, company_info)
+                logger.info(f"Successfully updated data for {ticker}")
+                
+                # Update last_updated timestamp
+                stock = db.query(Stock).filter(Stock.ticker == ticker).first()
+                if stock:
+                    stock.last_updated = datetime.now()
+                    db.commit()
+                
+                return True
+            else:
+                logger.warning(f"No data available from Yahoo Finance for {ticker}")
+                return False
+        except Exception as e:
+            logger.error(f"Failed to fetch data from Yahoo Finance for {ticker}: {str(e)}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error in fetch_and_save_single_stock for {ticker}: {str(e)}")
+        return False
 
 async def fetch_and_save_all_stocks(db: Session, ticker_list=None):
     """Fetch and save data for all Indonesian stocks with rate limiting"""
@@ -341,7 +461,7 @@ async def fetch_and_save_all_stocks(db: Session, ticker_list=None):
             # Pass db session to enable fallback to database
             df, company_info = await fetch_stock_data(ticker, db=db)
             if not df.empty:
-                save_stock_data(db, ticker, df, company_info)
+                await save_stock_data(db, ticker, df, company_info)
                 logger.info(f"Successfully saved data for {ticker}")
             else:
                 logger.warning(f"No data fetched for {ticker}")
@@ -350,20 +470,3 @@ async def fetch_and_save_all_stocks(db: Session, ticker_list=None):
         
         # Delay minimal antara API calls
         time.sleep(random.uniform(0.5, 1.0))
-
-async def fetch_and_save_single_stock(db: Session, ticker: str):
-    """Fetch and save data for a single stock with fallback to database"""
-    try:
-        logger.info(f"Fetching data for {ticker}...")
-        # Pass db session to enable fallback to database
-        df, company_info = await fetch_stock_data(ticker, db=db)
-        if not df.empty:
-            save_stock_data(db, ticker, df, company_info)
-            logger.info(f"Successfully saved data for {ticker}")
-            return True
-        else:
-            logger.warning(f"No data fetched for {ticker}")
-            return False
-    except Exception as e:
-        logger.error(f"Error processing {ticker}: {str(e)}")
-        return False

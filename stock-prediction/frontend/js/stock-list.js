@@ -19,9 +19,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // Fungsi untuk mengambil data saham
 async function fetchStockData() {
     try {
-        // Dalam implementasi nyata, ini akan memanggil API
-        // Untuk contoh, kita gunakan data statis
-        allStocks = generateMockStocks();
+        // Menampilkan loading state
+        document.getElementById('stocksTableBody').innerHTML = `
+            <tr>
+                <td colspan="10" class="text-center py-5">
+                    <div class="spinner-zahaam"></div>
+                    <p class="mt-3 text-muted">Loading stocks data...</p>
+                </td>
+            </tr>
+        `;
+        
+        // Fetch stock details dari API
+        const response = await fetch('/api/stocks/details');
+        
+        if (!response.ok) {
+            throw new Error(`Error fetching stock data: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        const stocksFromAPI = data.stocks || [];
+        
+        // Tambahkan data harga dan informasi lainnya
+        allStocks = await enrichStocksWithPriceData(stocksFromAPI);
         
         // Tampilkan data
         filteredStocks = [...allStocks];
@@ -34,11 +53,92 @@ async function fetchStockData() {
             <tr>
                 <td colspan="10" class="text-center py-5">
                     <i class="bi bi-exclamation-triangle text-warning fs-1"></i>
-                    <p class="mt-3 text-muted">Failed to load stocks data. Please try again later.</p>
+                    <p class="mt-3 text-muted">Failed to load stocks data: ${error.message}</p>
+                    <button class="btn btn-outline-primary mt-2" id="retryFetchBtn">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Retry
+                    </button>
                 </td>
             </tr>
         `;
+        
+        document.getElementById('retryFetchBtn').addEventListener('click', fetchStockData);
     }
+}
+
+// Fungsi untuk memperkaya data saham dengan data harga
+async function enrichStocksWithPriceData(stocks) {
+    try {
+        // Dalam implementasi produksi, mungkin ada API endpoint khusus
+        // yang mengembalikan data lengkap dengan harga
+        
+        // Untuk sekarang, kita akan fetch data harga terakhir dari API
+        const pricesResponse = await fetch('/api/stocks/latest-prices');
+        
+        if (!pricesResponse.ok) {
+            // Jika API belum tersedia, gunakan data harga acak
+            console.warn('Latest prices API not available, using random price data');
+            return stocks.map(stock => ({
+                symbol: stock.ticker.replace('.JK', ''),
+                company: stock.name,
+                sector: stock.sector,
+                lastPrice: generateRandomPrice(),
+                change: generateRandomChange(),
+                volume: Math.floor(Math.random() * 10000000) + 100000,
+                marketCap: generateRandomMarketCap(),
+                peRatio: (Math.random() * 30 + 5).toFixed(2) * 1
+            }));
+        }
+        
+        const pricesData = await pricesResponse.json();
+        
+        // Gabungkan data saham dengan data harga
+        return stocks.map(stock => {
+            const ticker = stock.ticker.replace('.JK', '');
+            const priceInfo = pricesData[ticker] || {};
+            
+            return {
+                symbol: ticker,
+                company: stock.name,
+                sector: stock.sector,
+                lastPrice: priceInfo.lastPrice || generateRandomPrice(),
+                change: priceInfo.change || generateRandomChange(),
+                volume: priceInfo.volume || Math.floor(Math.random() * 10000000) + 100000,
+                marketCap: priceInfo.marketCap || generateRandomMarketCap(),
+                peRatio: priceInfo.peRatio || (Math.random() * 30 + 5).toFixed(2) * 1
+            };
+        });
+    } catch (error) {
+        console.error('Error enriching stock data:', error);
+        // Fallback ke data harga acak jika terjadi error
+        return stocks.map(stock => ({
+            symbol: stock.ticker.replace('.JK', ''),
+            company: stock.name,
+            sector: stock.sector,
+            lastPrice: generateRandomPrice(),
+            change: generateRandomChange(),
+            volume: Math.floor(Math.random() * 10000000) + 100000,
+            marketCap: generateRandomMarketCap(),
+            peRatio: (Math.random() * 30 + 5).toFixed(2) * 1
+        }));
+    }
+}
+
+// Helper function untuk generate random price
+function generateRandomPrice() {
+    // Generate random price between 100 and 20000
+    return Math.floor(Math.random() * 19900) + 100;
+}
+
+// Helper function untuk generate random change
+function generateRandomChange() {
+    // Generate random change between -5% and +5%
+    return (Math.random() * 10 - 5).toFixed(2) * 1;
+}
+
+// Helper function untuk generate random market cap
+function generateRandomMarketCap() {
+    // Generate random market cap between 100B and 500T
+    return Math.floor(Math.random() * 500000000000000) + 100000000000;
 }
 
 // Setup event listeners

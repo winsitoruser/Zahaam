@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifikasi - ZAHAAM Stock Prediction</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/zahaam-styles.css">
+    <style>
+        .notification-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px;
+            transition: background-color 0.3s ease;
+        }
+        .notification-item:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        .notification-item.unread {
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        .notification-priority-indicator {
+            width: 4px;
+            height: 100%;
+            margin-right: 12px;
+            border-radius: 2px;
+        }
+        .notification-filters .btn-check:checked + .btn-outline-primary {
+            background-color: #0d6efd;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <img src="images/logo.png" height="40" alt="ZAHAAM">
+                <span class="badge bg-warning text-dark ms-1">Beta</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="stocks.html">Saham</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="strategy.html">Strategi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="prediction.html">Prediksi AI</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative" href="#" id="notification-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-badge">
+                                0
+                            </span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" id="notification-dropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                            <!-- Notifications will be loaded here via JavaScript -->
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="profile.html">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="d-none d-lg-inline ms-1">Profil</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">Notifikasi</h1>
+                
+                <!-- Notification Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Filter</h5>
+                        <div class="notification-filters mb-3">
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="notification-type" id="all-notifications" checked>
+                                <label class="btn btn-outline-primary" for="all-notifications">Semua</label>
+                                
+                                <input type="radio" class="btn-check" name="notification-type" id="signal-notifications">
+                                <label class="btn btn-outline-primary" for="signal-notifications">Sinyal Trading</label>
+                                
+                                <input type="radio" class="btn-check" name="notification-type" id="price-notifications">
+                                <label class="btn btn-outline-primary" for="price-notifications">Perubahan Harga</label>
+                                
+                                <input type="radio" class="btn-check" name="notification-type" id="news-notifications">
+                                <label class="btn btn-outline-primary" for="news-notifications">Berita</label>
+                                
+                                <input type="radio" class="btn-check" name="notification-type" id="system-notifications">
+                                <label class="btn btn-outline-primary" for="system-notifications">Sistem</label>
+                            </div>
+                        </div>
+                        
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="show-read-switch" checked>
+                                    <label class="form-check-label" for="show-read-switch">Tampilkan yang sudah dibaca</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                                <button id="mark-all-read-btn" class="btn btn-outline-primary">
+                                    <i class="fas fa-check-double me-1"></i> Tandai Semua Dibaca
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notifications List -->
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div id="notifications-container">
+                            <!-- Notifications will be loaded here -->
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3">Memuat notifikasi...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="empty-notifications" class="text-center py-5 d-none">
+                            <i class="fas fa-bell-slash fs-1 text-muted"></i>
+                            <p class="mt-3">Tidak ada notifikasi untuk ditampilkan</p>
+                        </div>
+                        
+                        <!-- Load More Button -->
+                        <div class="text-center p-3 border-top d-none" id="load-more-container">
+                            <button id="load-more-btn" class="btn btn-light">
+                                <i class="fas fa-sync me-1"></i> Muat Lebih Banyak
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-12 col-md-4">
+                    <h5 class="mb-3">
+                        <img src="images/logo.png" height="30" alt="ZAHAAM">
+                        <span class="badge bg-warning text-dark ms-1">Beta</span>
+                    </h5>
+                    <p class="text-muted">Platform prediksi saham berbasis AI dengan teknologi machine learning canggih untuk membantu investor membuat keputusan trading yang lebih baik.</p>
+                    <div class="social-links">
+                        <a href="#" class="me-2 text-decoration-none"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="me-2 text-decoration-none"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="me-2 text-decoration-none"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="me-2 text-decoration-none"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <h6 class="fw-bold mb-3">Platform</h6>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2"><a href="dashboard.html" class="nav-link p-0 text-muted">Dashboard</a></li>
+                        <li class="nav-item mb-2"><a href="stocks.html" class="nav-link p-0 text-muted">Saham</a></li>
+                        <li class="nav-item mb-2"><a href="strategy.html" class="nav-link p-0 text-muted">Strategi</a></li>
+                        <li class="nav-item mb-2"><a href="prediction.html" class="nav-link p-0 text-muted">Prediksi AI</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-2">
+                    <h6 class="fw-bold mb-3">Resources</h6>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted">Dokumentasi</a></li>
+                        <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted">Blog</a></li>
+                        <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted">FAQs</a></li>
+                        <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted">Dukungan</a></li>
+                    </ul>
+                </div>
+                <div class="col-12 col-md-4">
+                    <h6 class="fw-bold mb-3">Berlangganan Newsletter</h6>
+                    <p class="text-muted">Dapatkan update terbaru dari ZAHAAM</p>
+                    <form>
+                        <div class="d-flex w-100 gap-2">
+                            <input type="email" class="form-control" placeholder="Email address">
+                            <button class="btn btn-primary" type="button">Subscribe</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <p class="mb-0 text-muted">© 2023 ZAHAAM. All rights reserved.</p>
+                <ul class="nav">
+                    <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">Privacy</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">Terms</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">Cookies</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/notifications.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize notification manager
+            const notificationManager = window.notificationManager || new NotificationManager();
+            
+            // Elements
+            const notificationsContainer = document.getElementById('notifications-container');
+            const emptyState = document.getElementById('empty-notifications');
+            const loadMoreContainer = document.getElementById('load-more-container');
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            const markAllReadBtn = document.getElementById('mark-all-read-btn');
+            const showReadSwitch = document.getElementById('show-read-switch');
+            
+            // Filter elements
+            const allFilter = document.getElementById('all-notifications');
+            const signalFilter = document.getElementById('signal-notifications');
+            const priceFilter = document.getElementById('price-notifications');
+            const newsFilter = document.getElementById('news-notifications');
+            const systemFilter = document.getElementById('system-notifications');
+            
+            // Current filter state
+            let currentFilters = {
+                type: null,
+                showRead: true,
+                page: 1,
+                limit: 20
+            };
+            
+            // Load notifications function
+            async function loadNotifications(filters = {}, append = false) {
+                try {
+                    // Update filter state
+                    currentFilters = { ...currentFilters, ...filters };
+                    
+                    // Show loading state if not appending
+                    if (!append) {
+                        notificationsContainer.innerHTML = `
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3">Memuat notifikasi...</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Build query parameters
+                    const params = new URLSearchParams();
+                    const userId = localStorage.getItem('user_id');
+                    if (userId) {
+                        params.append('user_id', userId);
+                    }
+                    
+                    if (currentFilters.type) {
+                        params.append('type', currentFilters.type);
+                    }
+                    
+                    if (!currentFilters.showRead) {
+                        params.append('is_read', false);
+                    }
+                    
+                    params.append('limit', currentFilters.limit);
+                    
+                    // Fetch notifications
+                    const response = await fetch(`/api/notifications?${params.toString()}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch notifications');
+                    }
+                    
+                    const data = await response.json();
+                    const notifications = data.notifications;
+                    
+                    // Show empty state if no notifications
+                    if (notifications.length === 0 && !append) {
+                        notificationsContainer.innerHTML = '';
+                        emptyState.classList.remove('d-none');
+                        loadMoreContainer.classList.add('d-none');
+                        return;
+                    }
+                    
+                    // Hide empty state
+                    emptyState.classList.add('d-none');
+                    
+                    // Clear container if not appending
+                    if (!append) {
+                        notificationsContainer.innerHTML = '';
+                    }
+                    
+                    // Add notifications to container
+                    notifications.forEach(notification => {
+                        const notificationElement = createNotificationElement(notification);
+                        notificationsContainer.appendChild(notificationElement);
+                    });
+                    
+                    // Show/hide load more button
+                    if (notifications.length < currentFilters.limit) {
+                        loadMoreContainer.classList.add('d-none');
+                    } else {
+                        loadMoreContainer.classList.remove('d-none');
+                    }
+                } catch (error) {
+                    console.error('Error loading notifications:', error);
+                    notificationsContainer.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-exclamation-triangle fs-1 text-warning"></i>
+                            <p class="mt-3">Gagal memuat notifikasi. Silakan coba lagi nanti.</p>
+                        </div>
+                    `;
+                    loadMoreContainer.classList.add('d-none');
+                }
+            }
+            
+            // Create notification element
+            function createNotificationElement(notification) {
+                const element = document.createElement('div');
+                element.className = `notification-item d-flex align-items-start ${notification.is_read ? '' : 'unread'}`;
+                element.dataset.id = notification.id;
+                element.dataset.type = notification.type;
+                
+                // Add priority indicator
+                let priorityClass = 'bg-info';
+                if (notification.priority === 'high') priorityClass = 'bg-warning';
+                if (notification.priority === 'urgent') priorityClass = 'bg-danger';
+                
+                // Set icon based on notification type
+                let iconClass = 'fas fa-bell';
+                if (notification.type === 'signal_change') iconClass = 'fas fa-chart-line';
+                if (notification.type === 'price_alert') iconClass = 'fas fa-tag';
+                if (notification.type === 'news') iconClass = 'fas fa-newspaper';
+                if (notification.type === 'prediction_update') iconClass = 'fas fa-brain';
+                if (notification.type === 'system') iconClass = 'fas fa-cogs';
+                
+                // Format date
+                const date = new Date(notification.created_at);
+                const formattedDate = date.toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                element.innerHTML = `
+                    <div class="notification-priority-indicator ${priorityClass}"></div>
+                    <div class="notification-icon me-3 pt-1">
+                        <i class="${iconClass} fa-lg"></i>
+                    </div>
+                    <div class="notification-content flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong class="notification-title">${notification.title}</strong>
+                            <small class="text-muted">${formattedDate}</small>
+                        </div>
+                        <p class="notification-message mb-1">${notification.message}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            ${notification.ticker ? `<span class="badge bg-light text-dark">${notification.ticker}</span>` : '<span></span>'}
+                            <button class="btn btn-sm btn-link p-0 mark-read-btn" data-id="${notification.id}">
+                                ${notification.is_read ? '' : 'Tandai dibaca'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Add click event to mark as read
+                const markReadBtn = element.querySelector('.mark-read-btn');
+                if (markReadBtn) {
+                    markReadBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        markNotificationAsRead(notification.id);
+                    });
+                }
+                
+                // Add click event for ticker
+                if (notification.ticker) {
+                    element.addEventListener('click', () => {
+                        if (!notification.is_read) {
+                            markNotificationAsRead(notification.id);
+                        }
+                        window.location.href = `/stock-basic.html?symbol=${notification.ticker}`;
+                    });
+                }
+                
+                return element;
+            }
+            
+            // Mark notification as read
+            async function markNotificationAsRead(id) {
+                try {
+                    const response = await fetch(`/api/notifications/mark-read/${id}`, {
+                        method: 'POST'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to mark notification as read');
+                    }
+                    
+                    // Update UI
+                    const notification = document.querySelector(`.notification-item[data-id="${id}"]`);
+                    if (notification) {
+                        notification.classList.remove('unread');
+                        const markReadBtn = notification.querySelector('.mark-read-btn');
+                        if (markReadBtn) {
+                            markReadBtn.innerHTML = '';
+                        }
+                    }
+                    
+                    // Refresh notification badge
+                    notificationManager.fetchNotifications();
+                } catch (error) {
+                    console.error('Error marking notification as read:', error);
+                }
+            }
+            
+            // Mark all as read
+            async function markAllAsRead() {
+                const userId = localStorage.getItem('user_id');
+                if (!userId) return;
+                
+                try {
+                    markAllReadBtn.disabled = true;
+                    markAllReadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menandai...';
+                    
+                    const response = await fetch(`/api/notifications/mark-all-read?user_id=${userId}`, {
+                        method: 'POST'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to mark all notifications as read');
+                    }
+                    
+                    // Reload notifications
+                    loadNotifications();
+                    
+                    // Refresh notification badge
+                    notificationManager.fetchNotifications();
+                } catch (error) {
+                    console.error('Error marking all notifications as read:', error);
+                } finally {
+                    markAllReadBtn.disabled = false;
+                    markAllReadBtn.innerHTML = '<i class="fas fa-check-double me-1"></i> Tandai Semua Dibaca';
+                }
+            }
+            
+            // Add event listeners
+            loadMoreBtn.addEventListener('click', () => {
+                currentFilters.page++;
+                loadNotifications({ page: currentFilters.page }, true);
+            });
+            
+            markAllReadBtn.addEventListener('click', markAllAsRead);
+            
+            showReadSwitch.addEventListener('change', () => {
+                loadNotifications({ showRead: showReadSwitch.checked });
+            });
+            
+            // Filter event listeners
+            allFilter.addEventListener('change', () => {
+                if (allFilter.checked) {
+                    loadNotifications({ type: null, page: 1 });
+                }
+            });
+            
+            signalFilter.addEventListener('change', () => {
+                if (signalFilter.checked) {
+                    loadNotifications({ type: 'signal_change', page: 1 });
+                }
+            });
+            
+            priceFilter.addEventListener('change', () => {
+                if (priceFilter.checked) {
+                    loadNotifications({ type: 'price_alert', page: 1 });
+                }
+            });
+            
+            newsFilter.addEventListener('change', () => {
+                if (newsFilter.checked) {
+                    loadNotifications({ type: 'news', page: 1 });
+                }
+            });
+            
+            systemFilter.addEventListener('change', () => {
+                if (systemFilter.checked) {
+                    loadNotifications({ type: 'system', page: 1 });
+                }
+            });
+            
+            // Load notifications on page load
+            loadNotifications();
+        });
+    </script>
+</body>
+</html>
