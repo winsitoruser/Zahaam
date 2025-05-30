@@ -1,0 +1,387 @@
+/* CSS kustom untuk halaman prediksi */
+
+:root {
+    --primary: #4e73df;
+    --secondary: #858796;
+    --success: #1cc88a;
+    --info: #36b9cc;
+    --warning: #f6c23e;
+    --danger: #e74a3b;
+    --light: #f8f9fc;
+    --dark: #5a5c69;
+    --white: #fff;
+    --border-radius: 0.35rem;
+    --transition-speed: 0.3s;
+}
+
+body {
+    background-color: #f8f9fc;
+}
+
+/* Gradient background for jumbotron */
+.jumbotron-zahaam {
+    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 0;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.jumbotron-zahaam h1 {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.prediction-container {
+    margin-top: -3rem;
+}
+
+/* Styling untuk card dengan border kiri berwarna */
+.border-left-primary {
+    border-left: 4px solid var(--primary);
+}
+
+.border-left-info {
+    border-left: 4px solid var(--info);
+}
+
+.border-left-success {
+    border-left: 4px solid var(--success);
+}
+
+.border-left-warning {
+    border-left: 4px solid var(--warning);
+}
+
+.border-left-danger {
+    border-left: 4px solid var(--danger);
+}
+
+/* Bayangan yang lebih halus untuk card */
+.card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+    transition: all var(--transition-speed) ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.15);
+}
+
+/* Styling untuk header card */
+.card-header {
+    background-color: var(--white);
+    border-bottom: 1px solid rgba(227, 230, 240, 0.6);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+}
+
+/* Styling untuk level resistance dan support */
+.level-item {
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid transparent;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    transition: all var(--transition-speed) ease;
+}
+
+.resistance-level {
+    background-color: rgba(231, 74, 59, 0.05);
+    border-left-color: var(--danger);
+}
+
+.resistance-level:hover {
+    background-color: rgba(231, 74, 59, 0.1);
+    transform: translateX(3px);
+}
+
+.support-level {
+    background-color: rgba(28, 200, 138, 0.05);
+    border-left-color: var(--success);
+}
+
+.support-level:hover {
+    background-color: rgba(28, 200, 138, 0.1);
+    transform: translateX(3px);
+}
+
+/* Badges styling */
+.badge-signal {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Styling untuk signal card */
+.signal-card {
+    border-radius: var(--border-radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all var(--transition-speed) ease;
+}
+
+.signal-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+.entry-signal {
+    background-color: rgba(28, 200, 138, 0.08);
+    border-left: 3px solid var(--success);
+}
+
+.exit-signal {
+    background-color: rgba(231, 74, 59, 0.08);
+    border-left: 3px solid var(--danger);
+}
+
+/* Price chart dalam resistance/support level */
+.price-chart {
+    background-color: rgba(248, 249, 252, 0.5);
+    border-radius: var(--border-radius);
+    padding: 5px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Quick Stats styling */
+.quick-stat {
+    background-color: var(--light);
+    border-radius: var(--border-radius);
+    padding: 12px 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    transition: all var(--transition-speed) ease;
+}
+
+.quick-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+
+.quick-stat .stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* Styling untuk progress bar */
+.signal-strength {
+    height: 6px;
+    background-color: rgba(78, 115, 223, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.signal-strength .progress-bar {
+    height: 6px;
+    border-radius: 10px;
+}
+
+/* Styling untuk icon dalam header */
+.card-header i {
+    font-size: 1.2rem;
+    margin-right: 10px;
+    color: var(--primary);
+}
+
+/* Styling untuk form predict */
+.predict-form {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+    margin-bottom: 2rem;
+}
+
+.predict-form label {
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.predict-form .form-control {
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+}
+
+.predict-form .form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    border-color: var(--primary);
+}
+
+.btn-zahaam {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed) ease;
+}
+
+.btn-primary-zahaam {
+    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    border: none;
+    color: white;
+}
+
+.btn-primary-zahaam:hover {
+    background: linear-gradient(135deg, #3a5eca 0%, #1a3a96 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(78, 115, 223, 0.3);
+}
+
+/* Styling untuk time period buttons */
+.time-period-btn {
+    background-color: var(--white);
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--secondary);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    transition: all var(--transition-speed) ease;
+}
+
+.time-period-btn:hover, .time-period-btn.active {
+    background-color: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+/* Footer styling */
+.footer {
+    background-color: var(--light);
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.footer-link {
+    color: var(--secondary);
+    text-decoration: none;
+    transition: color var(--transition-speed) ease;
+}
+
+.footer-link:hover {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.social-icons a {
+    color: var(--secondary);
+    font-size: 1.2rem;
+    transition: all var(--transition-speed) ease;
+}
+
+.social-icons a:hover {
+    color: var(--primary);
+    transform: translateY(-3px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card, .predict-form, .signal-card, .level-item {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Dark Mode Styling */
+body.dark-mode {
+    background-color: #1a1a2e;
+    color: #e6e6e6;
+}
+
+body.dark-mode .jumbotron-zahaam {
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+}
+
+body.dark-mode .navbar-zahaam {
+    background-color: #121212;
+}
+
+body.dark-mode .card {
+    background-color: #1f1f2f;
+    border-color: #2a2a3a;
+}
+
+body.dark-mode .card-header {
+    background-color: #252538;
+    border-color: #2a2a3a;
+    color: #e6e6e6;
+}
+
+body.dark-mode .footer {
+    background-color: #121212;
+    border-color: #2a2a3a;
+}
+
+body.dark-mode .text-muted,
+body.dark-mode .footer-link {
+    color: #aaaaaa !important;
+}
+
+body.dark-mode .footer-link:hover {
+    color: #ffffff !important;
+}
+
+body.dark-mode .predict-form,
+body.dark-mode .form-control,
+body.dark-mode .input-group-text {
+    background-color: #252538;
+    border-color: #2a2a3a;
+    color: #e6e6e6;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: #8a8a9a;
+}
+
+body.dark-mode .time-period-btn {
+    background-color: #252538;
+    border-color: #2a2a3a;
+    color: #aaaaaa;
+}
+
+body.dark-mode .time-period-btn:hover,
+body.dark-mode .time-period-btn.active {
+    background-color: #0f3460;
+    color: #ffffff;
+}
+
+/* Dark mode transitions */
+body, .card, .card-header, .footer, .predict-form, .form-control, 
+.time-period-btn, .text-muted, .footer-link, .input-group-text,
+.navbar-zahaam, .jumbotron-zahaam {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Loading Spinner */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+.spinner-zahaam {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(78, 115, 223, 0.1);
+    border-radius: 50%;
+    border-top-color: #4e73df;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

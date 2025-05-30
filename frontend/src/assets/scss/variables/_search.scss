@@ -1,0 +1,10 @@
+$search-default-width:                               240px;
+$search-default-height:                              46px;
+$search-default-padding-horizontal:                  10px;
+$search-default-background:                          $global-inverse-color;;
+$search-default-focus-background:                    darken($search-default-background, 5%);
+
+$search-default-icon-width:                          50px;
+$search-default-icon-padding:                        -5px;
+
+$search-icon-color:                                  $global-muted-color;

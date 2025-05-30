@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Strategy - ZAHAAM Stock</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- ApexCharts -->
+    <link href="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="css/zahaam-styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-zahaam">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">ZAHAAM</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html" data-translate="home">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html" data-translate="dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="stock-basic.html" data-translate="stocks">Saham</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="prediction.html" data-translate="ai_prediction">Prediksi AI</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="strategy.html" data-translate="trading_strategy">Strategi Trading</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <!-- Language Selector -->
+                    <div class="me-3">
+                        <select id="languageSelector" class="form-select form-select-sm">
+                            <option value="id">ID</option>
+                            <option value="en">EN</option>
+                        </select>
+                    </div>
+                    
+                    <div class="dark-mode-toggle me-3">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </div>
+                    
+                    <a href="profile.html" class="btn btn-outline-light me-2">
+                        <i class="bi bi-person-circle"></i> <span data-translate="profile">Profil</span>
+                    </a>
+                    <a href="#" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> <span data-translate="login">Masuk</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-2">Trading Strategy</h2>
+                <p class="text-muted">Create, test, and optimize your trading strategies with historical data</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-primary" id="saveStrategyBtn">
+                        <i class="bi bi-save"></i> Save Strategy
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="loadStrategyBtn">
+                        <i class="bi bi-folder"></i> Load Strategy
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Strategy Form -->
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Strategy Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="strategyForm">
+                            <div class="mb-3">
+                                <label for="stockSymbol" class="form-label">Stock</label>
+                                <select class="form-select" id="stockSymbol" required>
+                                    <option value="BBRI">BBRI - Bank Rakyat Indonesia</option>
+                                    <option value="BBCA">BBCA - Bank Central Asia</option>
+                                    <option value="TLKM">TLKM - Telkom Indonesia</option>
+                                    <option value="ASII">ASII - Astra International</option>
+                                    <option value="BMRI">BMRI - Bank Mandiri</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="strategyName" class="form-label">Strategy Name</label>
+                                <input type="text" class="form-control" id="strategyName" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="strategyDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="strategyDescription" rows="2"></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="strategyType" class="form-label">Strategy Type</label>
+                                <select class="form-select" id="strategyType" required>
+                                    <option value="MA Crossover">Moving Average Crossover</option>
+                                    <option value="RSI">RSI (Relative Strength Index)</option>
+                                    <option value="MACD">MACD</option>
+                                    <option value="Bollinger Bands">Bollinger Bands</option>
+                                    <option value="Stochastic">Stochastic Oscillator</option>
+                                    <option value="Ichimoku">Ichimoku Cloud</option>
+                                    <option value="Trend Following">Trend Following</option>
+                                    <option value="Multi Strategy">Multi-indicator Strategy</option>
+                                </select>
+                            </div>
+                            
+                            <!-- MA Crossover Parameters -->
+                            <div class="parameter-group MA Crossover-parameters">
+                                <h6 class="mt-4 mb-3">MA Crossover Parameters</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="fastPeriod" class="form-label">Fast MA Period</label>
+                                    <input type="number" class="form-control" id="fastPeriod" min="1" max="50" value="20">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="slowPeriod" class="form-label">Slow MA Period</label>
+                                    <input type="number" class="form-control" id="slowPeriod" min="10" max="200" value="50">
+                                </div>
+                            </div>
+                            
+                            <!-- RSI Parameters -->
+                            <div class="parameter-group RSI-parameters" style="display: none;">
+                                <h6 class="mt-4 mb-3">RSI Parameters</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="rsiPeriod" class="form-label">RSI Period</label>
+                                    <input type="number" class="form-control" id="rsiPeriod" min="1" max="30" value="14">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="oversold" class="form-label">Oversold Level</label>
+                                    <input type="number" class="form-control" id="oversold" min="10" max="40" value="30">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="overbought" class="form-label">Overbought Level</label>
+                                    <input type="number" class="form-control" id="overbought" min="60" max="90" value="70">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="rsiFilter" class="form-label">Filter Method</label>
+                                    <select class="form-select" id="rsiFilter">
+                                        <option value="standard">Standard</option>
+                                        <option value="divergence">Divergence Detection</option>
+                                        <option value="trend">Trend-Aligned</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="rsiEMA">
+                                    <label class="form-check-label" for="rsiEMA">Apply EMA Smoothing to RSI</label>
+                                </div>
+                            </div>
+                            
+                            <!-- MACD Parameters -->
+                            <div class="parameter-group MACD-parameters" style="display: none;">
+                                <h6 class="mt-4 mb-3">MACD Parameters</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="macdFastPeriod" class="form-label">Fast EMA Period</label>
+                                    <input type="number" class="form-control" id="macdFastPeriod" min="5" max="20" value="12">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="macdSlowPeriod" class="form-label">Slow EMA Period</label>
+                                    <input type="number" class="form-control" id="macdSlowPeriod" min="10" max="30" value="26">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="macdSignalPeriod" class="form-label">Signal Line Period</label>
+                                    <input type="number" class="form-control" id="macdSignalPeriod" min="1" max="20" value="9">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="macdSignalType" class="form-label">Signal Type</label>
+                                    <select class="form-select" id="macdSignalType">
+                                        <option value="crossover">Zero Line Crossover</option>
+                                        <option value="histogram">Histogram Reversal</option>
+                                        <option value="divergence">MACD Divergence</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Bollinger Bands Parameters -->
+                            <div class="parameter-group Bollinger Bands-parameters" style="display: none;">
+                                <h6 class="mt-4 mb-3">Bollinger Bands Parameters</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="bollingerPeriod" class="form-label">SMA Period</label>
+                                    <input type="number" class="form-control" id="bollingerPeriod" min="5" max="50" value="20">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="bollingerDeviation" class="form-label">Standard Deviation</label>
+                                    <input type="number" class="form-control" id="bollingerDeviation" min="1" max="4" step="0.1" value="2">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="bollingerStrategy" class="form-label">Strategy Type</label>
+                                    <select class="form-select" id="bollingerStrategy">
+                                        <option value="squeeze">Bollinger Squeeze</option>
+                                        <option value="bounce">Mean Reversion</option>
+                                        <option value="breakout">Breakout Detection</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Stochastic Parameters -->
+                            <div class="parameter-group Stochastic-parameters" style="display: none;">
+                                <h6 class="mt-4 mb-3">Stochastic Oscillator Parameters</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="stochKPeriod" class="form-label">%K Period</label>
+                                    <input type="number" class="form-control" id="stochKPeriod" min="1" max="30" value="14">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="stochDPeriod" class="form-label">%D Period</label>
+                                    <input type="number" class="form-control" id="stochDPeriod" min="1" max="10" value="3">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="stochOversold" class="form-label">Oversold Level</label>
+                                    <input type="number" class="form-control" id="stochOversold" min="10" max="40" value="20">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="stochOverbought" class="form-label">Overbought Level</label>
+                                    <input type="number" class="form-control" id="stochOverbought" min="60" max="90" value="80">
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="stochSlowK" checked>
+                                    <label class="form-check-label" for="stochSlowK">Use Slow %K</label>
+                                </div>
+                            </div>
+                            
+                            <!-- Ichimoku Parameters -->
+                            <div class="parameter-group Ichimoku-parameters" style="display: none;">
+                                <h6 class="mt-4 mb-3">Ichimoku Cloud Parameters</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="tenkanPeriod" class="form-label">Tenkan-sen Period</label>
+                                    <input type="number" class="form-control" id="tenkanPeriod" min="1" max="30" value="9">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="kijunPeriod" class="form-label">Kijun-sen Period</label>
+                                    <input type="number" class="form-control" id="kijunPeriod" min="5" max="60" value="26">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="senkouSpanB" class="form-label">Senkou Span B Period</label>
+                                    <input type="number" class="form-control" id="senkouSpanB" min="10" max="75" value="52">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="ichimokuSignals" class="form-label">Signal Type</label>
+                                    <select class="form-select" id="ichimokuSignals">
+                                        <option value="tk-cross">TK Cross</option>
+                                        <option value="cloud-breakout">Cloud Breakout</option>
+                                        <option value="full">Complete Ichimoku System</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Trend Following Parameters -->
+                            <div class="parameter-group Trend Following-parameters" style="display: none;">
+                                <h6 class="mt-4 mb-3">Trend Following Parameters</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="trendIndicator" class="form-label">Trend Indicator</label>
+                                    <select class="form-select" id="trendIndicator">
+                                        <option value="adx">ADX (Average Directional Index)</option>
+                                        <option value="supertrend">SuperTrend</option>
+                                        <option value="parabolic-sar">Parabolic SAR</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="adxPeriod" class="form-label">ADX Period</label>
+                                    <input type="number" class="form-control" id="adxPeriod" min="5" max="30" value="14">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="adxThreshold" class="form-label">ADX Threshold</label>
+                                    <input type="number" class="form-control" id="adxThreshold" min="15" max="40" value="25">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="atrPeriod" class="form-label">ATR Period</label>
+                                    <input type="number" class="form-control" id="atrPeriod" min="5" max="30" value="10">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="atrMultiplier" class="form-label">ATR Multiplier</label>
+                                    <input type="number" class="form-control" id="atrMultiplier" min="1" max="5" step="0.5" value="2">
+                                </div>
+                            </div>
+                            
+                            <!-- Multi-Strategy Parameters -->
+                            <div class="parameter-group Multi Strategy-parameters" style="display: none;">
+                                <h6 class="mt-4 mb-3">Multi-indicator Strategy</h6>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="useMA" checked>
+                                    <label class="form-check-label" for="useMA">Moving Average Cross</label>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="useRSI" checked>
+                                    <label class="form-check-label" for="useRSI">RSI</label>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="useMACD">
+                                    <label class="form-check-label" for="useMACD">MACD</label>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="useVolume">
+                                    <label class="form-check-label" for="useVolume">Volume Analysis</label>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="confirmationCount" class="form-label">Required Confirmations</label>
+                                    <select class="form-select" id="confirmationCount">
+                                        <option value="1">At least 1 indicator (OR logic)</option>
+                                        <option value="2" selected>At least 2 indicators</option>
+                                        <option value="3">At least 3 indicators</option>
+                                        <option value="all">All indicators (AND logic)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Risk Management Parameters -->
+                            <h6 class="mt-4 mb-3">Risk Management</h6>
+                            
+                            <div class="mb-3">
+                                <label for="stopLoss" class="form-label">Stop Loss (%)</label>
+                                <input type="number" class="form-control" id="stopLoss" min="0.5" max="10" step="0.5" value="2.5">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="takeProfit" class="form-label">Take Profit (%)</label>
+                                <input type="number" class="form-control" id="takeProfit" min="1" max="20" step="0.5" value="5">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="riskType" class="form-label">Risk Type</label>
+                                <select class="form-select" id="riskType">
+                                    <option value="fixed">Fixed Percentage</option>
+                                    <option value="atr">ATR Based</option>
+                                    <option value="volatility">Volatility Based</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="positionSize" class="form-label">Position Size (%)</label>
+                                <input type="number" class="form-control" id="positionSize" min="1" max="100" step="1" value="90">
+                                <div class="form-text">Percentage of available capital per trade</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="maxDrawdown" class="form-label">Max Drawdown Limit (%)</label>
+                                <input type="number" class="form-control" id="maxDrawdown" min="5" max="50" step="1" value="20">
+                            </div>
+                            
+                            <!-- Trading Rules -->
+                            <h6 class="mt-4 mb-3">Trading Rules</h6>
+                            
+                            <div class="mb-3">
+                                <label for="consecutiveLosses" class="form-label">Max Consecutive Losses</label>
+                                <input type="number" class="form-control" id="consecutiveLosses" min="1" max="10" step="1" value="3">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="tradeFrequency" class="form-label">Trade Frequency</label>
+                                <select class="form-select" id="tradeFrequency">
+                                    <option value="high">High (Day Trading)</option>
+                                    <option value="medium" selected>Medium (Swing Trading)</option>
+                                    <option value="low">Low (Position Trading)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="trailingStop" checked>
+                                <label class="form-check-label" for="trailingStop">Use Trailing Stop</label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="reentryEnabled">
+                                <label class="form-check-label" for="reentryEnabled">Allow Re-entry</label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-play-fill"></i> Run Backtest</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Backtest Results & Trading Tools -->
+            <div class="col-lg-8">
+                <!-- Chart & Tool Tabs -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white p-0">
+                        <ul class="nav nav-tabs card-header-tabs" id="toolTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="backtest-tab" data-bs-toggle="tab" data-bs-target="#backtest-content" type="button" role="tab">Backtest</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts-content" type="button" role="tab">Chart & Indicators</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tools-tab" data-bs-toggle="tab" data-bs-target="#tools-content" type="button" role="tab">Trading Tools</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <!-- Backtest Results Tab -->
+                            <div class="tab-pane fade show active" id="backtest-content" role="tabpanel">
+                                <div id="backtestResults">
+                                    <div class="text-center py-4 fade-in">
+                                        <i class="bi bi-bar-chart-line fs-1 text-muted"></i>
+                                        <h4 class="mt-3">Configure your strategy</h4>
+                                        <p class="text-muted">Set up your trading strategy parameters and run a backtest to see results</p>
+                                        <div class="row mt-4">
+                                            <div class="col-md-6 offset-md-3">
+                                                <div class="metric-card text-center">
+                                                    <div class="metric-title">Example Performance</div>
+                                                    <div class="metric-value">+18.4%</div>
+                                                    <span class="metric-badge good">Moving Average Crossover</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Chart & Indicators Tab -->
+                            <div class="tab-pane fade" id="charts-content" role="tabpanel">
+                                <div class="mb-3">
+                                    <label class="form-label">Chart Type</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="chartType" id="candlestick" autocomplete="off" checked>
+                                        <label class="btn btn-outline-primary" for="candlestick">Candlestick</label>
+                                        
+                                        <input type="radio" class="btn-check" name="chartType" id="ohlc" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="ohlc">OHLC</label>
+                                        
+                                        <input type="radio" class="btn-check" name="chartType" id="line" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="line">Line</label>
+                                        
+                                        <input type="radio" class="btn-check" name="chartType" id="area" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="area">Area</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Indicators</label>
+                                    <div class="indicator-container">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="" id="showVolume" checked>
+                                                    <label class="form-check-label" for="showVolume">Volume</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="" id="showSMA">
+                                                    <label class="form-check-label" for="showSMA">SMA</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="" id="showEMA">
+                                                    <label class="form-check-label" for="showEMA">EMA</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="" id="showBollinger">
+                                                    <label class="form-check-label" for="showBollinger">Bollinger Bands</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="" id="showMACD">
+                                                    <label class="form-check-label" for="showMACD">MACD</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="" id="showRSI">
+                                                    <label class="form-check-label" for="showRSI">RSI</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="" id="showStochastic">
+                                                    <label class="form-check-label" for="showStochastic">Stochastic</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="" id="showATR">
+                                                    <label class="form-check-label" for="showATR">ATR</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="chart-wrapper">
+                                    <div id="chartContainer" style="height: 400px;"></div>
+                                    <div id="chartLoadingIndicator" class="spinner-container">
+                                        <div class="spinner-zahaam"></div>
+                                        <p class="text-muted mt-2">Loading chart data...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Trading Tools Tab -->
+                            <div class="tab-pane fade" id="tools-content" role="tabpanel">
+                                <!-- Fibonacci Retracement Tool -->
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Fibonacci Retracement</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="fiboHigh" class="form-label">High Price</label>
+                                                    <input type="number" class="form-control" id="fiboHigh">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="fiboLow" class="form-label">Low Price</label>
+                                                    <input type="number" class="form-control" id="fiboLow">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="calcFibo">Calculate Levels</button>
+                                        <div id="fiboResults" class="mt-3"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Position Size Calculator -->
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Position Size Calculator</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="accountSize" class="form-label">Account Size (IDR)</label>
+                                                    <input type="number" class="form-control" id="accountSize" value="10000000">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="riskPercent" class="form-label">Risk (%)</label>
+                                                    <input type="number" class="form-control" id="riskPercent" value="1" step="0.1">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="stopLossPoints" class="form-label">Stop Loss (points)</label>
+                                                    <input type="number" class="form-control" id="stopLossPoints" value="100">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="calcPosition">Calculate Position</button>
+                                        <div id="positionResults" class="mt-3"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Risk/Reward Calculator -->
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Risk/Reward Calculator</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="entryPrice" class="form-label">Entry Price</label>
+                                                    <input type="number" class="form-control" id="entryPrice">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="stopPrice" class="form-label">Stop Loss Price</label>
+                                                    <input type="number" class="form-control" id="stopPrice">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="targetPrice" class="form-label">Target Price</label>
+                                                    <input type="number" class="form-control" id="targetPrice">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="calcRiskReward">Calculate Ratio</button>
+                                        <div id="riskRewardResults" class="mt-3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Metrics -->
+                <div id="performanceMetrics">
+                    <!-- Will be populated when backtest is run -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">About Trading Strategies</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Trading strategies are systematic approaches to buying and selling assets based on predefined rules. Our platform allows you to create, test, and optimize these strategies using historical data.</p>
+                        
+                        <h6>Moving Average Crossover</h6>
+                        <p>This strategy generates buy signals when a faster moving average crosses above a slower moving average, and sell signals when it crosses below. It works well in trending markets but may generate false signals in ranging markets.</p>
+                        
+                        <h6>RSI (Relative Strength Index)</h6>
+                        <p>RSI measures the speed and change of price movements. The strategy generates buy signals when RSI falls below the oversold threshold (typically 30) and sell signals when it rises above the overbought threshold (typically 70).</p>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="bi bi-info-circle"></i> <strong>Disclaimer:</strong> Past performance is not indicative of future results. Backtesting results represent hypothetical performance and do not account for all real-world trading factors. Always conduct thorough research before implementing any trading strategy with real capital.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="d-flex align-items-center mb-3">
+                        <h4 class="mb-0 me-2">ZAHAAM</h4>
+                        <span class="badge bg-primary">Beta</span>
+                    </div>
+                    <p class="text-muted mb-3" data-translate="advanced_stock_platform">Platform Analisis & Prediksi Saham Tingkat Lanjut yang didukung oleh teknologi machine learning dan AI.</p>
+                    <div class="social-icons">
+                        <a href="#" class="me-3"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="me-3"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="me-3"><i class="bi bi-github"></i></a>
+                        <a href="#"><i class="bi bi-envelope-fill"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-4 mb-md-0">
+                    <h6 class="fw-bold mb-3" data-translate="platform">Platform</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="index.html" class="footer-link"><i class="bi bi-house-door me-2"></i><span data-translate="home">Beranda</span></a></li>
+                        <li class="mb-2"><a href="dashboard.html" class="footer-link"><i class="bi bi-grid-1x2 me-2"></i><span data-translate="dashboard">Dashboard</span></a></li>
+                        <li class="mb-2"><a href="stock-basic.html" class="footer-link"><i class="bi bi-graph-up me-2"></i><span data-translate="stocks">Saham</span></a></li>
+                        <li class="mb-2"><a href="prediction.html" class="footer-link"><i class="bi bi-magic me-2"></i><span data-translate="predictions">Prediksi</span></a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 col-6 mb-4 mb-md-0">
+                    <h6 class="fw-bold mb-3" data-translate="resources">Sumber Daya</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-journal-text me-2"></i><span data-translate="docs">Dokumentasi</span></a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-code-slash me-2"></i>API</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-mortarboard me-2"></i><span data-translate="learn">Pembelajaran</span></a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-question-circle me-2"></i><span data-translate="help">Bantuan</span></a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold mb-3" data-translate="subscribe_newsletter">Berlangganan Newsletter</h6>
+                    <p class="text-muted small mb-3" data-translate="get_updates">Dapatkan update mingguan tentang wawasan pasar dan fitur platform ZAHAAM.</p>
+                    <form>
+                        <div class="input-group mb-3">
+                            <input type="email" class="form-control" placeholder="Alamat email Anda" data-translate="your_email" aria-label="Email">
+                            <button class="btn btn-primary" type="button" data-translate="subscribe">Berlangganan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="small text-muted mb-0">© 2025 ZAHAAM. <span data-translate="all_rights_reserved">Hak cipta dilindungi undang-undang.</span></p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="privacy_policy">Kebijakan Privasi</a></li>
+                        <li class="list-inline-item">•</li>
+                        <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="terms_of_service">Ketentuan Layanan</a></li>
+                        <li class="list-inline-item">•</li>
+                        <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="sitemap">Peta Situs</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        /* Footer Styling */
+        .footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            color: #212529;
+        }
+        
+        .footer-link {
+            color: #495057;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: #3a7bd5;
+            text-decoration: none;
+        }
+    </style>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/strategy-backtest.js"></script>
+    <script src="js/strategy-chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dark Mode Toggle
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            
+            // Check for saved dark mode preference
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            // Dark mode toggle event listener
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+            
+            // Add loading animation for backtest results
+            const showBacktestLoading = () => {
+                const container = document.getElementById('backtestResults');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="spinner-container">
+                            <div class="spinner-zahaam"></div>
+                            <h5 class="mt-3">Running Backtest...</h5>
+                            <p class="text-muted">This may take a few seconds</p>
+                        </div>
+                    `;
+                }
+            };
+            
+            // Listen for form submission to show loading
+            document.getElementById('strategyForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showBacktestLoading();
+                
+                // Simulate API delay before displaying results
+                setTimeout(() => {
+                    // The actual initialization happens in strategy-backtest.js
+                    initStrategyBacktest('strategyForm', 'backtestResults');
+                }, 1200);
+            });
+            
+            // Initialize the strategy backtest with form and results container IDs
+            // This is now handled by the form submission event with loading animation
+        });
+    </script>
+</body>
+</html>

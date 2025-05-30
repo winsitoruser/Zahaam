@@ -1,0 +1,113 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Dashboard Styles */
+.dashboard-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.dashboard-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.stock-trend-up {
+  color: #28a745;
+}
+
+.stock-trend-down {
+  color: #dc3545;
+}
+
+.stock-trend-icon {
+  font-size: 1.5rem;
+}
+
+/* Market Overview Styles */
+.market-overview-table {
+  font-size: 0.9rem;
+}
+
+.market-overview-table th {
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+.market-overview-table td, 
+.market-overview-table th {
+  padding: 0.75rem;
+  vertical-align: middle;
+}
+
+/* News Styles */
+.news-card {
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.news-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.news-image {
+  height: 180px;
+  object-fit: cover;
+}
+
+.news-source {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.news-date {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.news-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-summary {
+  font-size: 0.9rem;
+  color: #495057;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

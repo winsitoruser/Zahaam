@@ -1,0 +1,73 @@
+{
+  "title": "Thinking of going vegan? What you need to know first",
+  "link": "thinking-of-going-vegan-what-you-need-to-know-first.html",
+  "author": {
+    "id": "tXeY2N",
+    "name": "Warren Wong",
+    "avatar": "img/user/author-85z9UC.jpg"
+  },
+  "category": "Health",
+  "tags": [
+    "diet"
+  ],
+  "image": "img/user/image-featured-S3bwOc.jpg",
+  "hidden": false,
+  "blocks": [
+    {
+      "id": "2cpiSZnuUH",
+      "type": "paragraph",
+      "data": {
+        "text": "The consumer shift to plant-based alternatives has changed fast food and grocery options, as Impossible Burger and Beyond Meat have become massive companies capitalizing on the trend. According to a 2017 study, as many as 6% of US consumers say they are vegan, compared to just 1% in 2014."
+      }
+    },
+    {
+      "id": "BgDHpatDWE",
+      "type": "quote",
+      "data": {
+        "text": "I chose to follow a vegan diet partly for environmental reasons and partly for health reasons",
+        "caption": "Rebecca Roitman, a nutritional sciences at Cornell University",
+        "alignment": "left"
+      }
+    },
+    {
+      "id": "jndALky6hN",
+      "type": "paragraph",
+      "data": {
+        "text": "Like Roitman, many choose to go vegan for its health benefits. In fact, studies have found that similar to vegetarian diets, vegan diets have a lower risk of many chronic diseases, such as heart disease, type 2 diabetes, obesity and cancer, according to Sharon Palmer, a registered dietitian nutritionist and plant-based food and sustainability expert. Another main motivation is the fact that vegans have the lowest impact on the environment, according to Palmer. And yet others simply wish to follow a vegan lifestyle for ethical reasons."
+      }
+    },
+    {
+      "id": "Va5Fjzwunu",
+      "type": "header",
+      "data": {
+        "text": "A vegan diet is more than simply a “plant-based” diet",
+        "level": 4
+      }
+    },
+    {
+      "id": "bSVCxV4PPL",
+      "type": "paragraph",
+      "data": {
+        "text": "A vegan diet is much more stringent than flexitarian eating, or even vegetarianism. In fact, a vegan diet is 100% plant-based, meaning it’s devoid of all animal foods, including dairy (cheese, yogurt, milk, cream, butter); eggs; meat, poultry or seafood; and for many, honey, explained Palmer."
+      }
+    },
+    {
+      "id": "lCkJZTmp8f",
+      "type": "paragraph",
+      "data": {
+        "text": "A vegetarian diet excludes all animal flesh (meat, poultry, seafood) but allows for dairy, eggs and honey. Flexitarian eaters focus on plant-based foods but may still include animal-based foods in limited amounts, including meat, poultry and fish, as well as dairy and eggs."
+      }
+    },
+    {
+      "id": "Tz3KHmPEro",
+      "type": "paragraph",
+      "data": {
+        "text": "Though some people, including food bloggers, may use the terms “plant-based” and “vegan” interchangeably, plant-based is an “umbrella term” and does not equate to being vegan, added Kimberlain, who is also a national spokesperson for the Academy of Nutrition and Dietetics. For example, while all vegans are plant-based, not all plant-based eaters are necessarily vegan. “Plant-based eaters may have a small portion of cheese or other animal protein,” Kimberlain said."
+      }
+    }
+  ],
+  "dateCreated": "December 29, 2022",
+  "dateModified": "May 10, 2023",
+  "timeCreated": "04:08 PM",
+  "timeModified": "10:25 AM"
+}

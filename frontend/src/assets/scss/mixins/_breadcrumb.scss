@@ -1,0 +1,16 @@
+@mixin hook-breadcrumb(){
+    @media (max-width: 960px) {
+        li:nth-child(n+4) {
+            display: none;
+        }
+    }
+    :last-child > span a {
+        color: rgba(255,255,255, 0.9);
+        &:hover {
+            text-decoration: none;
+        }
+    }
+}
+@mixin hook-breadcrumb-divider(){
+    margin: 0 $breadcrumb-divider-margin-horizontal;
+}

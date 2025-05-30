@@ -1,0 +1,151 @@
+/* Custom styling for My Watchlist page based on the Handlebars template */
+
+/* Hero section styling */
+.hero-section {
+  background-color: #f8f9fa;
+  padding: 3rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero-content .highlight {
+  color: #007bff;
+  position: relative;
+}
+
+.hero-content .lead {
+  font-size: 1.2rem;
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+}
+
+.hero-buttons {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.hero-image {
+  max-height: 350px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Main content section styling */
+.main-content {
+  background-color: #fff;
+}
+
+.section-heading {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 1.5rem;
+}
+
+/* Card styling */
+.custom-card {
+  border-radius: 8px;
+  overflow: hidden;
+  border: none;
+}
+
+.custom-card-header {
+  background-color: #fff;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem 1.5rem;
+}
+
+.custom-tabs .nav-link {
+  font-weight: 500;
+  color: #495057;
+  border: none;
+  padding: 0.75rem 1rem;
+  margin-right: 1rem;
+  position: relative;
+}
+
+.custom-tabs .nav-link.active {
+  color: #007bff;
+  background-color: transparent;
+  border: none;
+}
+
+.custom-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #007bff;
+}
+
+/* Table styling */
+.custom-table {
+  margin-bottom: 0;
+}
+
+.custom-table th {
+  font-weight: 600;
+  color: #495057;
+  border-top: none;
+}
+
+.custom-table th span[role="button"] {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.custom-table th span[role="button"]:hover {
+  color: #007bff;
+}
+
+/* Feature section styling */
+.feature-section {
+  background-color: #f8f9fa;
+  padding: 2rem 0;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 123, 255, 0.1);
+}
+
+.icon-wrap i {
+  font-size: 1.2rem;
+}
+
+.feature-text {
+  font-weight: 500;
+}
