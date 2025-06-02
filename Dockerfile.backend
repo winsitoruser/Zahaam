@@ -1,0 +1,14 @@
+FROM python:3.9
+
+WORKDIR /app
+
+COPY stock-prediction/backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gunicorn
+
+COPY stock-prediction/backend /app
+
+EXPOSE 8000
+
+# Run the application with gunicorn for production
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "--bind", "0.0.0.0:8000"]
