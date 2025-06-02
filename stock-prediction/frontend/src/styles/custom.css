@@ -1,0 +1,196 @@
+/* Global styles yang meniru desain HTML original */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar-brand {
+    font-weight: 700;
+}
+
+/* Main Layout Container */
+.main-layout {
+    display: flex;
+    flex: 1;
+    margin-top: 56px; /* Tinggi navbar */
+}
+
+.sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background-color: #fff;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    z-index: 1;
+    position: sticky;
+    top: 56px; /* Sama dengan margin-top main-layout */
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+}
+
+.sidebar-sticky {
+    padding-top: 1rem;
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: #333;
+    padding: 0.75rem 1rem;
+}
+
+.sidebar .nav-link.active {
+    color: #0d6efd;
+}
+
+.sidebar .nav-link:hover {
+    color: #0d6efd;
+}
+
+.sidebar .nav-link i {
+    margin-right: 10px;
+}
+
+/* Main Content */
+.main-content {
+    flex-grow: 1;
+    padding: 1.5rem;
+    overflow-x: hidden;
+}
+
+/* Card Styles */
+.card {
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    border: none;
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    background-color: #fff;
+}
+
+/* Stats Cards */
+.stat-card {
+    padding: 1.25rem;
+    color: white;
+    position: relative;
+    border-radius: 8px;
+    min-height: 100px;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-bottom: 0;
+    opacity: 0.8;
+}
+
+.stat-icon {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 2.2rem;
+    opacity: 0.5;
+}
+
+/* Footer Styling */
+.footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Chart Containers */
+#marketChartContainer, #volumeChartContainer {
+    height: 300px;
+}
+
+.navbar-zahaam {
+    background-color: #2c3e50;
+}
+
+/* Dark mode toggle */
+.dark-mode-toggle {
+    position: relative;
+    width: 50px;
+    height: 24px;
+}
+
+.dark-mode-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #007bff;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #007bff;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Table styles */
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Custom colors for stats */
+.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+.bg-success {
+    background-color: #198754 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.pagination .page-link {
+    border-radius: 4px;
+    color: #495057;
+    border-color: #f0f0f0;
+    padding: 0.3rem 0.6rem;
+}

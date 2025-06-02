@@ -1,6 +1,19 @@
 version: '3'
 
 services:
+  db:
+    image: postgres:15-alpine
+    container_name: zahaam-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=zahaam
+      - POSTGRES_PASSWORD=zahaampassword
+      - POSTGRES_DB=stock_prediction
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
     build:
       context: .
@@ -9,8 +22,12 @@ services:
     restart: always
     ports:
       - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://zahaam:zahaampassword@db:5432/stock_prediction
+    depends_on:
+      - db
     volumes:
-      - ./stock-prediction/backend/stock_prediction.db:/app/stock_prediction.db
+      - ./stock-prediction/backend:/app
 
   frontend:
     build:
@@ -22,3 +39,8 @@ services:
       - "80:80"
     depends_on:
       - backend
+    volumes:
+      - ./stock-prediction/frontend:/app
+
+volumes:
+  postgres_data:

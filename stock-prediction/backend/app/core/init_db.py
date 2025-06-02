@@ -20,16 +20,25 @@ def init_db():
     
     if stocks_count == 0:
         logger.info("Populating stocks table with initial data...")
-        for stock_data in INDONESIAN_STOCKS:
+        
+        # INDONESIAN_STOCKS is now a dictionary in format {ticker: {name, sector}}
+        from datetime import datetime
+        now = datetime.now()
+        
+        for ticker, info in INDONESIAN_STOCKS.items():
             stock = Stock(
-                ticker=stock_data["ticker"],
-                name=stock_data["name"],
-                sector=stock_data["sector"]
+                ticker=ticker,
+                name=info.get("name", ticker),
+                sector=info.get("sector", "Unknown"),
+                is_active=True,
+                last_updated=now
             )
             db.add(stock)
         
         db.commit()
         logger.info(f"Added {len(INDONESIAN_STOCKS)} stocks to the database")
+    else:
+        logger.info(f"Database already contains {stocks_count} stocks, skipping initialization")
     
     db.close()
 

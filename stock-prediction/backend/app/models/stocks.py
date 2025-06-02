@@ -33,6 +33,7 @@ class StockPrice(Base):
     id = Column(Integer, primary_key=True, index=True)
     stock_id = Column(Integer, ForeignKey("stocks.id", ondelete="CASCADE"), nullable=False)
     date = Column(DateTime, index=True, nullable=False)
+    interval = Column(String(10), default="1d")  # Interval data (1d, 1h, 15m, 5m, dll)
     open = Column(Float)
     high = Column(Float)
     low = Column(Float)
@@ -59,6 +60,7 @@ class StockIndicator(Base):
     id = Column(Integer, primary_key=True, index=True)
     stock_id = Column(Integer, ForeignKey("stocks.id", ondelete="CASCADE"), nullable=False)
     date = Column(DateTime, index=True, nullable=False)
+    interval = Column(String(10), default="1d")  # Interval data (1d, 1h, 15m, 5m, dll)
     
     # Common indicators
     sma_20 = Column(Float)

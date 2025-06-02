@@ -1,0 +1,13 @@
+---
+layout: default
+title: Blog
+breadcrumb: true
+asBlog: false
+asSingle: true
+---
+<main data-title="blog-single">
+    {{> post-title-shortfalls-of-some-cold-and-flu-meds-continue-amid }}
+    {{#if setting.blog.disqussShortname}}
+    {{> component-disqus }}
+    {{/if}}
+</main>

@@ -1,0 +1,113 @@
+{
+  "slideshow": [
+    {
+      "slides": [
+        {
+          "id": "jaxy4e",
+          "text": "<li>\n    <div class=\"uk-container\">\n        <div class=\"uk-grid\" data-uk-grid>\n            <div class=\"uk-width-1-2@m\">\n                <div class=\"uk-overlay\">\n                    <h1>Get more <span class=\"in-highlight\">freedom</span> in the markets.</h1>\n                    <p class=\"uk-text-lead uk-visible@m\">Trade Cryptocurrencies, Stock Indices, Commodities and Forex from a single account</p>\n                    <div class=\"in-slideshow-button\">\n                        <a href=\"#\" class=\"uk-button uk-button-primary uk-border-rounded\">Open account</a>\n                        <a href=\"#\" class=\"uk-button uk-button-default uk-border-rounded uk-margin-small-left uk-visible@m\">Discover account</a>\n                    </div>\n                    <p class=\"uk-text-small\"><span class=\"uk-text-primary\">*</span>Trading in Forex/ CFDs is highly speculative and carries a high level of risk.</p>\n                </div>\n            </div>\n            <div class=\"uk-position-center\">\n                <img src=\"{{root}}img/in-lazy.svg\" data-src=\"{{root}}img/in-slideshow-image-1.png\" alt=\"slideshow-image\" width=\"862\" height=\"540\" data-uk-img>\n            </div>\n        </div>\n    </div>\n</li>"
+        },
+        {
+          "id": "jKK1PQ",
+          "text": "<li>\n    <div class=\"uk-container\">\n        <div class=\"uk-grid\" data-uk-grid>\n            <div class=\"uk-width-1-2@m\">\n                <div class=\"uk-overlay\">\n                    <h1>Let top <span class=\"in-highlight\">traders</span> do the job for you!</h1>\n                    <p class=\"uk-text-lead uk-visible@m\">Covesting allows you to automatically copy top performing traders and achieve the returns</p>\n                    <div class=\"in-slideshow-button\">\n                        <a href=\"#\" class=\"uk-button uk-button-primary uk-border-rounded\">Open account</a>\n                        <a href=\"#\" class=\"uk-button uk-button-default uk-border-rounded uk-margin-small-left uk-visible@m\">Discover covesting</a>\n                    </div>\n                    <p class=\"uk-text-small\"><span class=\"uk-text-primary\">*</span>Trading in Forex/ CFDs is highly speculative and carries a high level of risk.</p>\n                </div>\n            </div>\n            <div class=\"uk-position-center\">\n                <img src=\"{{root}}img/in-lazy.svg\" data-src=\"{{root}}img/in-slideshow-image-2.png\" alt=\"slideshow-image\" width=\"862\" height=\"540\" data-uk-img>\n            </div>\n        </div>\n    </div>\n</li>"
+        }
+      ]
+    },
+    {
+      "slides": [
+        {
+          "id": "AN3Upz",
+          "text": "<li>\n    <div class=\"uk-container\">\n        <div class=\"uk-grid\" data-uk-grid>\n            <div class=\"uk-width-1-2@m\">\n                <div class=\"uk-overlay\">\n                    <h1>Let top <span class=\"in-highlight\">traders</span> do the job for you!</h1>\n                    <p class=\"uk-text-lead uk-visible@m\">Covesting allows you to automatically copy top performing traders and achieve the returns</p>\n                    <div class=\"in-slideshow-button\">\n                        <a href=\"#\" class=\"uk-button uk-button-primary uk-border-rounded\">Open account</a>\n                        <a href=\"#\" class=\"uk-button uk-button-default uk-border-rounded uk-margin-small-left uk-visible@m\">Discover covesting</a>\n                    </div>\n                    <p class=\"uk-text-small\"><span class=\"uk-text-primary\">*</span>Trading in Forex/ CFDs is highly speculative and carries a high level of risk.</p>\n                </div>\n            </div>\n            <div class=\"uk-position-center\">\n                <img class=\"uk-animation-slide-top-small\" src=\"{{root}}img/in-lazy.svg\" data-src=\"{{root}}img/in-slideshow-image-2.png\" alt=\"slideshow-image\" width=\"862\" height=\"540\" data-uk-img>\n            </div>\n        </div>\n    </div>\n</li>"
+        },
+        {
+          "id": "aU0Ino",
+          "text": "<li>\n    <div class=\"uk-container\">\n        <div class=\"uk-grid\" data-uk-grid>\n            <div class=\"uk-width-1-2@m\">\n                <div class=\"uk-overlay\">\n                    <h1>Learn forex trading with our <span class=\"in-highlight\">courses</span>.</h1>\n                    <p class=\"uk-text-lead uk-visible@m\">Profit Inc inner circle weekly educational workshops are a great resource for any skill level trader</p>\n                    <div class=\"in-slideshow-button\">\n                        <a href=\"#\" class=\"uk-button uk-button-primary uk-border-rounded\">Open account</a>\n                        <a href=\"#\" class=\"uk-button uk-button-default uk-border-rounded uk-margin-small-left uk-visible@m\">Discover courses</a>\n                    </div>\n                    <p class=\"uk-text-small\"><span class=\"uk-text-primary\">*</span>Trading in Forex/ CFDs is highly speculative and carries a high level of risk.</p>\n                </div>\n            </div>\n            <div class=\"uk-position-center\">\n                <img class=\"uk-animation-slide-top-small\" src=\"{{root}}img/in-lazy.svg\" data-src=\"{{root}}img/in-slideshow-image-3.png\" alt=\"slideshow-image\" width=\"862\" height=\"540\" data-uk-img>\n            </div>\n        </div>\n    </div>\n</li>"
+        }
+      ]
+    },
+    {
+      "slides": [
+        {
+          "id": "JYhBTZ",
+          "text": "<li>\n    <div class=\"uk-container\">\n        <div class=\"uk-grid\" data-uk-grid>\n            <div class=\"uk-width-1-2@m\">\n                <div class=\"uk-overlay\">\n                    <h1>Learn forex trading with our <span class=\"in-highlight\">courses</span>.</h1>\n                    <p class=\"uk-text-lead uk-visible@m\">Profit Inc inner circle weekly educational workshops are a great resource for any skill level trader</p>\n                    <div class=\"in-slideshow-button\">\n                        <a href=\"#\" class=\"uk-button uk-button-primary uk-border-rounded\">Open account</a>\n                        <a href=\"#\" class=\"uk-button uk-button-default uk-border-rounded uk-margin-small-left uk-visible@m\">Discover courses</a>\n                    </div>\n                    <p class=\"uk-text-small\"><span class=\"uk-text-primary\">*</span>Trading in Forex/ CFDs is highly speculative and carries a high level of risk.</p>\n                </div>\n            </div>\n            <div class=\"uk-position-center\">\n                <img class=\"uk-animation-slide-top-small\" src=\"{{root}}img/in-lazy.svg\" data-src=\"{{root}}img/in-slideshow-image-3.png\" alt=\"slideshow-image\" width=\"862\" height=\"540\" data-uk-img>\n            </div>\n        </div>\n    </div>\n</li>"
+        },
+        {
+          "id": "BqAmI6",
+          "text": "<li>\n    <div class=\"uk-container\">\n        <div class=\"uk-grid\" data-uk-grid>\n            <div class=\"uk-width-1-2@m\">\n                <div class=\"uk-overlay\">\n                    <h1>Multi-award <span class=\"in-highlight\">winning</span> forex provider.</h1>\n                    <p class=\"uk-text-lead uk-visible@m\">We have been proud to offer traders a powerful and advanced trading platform technologies</p>\n                    <div class=\"in-slideshow-button\">\n                        <a href=\"#\" class=\"uk-button uk-button-primary uk-border-rounded\">Open account</a>\n                        <a href=\"#\" class=\"uk-button uk-button-default uk-border-rounded uk-margin-small-left uk-visible@m\">Discover platform</a>\n                    </div>\n                    <p class=\"uk-text-small\"><span class=\"uk-text-primary\">*</span>Trading in Forex/ CFDs is highly speculative and carries a high level of risk.</p>\n                </div>\n            </div>\n            <div class=\"uk-position-center\">\n                <img class=\"uk-animation-slide-top-small\" src=\"{{root}}img/in-lazy.svg\" data-src=\"{{root}}img/in-slideshow-image-4.png\" alt=\"slideshow-image\" width=\"862\" height=\"540\" data-uk-img>\n            </div>\n        </div>\n    </div>\n</li>"
+        }
+      ]
+    },
+    {
+      "slides": [
+        {
+          "id": "EZREtc",
+          "text": "<li>\n    <div class=\"uk-container\">\n        <div class=\"uk-grid\" data-uk-grid>\n            <div class=\"uk-width-1-2@m\">\n                <div class=\"uk-overlay\">\n                    <h1>Multi-award <span class=\"in-highlight\">winning</span> forex provider.</h1>\n                    <p class=\"uk-text-lead uk-visible@m\">We have been proud to offer traders a powerful and advanced trading platform technologies</p>\n                    <div class=\"in-slideshow-button\">\n                        <a href=\"#\" class=\"uk-button uk-button-primary uk-border-rounded\">Open account</a>\n                        <a href=\"#\" class=\"uk-button uk-button-default uk-border-rounded uk-margin-small-left uk-visible@m\">Discover platform</a>\n                    </div>\n                    <p class=\"uk-text-small\"><span class=\"uk-text-primary\">*</span>Trading in Forex/ CFDs is highly speculative and carries a high level of risk.</p>\n                </div>\n            </div>\n            <div class=\"uk-position-center\">\n                <img class=\"uk-animation-slide-top-small\" src=\"{{root}}img/in-lazy.svg\" data-src=\"{{root}}img/in-slideshow-image-4.png\" alt=\"slideshow-image\" width=\"862\" height=\"540\" data-uk-img>\n            </div>\n        </div>\n    </div>\n</li>"
+        },
+        {
+          "id": "hKUTU1",
+          "text": "<li>\r\n    <div class=\"uk-container\">\r\n        <div class=\"uk-grid\" data-uk-grid>\r\n            <div class=\"uk-width-1-2@m\">\r\n                <div class=\"uk-overlay\">\r\n                    <h1>Get more <span class=\"in-highlight\">freedom</span> in the markets.</h1>\r\n                    <p class=\"uk-text-lead uk-visible@m\">Trade Cryptocurrencies, Stock Indices, Commodities and Forex from a single account</p>\r\n                    <div class=\"in-slideshow-button\">\r\n                        <a href=\"#\" class=\"uk-button uk-button-primary uk-border-rounded\">Open account</a>\r\n                        <a href=\"#\" class=\"uk-button uk-button-default uk-border-rounded uk-margin-small-left uk-visible@m\">Discover account</a>\r\n                    </div>\r\n                    <p class=\"uk-text-small\"><span class=\"uk-text-primary\">*</span>Trading in Forex/ CFDs is highly speculative and carries a high level of risk.</p>\r\n                </div>\r\n            </div>\r\n            <div class=\"uk-position-center\">\r\n                <img class=\"uk-animation-slide-top-small\" src=\"{{root}}img/in-lazy.svg\" data-src=\"{{root}}img/in-slideshow-image-1.png\" alt=\"slideshow-image\" width=\"862\" height=\"540\" data-uk-img>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</li>"
+        }
+      ]
+    }
+  ],
+  "header": {
+    "siteLogo": {
+      "src": "img/user/header-logo-7aod97.svg",
+      "width": "130",
+      "height": "36"
+    },
+    "signup": {
+      "title": "Sign up",
+      "url": "#",
+      "external": false,
+      "display": true
+    },
+    "signin": {
+      "title": "Login",
+      "url": "signin.html",
+      "external": false,
+      "display": true
+    }
+  },
+  "footer": {
+    "copyrightText": "© Profit Inc 2020. All rights reserved.",
+    "siteLogo": {
+      "enabled": true,
+      "logo": {
+        "src": "img/user/footer-logo-wXvCAq.svg",
+        "width": "130",
+        "height": "36"
+      }
+    }
+  },
+  "contactMap": {
+    "email": "halo@company.com",
+    "mapIframe": "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10600.5248164368!2d144.95966577016594!3d-37.81707816290683!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2sid!4v1645280096951!5m2!1sen!2sid\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\"></iframe>",
+    "mapSrc": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10600.5248164368!2d144.95966577016594!3d-37.81707816290683!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2sid!4v1645280096951!5m2!1sen!2sid"
+  },
+  "socialMedia": [
+    {
+      "facebook": "https://www.facebook.com/indonez"
+    },
+    {
+      "twitter": "https://twitter.com/indonez_tw"
+    },
+    {
+      "instagram": "https://www.instagram.com/indonez_ig"
+    },
+    {
+      "linkedin": ""
+    },
+    {
+      "behance": ""
+    },
+    {
+      "whatsapp": ""
+    },
+    {
+      "telegram": ""
+    },
+    {
+      "youtube": "#some-link"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+@mixin hook-sticky-misc(){
+    .uk-sticky {    
+        &.uk-active {
+            background: $global-inverse-color !important;
+            box-shadow: 0 2px 15px 0 rgba(0,0,0,0.13);
+            border-bottom: 1px solid #e3e3e3;
+            &.uk-navbar-container,
+            .uk-navbar-nav {
+                height: 75px;
+            }
+            .uk-navbar-nav > li > a,
+            .uk-navbar-item {
+                min-height: 75px;
+            }
+            .uk-navbar-dropdown {
+                --uk-position-offset: -1px;
+            }
+        }
+    }
+}

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - ZAHAAM Stock</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="css/zahaam-styles.css" rel="stylesheet">
+    <style>
+        /* Profile Photo Styling */
+        .profile-photo-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+        
+        .profile-photo-container:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .profile-photo-overlay {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            z-index: 10;
+        }
+        
+        .profile-photo-overlay .btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0.85;
+            transition: all 0.2s ease;
+        }
+        
+        .profile-photo-overlay .btn:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #fff;
+        }
+        
+        .toast-container {
+            z-index: 1080;
+        }
+        
+        /* Override footer styling untuk halaman ini */
+        .footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            color: #212529;
+        }
+        
+        .footer-link {
+            color: #495057;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: #3a7bd5;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-zahaam fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">ZAHAAM</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="stock-basic.html">Stocks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="prediction.html">AI Prediction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="strategy.html">Trading Strategy</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <div class="dark-mode-toggle me-3">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </div>
+                    
+                    <a href="profile.html" class="btn btn-outline-light me-2 active">
+                        <i class="bi bi-person-circle"></i> Profile
+                    </a>
+                    <a href="#" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4 mt-5 pt-3">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6">
+                <h2 class="mb-2">User Profile</h2>
+                <p class="text-muted">Manage your account settings and preferences</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="alert alert-success d-inline-flex align-items-center py-2 px-3 mb-0">
+                    <i class="bi bi-check-circle me-2"></i> Premium Account Active
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3">
+                <!-- Profile Navigation -->
+                <div class="card mb-4">
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush rounded-3">
+                            <button class="list-group-item list-group-item-action profile-tab-btn active" data-bs-toggle="tab" data-bs-target="#profileTab">
+                                <i class="bi bi-person me-2"></i> Profile
+                            </button>
+                            <button class="list-group-item list-group-item-action profile-tab-btn" data-bs-toggle="tab" data-bs-target="#watchlistTab">
+                                <i class="bi bi-star me-2"></i> Watchlist
+                            </button>
+                            <button class="list-group-item list-group-item-action profile-tab-btn" data-bs-toggle="tab" data-bs-target="#tradingHistoryTab">
+                                <i class="bi bi-clock-history me-2"></i> Trading History
+                            </button>
+                            <button class="list-group-item list-group-item-action profile-tab-btn" data-bs-toggle="tab" data-bs-target="#preferencesTab">
+                                <i class="bi bi-gear me-2"></i> Preferences
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Need Help Card -->
+                <div class="card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="bi bi-question-circle text-white"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Need Help?</h5>
+                        </div>
+                        <p class="card-text">Contact our support team for assistance with your account or trading strategies.</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-headset me-2"></i>Contact Support</a>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-body p-4 text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="rounded-circle bg-success d-flex align-items-center justify-content-center mb-3" style="width: 50px; height: 50px;">
+                                <i class="bi bi-shield-lock text-white" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h5 class="mb-2">Account Security</h5>
+                            <p class="text-muted small mb-3">Your account is secure</p>
+                            <div class="progress w-100 mb-2" style="height: 6px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p class="small text-muted">Security score: 90/100</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="tab-content">
+                    <!-- Profile Tab -->
+                    <div class="tab-pane fade show active profile-tab-content" id="profileTab">
+                        <div class="card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Profile Information</h5>
+                                <span class="badge rounded-pill" style="background-color: var(--primary-color);">Verified</span>
+                            </div>
+                            <div class="card-body">
+                                <!-- Profile Information -->
+                                <div class="text-center mb-4">
+                                    <div class="profile-photo-container mb-3">
+                                        <img src="assets/images/default-avatar.svg" alt="Profile Photo" id="profilePhoto" class="profile-image">
+                                        <div class="profile-photo-overlay">
+                                            <label for="photoUpload" class="btn btn-sm btn-primary rounded-circle">
+                                                <i class="bi bi-camera"></i>
+                                            </label>
+                                            <input type="file" id="photoUpload" accept="image/*" style="display: none;">
+                                        </div>
+                                    </div>
+                                    <h4 id="profileName">John Doe</h4>
+                                    <p class="text-muted" id="profileEmail">john.doe@example.com</p>
+                                    <div class="badge bg-success mb-2">Aktif</div>
+                                </div>
+                                
+                                <!-- Profile Details -->
+                                <div id="profileDetails">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label text-muted">Nama Lengkap</label>
+                                            <p class="mb-0" id="detailName">John Doe</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label text-muted">Email</label>
+                                            <p class="mb-0" id="detailEmail">john.doe@example.com</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label text-muted">Nomor Telepon</label>
+                                            <p class="mb-0" id="detailPhone">+62812345678</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label text-muted">Tanggal Bergabung</label>
+                                            <p class="mb-0" id="detailJoinDate">10 December 2024</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal"><i class="bi bi-pencil me-2"></i>Edit Profile</button>
+                                <button class="btn btn-outline-secondary"><i class="bi bi-lock me-2"></i>Change Password</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Watchlist Tab -->
+                    <div class="tab-pane fade profile-tab-content" id="watchlistTab">
+                        <div class="card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Watchlist</h5>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">
+                                    <i class="bi bi-plus"></i> Add Stock
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Symbol</th>
+                                                <th>Name</th>
+                                                <th class="text-end">Last Price</th>
+                                                <th class="text-end">Change</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="watchlistTable">
+                                            <!-- Will be populated by JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trading History Tab -->
+                    <div class="tab-pane fade profile-tab-content" id="tradingHistoryTab">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Trading History</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Symbol</th>
+                                                <th>Type</th>
+                                                <th class="text-end">Price</th>
+                                                <th class="text-end">Shares</th>
+                                                <th class="text-end">Value</th>
+                                                <th class="text-end">P&L</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tradingHistoryTable">
+                                            <!-- Will be populated by JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Preferences Tab -->
+                    <div class="tab-pane fade profile-tab-content" id="preferencesTab">
+                        <div class="row">
+                            <!-- Notification Preferences -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-white">
+                                        <h5 class="mb-0">Notification Preferences</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="notificationForm">
+                                            <div class="mb-3 form-check">
+                                                <input type="checkbox" class="form-check-input" id="emailNotif">
+                                                <label class="form-check-label" for="emailNotif">Email Notifications</label>
+                                                <div class="form-text">Receive price alerts and important updates via email</div>
+                                            </div>
+                                            <div class="mb-3 form-check">
+                                                <input type="checkbox" class="form-check-input" id="pushNotif">
+                                                <label class="form-check-label" for="pushNotif">Push Notifications</label>
+                                                <div class="form-text">Receive real-time alerts on your browser</div>
+                                            </div>
+                                            <div class="mb-3 form-check">
+                                                <input type="checkbox" class="form-check-input" id="smsNotif">
+                                                <label class="form-check-label" for="smsNotif">SMS Notifications</label>
+                                                <div class="form-text">Receive urgent alerts via text message</div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Save Preferences</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Trading Preferences -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-white">
+                                        <h5 class="mb-0">Trading Preferences</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="tradingPreferencesForm">
+                                            <div class="mb-3">
+                                                <label for="defaultTimeframe" class="form-label">Default Timeframe</label>
+                                                <select class="form-select" id="defaultTimeframe">
+                                                    <option value="1D">1 Day</option>
+                                                    <option value="1W">1 Week</option>
+                                                    <option value="1M">1 Month</option>
+                                                    <option value="3M">3 Months</option>
+                                                    <option value="1Y">1 Year</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="defaultChartType" class="form-label">Default Chart Type</label>
+                                                <select class="form-select" id="defaultChartType">
+                                                    <option value="candlestick">Candlestick</option>
+                                                    <option value="line">Line</option>
+                                                    <option value="area">Area</option>
+                                                    <option value="bar">Bar</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Default Indicators</label>
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input indicator-checkbox" id="smaIndicator" value="SMA">
+                                                    <label class="form-check-label" for="smaIndicator">SMA (Simple Moving Average)</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input indicator-checkbox" id="emaIndicator" value="EMA">
+                                                    <label class="form-check-label" for="emaIndicator">EMA (Exponential Moving Average)</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input indicator-checkbox" id="rsiIndicator" value="RSI">
+                                                    <label class="form-check-label" for="rsiIndicator">RSI (Relative Strength Index)</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input indicator-checkbox" id="macdIndicator" value="MACD">
+                                                    <label class="form-check-label" for="macdIndicator">MACD</label>
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Save Preferences</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="d-flex align-items-center mb-3">
+                        <h4 class="mb-0 me-2">ZAHAAM</h4>
+                        <span class="badge bg-primary">Beta</span>
+                    </div>
+                    <p class="text-muted mb-3" data-translate="advanced_stock_platform">Platform Analisis & Prediksi Saham Tingkat Lanjut yang didukung oleh teknologi machine learning dan AI.</p>
+                    <div class="social-icons">
+                        <a href="#" class="me-3"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="me-3"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="me-3"><i class="bi bi-github"></i></a>
+                        <a href="#"><i class="bi bi-envelope-fill"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-4 mb-md-0">
+                    <h6 class="fw-bold mb-3" data-translate="platform">Platform</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="index.html" class="footer-link"><i class="bi bi-house-door me-2"></i><span data-translate="home">Beranda</span></a></li>
+                        <li class="mb-2"><a href="dashboard.html" class="footer-link"><i class="bi bi-grid-1x2 me-2"></i><span data-translate="dashboard">Dashboard</span></a></li>
+                        <li class="mb-2"><a href="stock-basic.html" class="footer-link"><i class="bi bi-graph-up me-2"></i><span data-translate="stocks">Saham</span></a></li>
+                        <li class="mb-2"><a href="prediction.html" class="footer-link"><i class="bi bi-magic me-2"></i><span data-translate="predictions">Prediksi</span></a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 col-6 mb-4 mb-md-0">
+                    <h6 class="fw-bold mb-3" data-translate="resources">Sumber Daya</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-journal-text me-2"></i><span data-translate="docs">Dokumentasi</span></a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-code-slash me-2"></i>API</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-mortarboard me-2"></i><span data-translate="learn">Pembelajaran</span></a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-question-circle me-2"></i><span data-translate="help">Bantuan</span></a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold mb-3" data-translate="subscribe_newsletter">Berlangganan Newsletter</h6>
+                    <p class="text-muted small mb-3" data-translate="get_updates">Dapatkan update mingguan tentang wawasan pasar dan fitur platform ZAHAAM.</p>
+                    <form class="mt-3">
+                        <div class="input-group mb-2">
+                            <input type="email" class="form-control" placeholder="Email anda" aria-label="Email anda">
+                            <button class="btn btn-primary" type="button" data-translate="subscribe">Langganan</button>
+                        </div>
+                        <div class="form-check small">
+                            <input class="form-check-input" type="checkbox" id="newsletterConsent" checked>
+                            <label class="form-check-label text-muted" for="newsletterConsent" data-translate="agree_receive">
+                                Saya setuju menerima email marketing dari ZAHAAM
+                            </label>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr class="mt-4 mb-3">
+            <div class="row align-items-center">
+                <div class="col-md-6 small">
+                    <p class="mb-0 text-muted" data-translate="copyright"> 2025 ZAHAAM Stock. Hak Cipta Dilindungi.</p>
+                </div>
+                <div class="col-md-6 text-md-end small">
+                    <a href="#" class="footer-link me-3" data-translate="privacy_policy">Kebijakan Privasi</a>
+                    <a href="#" class="footer-link" data-translate="terms_of_service">Ketentuan Layanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/user-profile.js"></script>
+    <!-- Profile Photo Upload Script -->
+    <script src="js/profile-photo-upload.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dark Mode Toggle
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            
+            // Check for saved dark mode preference
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            // Dark mode toggle event listener
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+            
+            // Add loading animation
+            function addLoadingSpinner(containerId) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
+                        <div class="d-flex justify-content-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Initialize the user profile
+            initUserProfile();
+        });
+    </script>
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Edit Profil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Nama</label>
+                        <input type="text" class="form-control" id="editName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPhone" class="form-label">Nomor Telepon</label>
+                        <input type="tel" class="form-control" id="editPhone">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveProfileChanges">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Scripts -->
+<script src="js/user-profile.js"></script>
+<script src="js/profile-photo-upload.js"></script>
+</body>
+</html>

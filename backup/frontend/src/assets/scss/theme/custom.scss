@@ -1,0 +1,788 @@
+// header
+header {
+    border-bottom: 1px solid #e3e3e3;
+    .in-profit-ticker {
+        box-shadow: 0px 10px 25px -5px rgba(0,0,0,0.06);
+        .uk-slider-items li {
+            display: flex;
+            align-items: center;
+        }
+        .in-icon-wrap {
+            font-size: 10px;
+            color: $global-inverse-color;
+            margin-right: 6px;
+            &.small {
+                width: 16px;
+                height: 16px;
+            }
+            &.up {
+                background-color: #2ecc71;
+            }
+            &.down {
+                background-color: #ee4f6f;
+            }
+        }
+        .uk-slider-items li {
+            color: #818181;
+            font-size: $global-small-font-size;
+            span {
+                margin-left: 8px;
+            }
+        }
+    }
+    .in-optional-nav {
+        margin-left: 25px;
+        div {
+            border: 1px solid $primary;
+            border-radius: $border-rounded-border-radius;
+            margin-left: 11px;
+            padding: 5px 4px 8px 4px;
+        }
+        .uk-button {
+            color: $primary;
+            font-size: $global-small-font-size;
+            font-weight: bold;
+            line-height: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding-left: 10px;
+            padding-right: 10px;
+            &:first-child {
+                border-right: 1px solid $primary;
+            }
+        }
+    }
+    .uk-navbar-dropdown {
+        li {
+            font-size: 14.6px;
+            text-transform: initial;
+        }
+    }
+}
+@media (max-width: 960px) {
+    header {
+        .in-profit-ticker {
+            .uk-slider-items li {
+                justify-content: center;
+            }
+        }
+    }
+}
+
+// navbar
+.uk-navbar-parent-icon {
+    position: relative;
+    top: 2px;
+    svg {
+        width: 9px;
+        height: 9px;
+        
+    }
+}
+.uk-navbar-dropdown-nav {
+    a {
+        i {
+            font-size: 13px;
+        }
+    }
+}
+
+// mobile navbar
+.in-mobile-nav {
+    .uk-button {
+        font-size: 17px;
+        padding: 2px 16px;
+        color: #463a5c;
+        background-color: transparent;
+        box-shadow: inset 0px 0px 0px 2px $global-border;
+        border-radius: $border-rounded-border-radius;
+    }
+}
+
+.uk-nav-default {
+    margin-top: -40px;
+    li {
+        a {
+            font-size: 24px;
+        }
+    }
+}
+.uk-nav-sub {
+    li {
+        a {
+            font-size: 18px;
+            i {
+                margin-left: 8px;
+                font-size: 13px;
+            }
+        }
+    }    
+}
+
+// slideshow
+.in-slideshow {
+    background: linear-gradient(0deg, rgba(245,245,249,1) 0%, rgba(245,245,249,1) 80%, rgba(255,255,255,1) 100%);
+    position: relative;
+    .uk-slideshow-items {
+        margin-bottom: -40px;
+        p {
+            margin-top: 25px;
+        }
+    }
+    .uk-overlay {
+        margin-top: 31px;
+        z-index: 1;
+        position: relative;
+    }
+    .uk-position-center {
+        margin-top: -1px;
+        left: 61%;
+    }
+    .in-slideshow-button {
+        margin-top: 30px;
+        .uk-button {
+            padding: 3px 30px;
+        }
+    }
+    .in-slideshow-feature {
+        color: $global-emphasis-color;
+        position: relative;
+        top: -65px;
+        .in-icon-wrap {
+            background-color: #6b617c;
+            color: $global-inverse-color;
+        }
+    } 
+}
+@media (min-width: 640px) and (max-width: 960px) {
+    .in-slideshow {
+        .uk-overlay {
+            margin-top: 16%;
+            text-align: center;
+        }
+        .uk-position-center {
+            left: 50%;
+            opacity: 0.75;
+            img {
+                height: 100%;
+            }
+        }
+    }
+}
+@media (max-width: 639px) {
+    .in-slideshow {
+        .uk-overlay {
+            margin-top: 8px;
+        }
+        .uk-position-center {
+            left: 48%;
+            opacity: 0.75;
+            img {
+                height: 342px;
+            }
+        }
+        .in-highlight {
+            display: inline-block;
+        }
+    }
+}
+
+// breadcrumb
+.in-profit-breadcrumb {
+    .uk-breadcrumb {
+        padding-top: 20px;
+    }
+}
+
+// footer
+footer {
+    p, .uk-section-secondary:not(.uk-preserve-color) a {
+        color: rgba(255, 255, 255, 0.55);
+    }
+    .uk-list li i {
+        color: $global-inverse-color;
+    }  
+    .footer-warning {
+        padding: 0 28px 6px 28px;
+        border: $global-border-width solid rgba(255, 255, 255, 0.25);
+        border-radius: 12px;
+        h5 {
+            margin-top: -9px;
+            margin-left: -8px;
+            span {
+                background-color:  $global-secondary-background;
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+        }
+    }
+    .social-media-list {
+        div {
+            a {
+                font-size: 0;
+                .fab {
+                    font-size: 18px;
+                    color: rgba(255, 255, 255, 0.55);
+                    margin-left: 24px;
+                    &:hover {
+                        color: $global-inverse-color;
+                    }
+                }
+            }
+            
+        }
+    }
+}
+@media (max-width: 960px) {
+    footer {
+        .uk-section-primary {
+            padding-top: 65px;
+        }
+        .social-media-list {
+            div:first-child {
+                .fab {
+                    margin-left: 0px;
+                }
+            }
+        }
+    }
+}
+
+.in-profit-2 {
+    &.uk-background-contain {
+        background-size: 960px 710px;
+        background-position: 20% 30%;
+    }
+    .in-pricing-1 {
+        .uk-card {
+            border-radius: 12px;
+            border: 2px solid #d5cee0;
+            &:hover {
+                border-color: lighten($global-secondary-background, 45%);
+            }
+        }
+        .uk-card-default {
+            background: linear-gradient(0deg, rgba(247,247,250,1) 0%, rgba(247,247,250,1) 45%, rgba(255,255,255,1) 75%, rgba(255,255,255,1) 100%);
+        }
+        .uk-card-body {
+            padding-top: 0;
+            padding-bottom: 20px;
+            p, .uk-label {
+                position: relative;
+                z-index: 1;
+            }
+            .uk-label {
+                margin-top: 4px;
+            }
+        }
+        .uk-card-media-top {
+            position: relative;
+            span {
+                position: absolute;
+                width: 100%;
+                height: 101%;
+                background: linear-gradient(0deg, rgba(247,247,250,1) 0%, rgba(247,247,250,0.5998774509803921) 30%, rgba(247,247,250,0) 100%);
+                top: 0;
+            }
+        }
+        .uk-button-link {
+            color: $primary;
+        }
+    }    
+    .in-heading-extra {
+        border-left: 7px solid $primary;
+        padding-left: 18px;
+        position: relative;
+        top: -120px;
+        margin-bottom: -120px;
+        &:before {
+            width: 100%;
+            height: 300px;
+            content: "";
+            position: absolute;
+            right: -200px;
+        }
+        &.in-card-decor-1:before {
+            background: url("../img/in-profit-decor-1.svg") no-repeat;
+            background-size: 100%;
+        }
+        &.in-card-decor-2:before {
+            background: url("../img/in-profit-decor-2.svg") no-repeat;
+            background-size: 100%
+        }
+        .uk-text-lead {
+            margin-top: -5px;
+        }
+    }
+    .in-profit-appcard {
+        &.uk-card-body {
+            .uk-child-width-1-2\@m div:nth-child(2) {
+                padding-left: 0;
+                margin-top: -40px;
+                margin-bottom: -40px;
+            }
+        }
+        background-color: #f7f6fc;
+        border: 2px solid lighten($global-secondary-background, 55%);
+        border-radius: 12px;
+        hr {
+            border-color: #d1d0dd;
+            margin-top: 25px;
+        }
+        img {
+            position: relative;
+            right: -40px;
+            height: 100%;
+        }
+    }
+    .in-profit-tradestatus {
+        h1 {
+            font-size: 36px;
+        }
+        .uk-text-lead {
+            font-size: 24px;
+        }
+    }
+}
+@media (max-width: 960px) {
+    .in-profit-2 {
+        .in-heading-extra {
+            &:before {
+                top: 39px;
+                right: -180px;
+            }
+        }
+    }
+}
+@media (max-width: 639px) {
+    .in-profit-2 {
+        .uk-card-body {
+            .uk-label {
+                display: none;
+            }
+        }
+        .uk-button-link {
+            margin-bottom: 25px;
+        }
+        .in-profit-appcard {
+            .uk-flex {
+                flex-direction: column;
+            }
+        }
+        .in-button-app {
+            justify-content: center;
+            width: 100%;
+        }
+    }
+}
+
+.in-profit-3 {
+    background-color:#01123c;
+    h1.uk-heading-bullet {
+        color: $primary;
+    }
+}
+@media (min-width: 640px) and (max-width: 960px) {
+    .in-profit-3 {
+        &.uk-background-contain {
+            background-size: auto 80%;
+        }
+    }
+}
+@media (max-width: 639px) {
+    .in-profit-3 {
+        &.uk-background-contain {
+            background-size: auto 40%;
+        }
+    }
+}
+
+.in-profit-4 {
+    position: relative;
+    .in-profit-stockprice {
+        margin-top: 20px;
+        margin-bottom: 30px;
+        font-size: $global-small-font-size;
+        .uk-card-default {
+            background-color: $global-inverse-color;
+            box-shadow: 0px 0px 55px 0px rgba(0,0,0,0.15);
+        }
+        .uk-card-body {
+            padding: 18px 20px;
+        }
+        i {
+            margin-right: 6px;
+        }
+        .up {
+            color: #2ecc71;
+        }
+        .down {
+            color: #ee4f6f;
+        }        
+    }
+    &::after {
+        width: 100%;
+        height: 1px;
+        background-color: #e3e3e3;
+        position: absolute;
+        content: "";
+        bottom: 64px;
+    }
+    .trustpilot-widget {
+        padding-top: 20px;
+        padding-bottom: 17px;
+    }
+}
+
+.in-profit-5 {
+    .in-pricing-1 {   
+        .uk-card {
+            border-radius: 12px;
+            border: 2px solid #d5cee0;
+        } 
+        .uk-card-header {
+            h3 {
+                margin-top: 15px;
+            }
+            .uk-card-badge {
+                margin: 0;
+            }
+            i {
+                color: $global-inverse-color;
+                &.circle {
+                    background-color: $global-primary-background;
+                }
+            }
+        }
+        .uk-card-badge {
+            top: 50px;
+            right: 20px;
+        }
+    }
+    .uk-card-default {
+        background: url("../img/in-profit-decor-3.svg") no-repeat;
+        background-size: 400px 296px;
+        background-position: -80px -120px;
+    }
+}
+
+.in-profit-6 {
+    .uk-child-width-1-3\@m {
+        .uk-flex {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+    }
+    h1.uk-text-primary {
+        border: $global-border-width solid $primary;
+        border-radius: 12px;
+        padding: 10px 18px;
+    }
+}
+
+.in-profit-7 {
+    &.uk-background-contain {
+        background-size: 960px 710px;
+        background-position: 20% 35%;
+    }
+    div {
+        article {
+            border-bottom: $global-border-width solid $global-border;
+            padding-top: 18px;
+            padding-bottom: 20px;
+            h5 a {
+                color: $global-emphasis-color;
+            }
+        }
+        article:last-child {
+            border-bottom: 0;
+        }
+    }
+}
+@media (max-width: 960px) {
+    .in-profit-7 {
+        .in-client-logo-6 {
+            .uk-tile:nth-child(1) {
+                border-right: $global-border-width solid $global-border;
+            }
+            .uk-tile:nth-child(3) {
+                border-right: $global-border-width solid $global-border;
+                border-bottom: 0;
+            }
+            .uk-tile:nth-child(4) {
+                border-bottom: 0;
+            }
+        }
+    }
+}
+@media (max-width: 639px) {
+    .in-profit-7 {
+        .in-client-logo-6 {
+            .uk-tile:nth-child(1) {
+                border-right: 0;
+            }
+            .uk-tile:nth-child(3) {
+                border-right: 0;
+                border-bottom: $global-border-width solid $global-border;
+            }
+            .uk-tile:nth-child(4) {
+                border-bottom: 0;
+            }
+        }
+    }
+}
+
+.in-profit-8 {
+    border-top: 1px solid #e3e3e3;
+    .in-profit-award {
+        padding: 18px 20px;
+        position: relative;
+        h4 {
+            margin-top: 16px;
+            margin-bottom: -16px;
+        }
+        &:before {
+            position: absolute;
+            top: 0;
+            left: 7px;
+            content: url("../img/in-award-left.svg");
+        }
+        &:after {
+            position: absolute;
+            top: 0;
+            right: 7px;
+            content: url("../img/in-award-right.svg");
+        }
+    }
+}
+@media (max-width: 960px) {
+    .in-profit-8 {
+        &.uk-background-contain {
+            background-size: auto 80%;
+        }
+    }
+}
+
+.in-profit-9 {
+    .uk-width-expand\@m {
+        padding-top: 7px;
+    }
+    .uk-child-width-1-6\@m {
+        margin-top: 15px;
+        margin-bottom: 10px;
+        .in-icon-wrap {
+            background-color: $global-inverse-color;
+        }
+    }
+    .fas, .fab {
+        color: $primary;
+        font-size: 24px;
+    }
+}
+
+.in-profit-10 {
+    .uk-container {
+        margin-bottom: -70px;
+        padding-bottom: 75px;
+    }
+    .uk-background-contain {
+        background-size: 498px 314px;
+    }
+}
+@media (max-width: 639px) {
+    .in-profit-10 {
+        .uk-container {
+            padding-bottom: 360px;
+        }
+    }
+}
+
+.in-profit-11 {
+    background-color:#01123c;
+    &.uk-section-secondary:not(.uk-preserve-color) .uk-label {
+        background-color: $primary;
+        color: $global-inverse-color;
+    }
+    .uk-card-primary {
+        background-color: rgba(139,178,217,.4);
+        backdrop-filter: blur(4px);
+        .uk-button-primary {
+            background-color: $primary;
+            color: $global-inverse-color;
+            &:hover {
+                background-color: darken($primary, 5%);
+                color: $global-inverse-color;
+            }
+        }
+    }
+}
+@media (min-width: 640px) and (max-width: 960px) {
+    .in-profit-11 {
+        &.uk-background-contain {
+            background-size: auto 80%;
+        }
+    }
+}
+@media (max-width: 639px) {
+    .in-profit-11 {
+        &.uk-background-contain {
+            background-size: auto 60%;
+        }
+    }
+}
+
+.in-profit-12 {
+    .uk-card-default {
+        background-color: $global-inverse-color;
+        margin-bottom: 10px;
+        .uk-card-body {
+            padding: 18px 18px 10px 18px;
+        }
+    }
+}
+@media (max-width: 639px) {
+    .in-profit-12 {
+        .uk-button-default {
+            &.uk-margin-small-left {
+                margin-top: 10px;
+            }
+        }
+    }
+}
+
+.in-profit-13 {
+    .in-pricing-1 {
+        .uk-card {
+            border-radius: 12px;
+            border: 2px solid #d5cee0;
+            &:hover {
+                border-color: lighten($global-secondary-background, 45%);
+            }
+        } 
+        .uk-card-default {
+            background: url("../img/in-profit-decor-3.svg") no-repeat;
+            background-size: 400px 296px;
+            background-position: -80px -120px;
+        }
+        .uk-background-contain {
+            background-size: 217px 241px;
+        }
+        .uk-card-header {
+            h3 {
+                margin-top: 15px;
+            }
+        }
+    }
+    .in-icon-wrap {
+        color: $primary;
+    }
+    .uk-width-5-6\@m {
+        p {
+            top: 5px;
+            position: relative;
+        }
+    }
+}
+@media (max-width: 960px) {
+    .in-profit-13 {
+        .in-pricing-1 {
+            .uk-background-contain {
+                background-size: auto 50%;
+            }
+        }
+    }
+}
+
+@media (min-width: 640px) and (max-width: 960px) {
+    .in-profit-14 {
+        &.uk-background-contain {
+            background-size: auto 60%;
+        }
+    }
+}
+@media (max-width: 639px) {
+    .in-profit-14 {
+        &.uk-background-contain {
+            background-size: auto 35%;
+        }
+    }
+}
+
+.in-profit-15 {
+    .in-icon-wrap {
+        background-color: $primary;
+        color: $global-inverse-color;
+        position: relative;
+        &.large {
+            font-size: 32px;
+        }
+        &:after {
+            position: absolute;
+            top: 22px;
+            right: -220px;
+            content: url("../img/in-profit-dotted.svg");
+        }
+    }
+    .uk-child-width-1-3\@m {
+        div:last-child {
+            .in-icon-wrap:after {
+                content: "";
+            }
+        }
+    }
+}
+@media (max-width: 960px) {
+    .in-profit-15 {
+        .in-icon-wrap {
+            &:after {
+                content: "";
+            }
+        }
+    }
+}
+
+.in-profit-16 {
+    .in-client-logo-3 {
+        margin-top: 5px;
+        .uk-tile {
+            padding: 10px 25px;
+        }
+    }
+    .in-create-account {
+        padding: 0 34px 30px 34px;
+        border: $global-border-width solid $global-border;
+        border-radius: 12px;
+        .uk-label {
+            background-color: $primary;
+            margin-top: -18px;
+        }
+    }
+    .uk-width-auto\@m h4 {
+        margin-top: 8px;
+    }
+}
+@media (max-width: 639px) {
+    .in-profit-16 {
+        .in-create-account {
+            form {
+                margin-top: 10px;
+            }
+        }
+    }
+}
+
+.in-profit-17 {
+    border-top: 1px solid #e3e3e3;
+    &.uk-background-contain {
+        background-size: 960px 710px;
+        background-position: 20% 35%;
+    }
+}
+@media (max-width: 960px) {
+    .in-profit-17 {
+        margin-bottom: -70px;
+        .in-offset-bottom-20 {
+            margin-bottom: -30px;
+        }
+    }
+}

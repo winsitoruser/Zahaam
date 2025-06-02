@@ -3,9 +3,9 @@ import { Container, Row, Col, Card, Table, Button, Form, Spinner, Modal, Alert, 
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { formatCurrency, getValueColor } from '../services/api';
-import './MyWatchlist.css'; // Will create this file for custom styling
 
 const MyWatchlist = () => {
+  // State untuk menyimpan data
   const [watchlistItems, setWatchlistItems] = useState([]);
   const [stocks, setStocks] = useState([]);
   const [predictions, setPredictions] = useState([]);
@@ -14,115 +14,131 @@ const MyWatchlist = () => {
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showAlerts, setShowAlerts] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [sortBy, setSortBy] = useState('favorite');
   const [activeTab, setActiveTab] = useState('stocks');
   
-  // Form state for adding/editing
+  // Form state
   const [formData, setFormData] = useState({
     notes: '',
     is_favorite: false,
     alert_price_high: '',
-    alert_price_low: ''
+    alert_price_low: '',
+    notification_enabled: true
   });
   
+  // Inisialisasi data saat komponen di-mount
   useEffect(() => {
     fetchWatchlist();
     fetchStocks();
   }, [refreshTrigger]);
   
+  // Effect untuk mengambil prediksi ketika tab aktif berubah
   useEffect(() => {
-    if (activeTab === 'predictions' && watchlistItems.length > 0) {
+    if (activeTab === 'predictions') {
       fetchPredictions();
     }
-  }, [activeTab, watchlistItems]);
+  }, [activeTab]);
   
+  // Fungsi untuk mengambil watchlist
   const fetchWatchlist = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8000/api/watchlist');
+      const response = await axios.get('/watchlist');
       setWatchlistItems(response.data.watchlist);
     } catch (err) {
       console.error('Error fetching watchlist:', err);
-      setError('Failed to load watchlist. Please try again.');
+      setError('Failed to load watchlist data');
     } finally {
       setLoading(false);
     }
   };
   
+  // Fungsi untuk mengambil daftar saham
   const fetchStocks = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/stocks/db');
+      const response = await axios.get('/stocks/db');
       setStocks(response.data.stocks);
     } catch (err) {
       console.error('Error fetching stocks:', err);
     }
   };
   
+  // Fungsi untuk mengambil prediksi
   const fetchPredictions = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:8000/api/watchlist/predictions');
+      const response = await axios.get('/watchlist/predictions');
       setPredictions(response.data.predictions);
     } catch (err) {
       console.error('Error fetching predictions:', err);
-      setError('Failed to load predictions. Please try again.');
+      setError('Failed to load prediction data');
     } finally {
       setLoading(false);
     }
   };
   
+  // Handler untuk menambahkan item ke watchlist
   const handleAddToWatchlist = async (e) => {
     e.preventDefault();
-    
     if (!selectedTicker) {
-      setError('Please select a stock to add to watchlist');
+      setError('Please select a stock');
       return;
     }
     
     try {
-      await axios.post('http://localhost:8000/api/watchlist', {
+      await axios.post('/watchlist', {
         ticker: selectedTicker,
         notes: formData.notes,
         is_favorite: formData.is_favorite,
         alert_price_high: formData.alert_price_high || null,
-        alert_price_low: formData.alert_price_low || null
+        alert_price_low: formData.alert_price_low || null,
+        notification_enabled: formData.notification_enabled
       });
       
-      // Reset form and refresh watchlist
+      setShowAddModal(false);
       setSelectedTicker('');
       setFormData({
         notes: '',
         is_favorite: false,
         alert_price_high: '',
-        alert_price_low: ''
+        alert_price_low: '',
+        notification_enabled: true
       });
-      setShowAddModal(false);
+      
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
       console.error('Error adding to watchlist:', err);
-      setError(err.response?.data?.detail || 'Failed to add stock to watchlist');
+      setError('Failed to add to watchlist');
     }
   };
   
+  // Handler untuk update item watchlist
   const handleUpdateWatchlistItem = async (e) => {
     e.preventDefault();
-    
     if (!editItem) {
       return;
     }
     
     try {
-      await axios.put(`http://localhost:8000/api/watchlist/${editItem.id}`, {
+      await axios.put(`/watchlist/${editItem.id}`, {
         notes: formData.notes,
         is_favorite: formData.is_favorite,
         alert_price_high: formData.alert_price_high || null,
-        alert_price_low: formData.alert_price_low || null
+        alert_price_low: formData.alert_price_low || null,
+        notification_enabled: formData.notification_enabled
       });
       
       setShowEditModal(false);
+      setEditItem(null);
+      setFormData({
+        notes: '',
+        is_favorite: false,
+        alert_price_high: '',
+        alert_price_low: '',
+        notification_enabled: true
+      });
+      
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
       console.error('Error updating watchlist item:', err);
@@ -130,32 +146,36 @@ const MyWatchlist = () => {
     }
   };
   
+  // Handler untuk remove item dari watchlist
   const handleRemoveFromWatchlist = async (itemId) => {
     if (!window.confirm('Are you sure you want to remove this stock from your watchlist?')) {
       return;
     }
     
     try {
-      await axios.delete(`http://localhost:8000/api/watchlist/${itemId}`);
+      await axios.delete(`/watchlist/${itemId}`);
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
       console.error('Error removing from watchlist:', err);
-      setError('Failed to remove stock from watchlist');
+      setError('Failed to remove from watchlist');
     }
   };
   
-  const openEditModal = (item) => {
+  // Fungsi untuk menampilkan modal edit
+  const handleShowEditModal = (item) => {
     setEditItem(item);
     setFormData({
       notes: item.notes || '',
       is_favorite: item.is_favorite || false,
       alert_price_high: item.alert_price_high || '',
-      alert_price_low: item.alert_price_low || ''
+      alert_price_low: item.alert_price_low || '',
+      notification_enabled: item.notification_enabled !== false
     });
     setShowEditModal(true);
   };
   
-  const handleFormChange = (e) => {
+  // Handler untuk input form
+  const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
@@ -163,178 +183,8 @@ const MyWatchlist = () => {
     });
   };
   
-  const sortWatchlist = (items) => {
-    const sorted = [...items];
-    
-    switch (sortBy) {
-      case 'favorite':
-        sorted.sort((a, b) => (b.is_favorite ? 1 : 0) - (a.is_favorite ? 1 : 0));
-        break;
-      case 'name':
-        sorted.sort((a, b) => a.stock_info.name.localeCompare(b.stock_info.name));
-        break;
-      case 'ticker':
-        sorted.sort((a, b) => a.ticker.localeCompare(b.ticker));
-        break;
-      case 'price':
-        sorted.sort((a, b) => 
-          (b.stock_info.current_price || 0) - (a.stock_info.current_price || 0)
-        );
-        break;
-      default:
-        break;
-    }
-    
-    return sorted;
-  };
-  
-  const renderWatchlistTable = () => {
-    if (watchlistItems.length === 0) {
-      return (
-        <div className="text-center p-4">
-          <p>Your watchlist is empty. Add stocks to your watchlist to track them here.</p>
-        </div>
-      );
-    }
-    
-    const sortedItems = sortWatchlist(watchlistItems);
-    
-    return (
-      <Table striped hover responsive className="custom-table">
-        <thead>
-          <tr>
-            <th>
-              <span role="button" onClick={() => setSortBy('favorite')}>
-                <i className="bi bi-star-fill me-1 text-warning"></i>
-              </span>
-            </th>
-            <th>
-              <span role="button" onClick={() => setSortBy('ticker')}>Ticker</span>
-            </th>
-            <th>
-              <span role="button" onClick={() => setSortBy('name')}>Name</span>
-            </th>
-            <th>
-              <span role="button" onClick={() => setSortBy('price')}>Current Price</span>
-            </th>
-            <th>Sector</th>
-            <th>Notes</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedItems.map((item) => (
-            <tr key={item.id}>
-              <td>
-                {item.is_favorite && <i className="bi bi-star-fill text-warning"></i>}
-              </td>
-              <td>
-                <Link to={`/stock-analysis?ticker=${item.ticker}`}>
-                  {item.ticker}
-                </Link>
-                {(item.alert_price_high || item.alert_price_low) && (
-                  <i className="bi bi-bell-fill text-info ms-2" title="Price alert set"></i>
-                )}
-              </td>
-              <td>{item.stock_info.name}</td>
-              <td className={getValueColor(item.stock_info.current_price)}>
-                {item.stock_info.current_price 
-                  ? formatCurrency(item.stock_info.current_price, 'IDR') 
-                  : 'N/A'}
-              </td>
-              <td>{item.stock_info.sector}</td>
-              <td>
-                {item.notes && item.notes.length > 20
-                  ? `${item.notes.substring(0, 20)}...` 
-                  : item.notes || ''}
-              </td>
-              <td>
-                <Button 
-                  variant="outline-primary" 
-                  size="sm" 
-                  className="me-2 rounded-pill"
-                  onClick={() => openEditModal(item)}
-                >
-                  <i className="bi bi-pencil"></i>
-                </Button>
-                <Button 
-                  variant="outline-danger" 
-                  size="sm"
-                  className="rounded-pill"
-                  onClick={() => handleRemoveFromWatchlist(item.id)}
-                >
-                  <i className="bi bi-trash"></i>
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    );
-  };
-  
-  const renderPredictionsTable = () => {
-    if (!predictions || predictions.length === 0) {
-      return (
-        <div className="text-center p-4">
-          <p>No predictions available. Add stocks to your watchlist and check back.</p>
-        </div>
-      );
-    }
-    
-    return (
-      <div>
-        <Table striped hover responsive className="custom-table">
-          <thead>
-            <tr>
-              <th>
-                <i className="bi bi-star-fill text-warning me-1"></i>
-              </th>
-              <th>Ticker</th>
-              <th>Name</th>
-              <th>Current Price</th>
-              <th>Signal</th>
-              <th>Recommendation</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {predictions.map((item, index) => (
-              <tr key={index}>
-                <td>
-                  {item.is_favorite && <i className="bi bi-star-fill text-warning"></i>}
-                </td>
-                <td>{item.ticker}</td>
-                <td>{item.name}</td>
-                <td className={getValueColor(item.latest_price)}>
-                  {formatCurrency(item.latest_price, 'IDR')}
-                </td>
-                <td>
-                  <Badge bg={item.action === 'BUY' ? 'success' : item.action === 'SELL' ? 'danger' : 'warning'}>
-                    {item.action}
-                  </Badge>
-                </td>
-                <td>
-                  {item.recommendation && item.recommendation.length > 30
-                    ? `${item.recommendation.substring(0, 30)}...` 
-                    : item.recommendation || ''}
-                </td>
-                <td>
-                  <Link to={`/stock-analysis?ticker=${item.ticker}`}>
-                    <Button variant="outline-primary" size="sm" className="rounded-pill">
-                    <i className="bi bi-graph-up me-1"></i>Analyze
-                  </Button>
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-    );
-  };
-
-  const renderAddToWatchlistModal = () => (
+  // Render modal tambah watchlist
+  const renderAddWatchlistModal = () => (
     <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
       <Modal.Header closeButton>
         <Modal.Title>Add to Watchlist</Modal.Title>
@@ -342,14 +192,14 @@ const MyWatchlist = () => {
       <Modal.Body>
         <Form onSubmit={handleAddToWatchlist}>
           <Form.Group className="mb-3">
-            <Form.Label>Select Stock</Form.Label>
-            <Form.Select
+            <Form.Label>Stock</Form.Label>
+            <Form.Select 
               value={selectedTicker}
               onChange={(e) => setSelectedTicker(e.target.value)}
               required
             >
-              <option value="">Select a stock...</option>
-              {stocks.map((stock) => (
+              <option value="">Select a stock</option>
+              {stocks.map(stock => (
                 <option key={stock.ticker} value={stock.ticker}>
                   {stock.ticker} - {stock.name}
                 </option>
@@ -361,42 +211,11 @@ const MyWatchlist = () => {
             <Form.Label>Notes</Form.Label>
             <Form.Control
               as="textarea"
-              rows={2}
-              placeholder="Add your notes about this stock"
               name="notes"
               value={formData.notes}
-              onChange={handleFormChange}
+              onChange={handleInputChange}
+              placeholder="Add your notes about this stock"
             />
-          </Form.Group>
-          
-          <Form.Group className="mb-3">
-            <Form.Label>Price Alerts</Form.Label>
-            <Row>
-              <Col>
-                <Form.Control
-                  type="number"
-                  placeholder="High price alert"
-                  name="alert_price_high"
-                  value={formData.alert_price_high}
-                  onChange={handleFormChange}
-                />
-                <Form.Text className="text-muted">
-                  Alert when price goes above
-                </Form.Text>
-              </Col>
-              <Col>
-                <Form.Control
-                  type="number"
-                  placeholder="Low price alert"
-                  name="alert_price_low"
-                  value={formData.alert_price_low}
-                  onChange={handleFormChange}
-                />
-                <Form.Text className="text-muted">
-                  Alert when price goes below
-                </Form.Text>
-              </Col>
-            </Row>
           </Form.Group>
           
           <Form.Group className="mb-3">
@@ -405,15 +224,52 @@ const MyWatchlist = () => {
               label="Mark as favorite"
               name="is_favorite"
               checked={formData.is_favorite}
-              onChange={handleFormChange}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          
+          <Row>
+            <Col>
+              <Form.Group className="mb-3">
+                <Form.Label>Alert When Price Above</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="alert_price_high"
+                  value={formData.alert_price_high}
+                  onChange={handleInputChange}
+                  placeholder="Optional"
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group className="mb-3">
+                <Form.Label>Alert When Price Below</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="alert_price_low"
+                  value={formData.alert_price_low}
+                  onChange={handleInputChange}
+                  placeholder="Optional"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          
+          <Form.Group className="mb-3">
+            <Form.Check
+              type="checkbox"
+              label="Enable price notifications"
+              name="notification_enabled"
+              checked={formData.notification_enabled}
+              onChange={handleInputChange}
             />
           </Form.Group>
           
           <div className="d-flex justify-content-end">
-            <Button variant="secondary" className="me-2 rounded-pill" onClick={() => setShowAddModal(false)}>
+            <Button variant="secondary" className="me-2" onClick={() => setShowAddModal(false)}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit" className="rounded-pill">
+            <Button variant="primary" type="submit">
               Add to Watchlist
             </Button>
           </div>
@@ -422,212 +278,304 @@ const MyWatchlist = () => {
     </Modal>
   );
   
+  // Render modal edit watchlist
   const renderEditWatchlistItemModal = () => (
     <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
       <Modal.Header closeButton>
-        <Modal.Title>
-          Edit {editItem?.ticker}
-        </Modal.Title>
+        <Modal.Title>Edit Watchlist Item</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form onSubmit={handleUpdateWatchlistItem}>
-          <Form.Group className="mb-3">
-            <Form.Label>Notes</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              placeholder="Add your notes about this stock"
-              name="notes"
-              value={formData.notes}
-              onChange={handleFormChange}
-            />
-          </Form.Group>
-          
-          <Form.Group className="mb-3">
-            <Form.Label>Price Alerts</Form.Label>
+        {editItem && (
+          <Form onSubmit={handleUpdateWatchlistItem}>
+            <p className="fw-bold">{editItem.ticker} - {editItem.name}</p>
+            
+            <Form.Group className="mb-3">
+              <Form.Label>Notes</Form.Label>
+              <Form.Control
+                as="textarea"
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                placeholder="Add your notes about this stock"
+              />
+            </Form.Group>
+            
+            <Form.Group className="mb-3">
+              <Form.Check
+                type="checkbox"
+                label="Mark as favorite"
+                name="is_favorite"
+                checked={formData.is_favorite}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+            
             <Row>
               <Col>
-                <Form.Control
-                  type="number"
-                  placeholder="High price alert"
-                  name="alert_price_high"
-                  value={formData.alert_price_high}
-                  onChange={handleFormChange}
-                />
-                <Form.Text className="text-muted">
-                  Alert when price goes above
-                </Form.Text>
+                <Form.Group className="mb-3">
+                  <Form.Label>Alert When Price Above</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="alert_price_high"
+                    value={formData.alert_price_high}
+                    onChange={handleInputChange}
+                    placeholder="Optional"
+                  />
+                </Form.Group>
               </Col>
               <Col>
-                <Form.Control
-                  type="number"
-                  placeholder="Low price alert"
-                  name="alert_price_low"
-                  value={formData.alert_price_low}
-                  onChange={handleFormChange}
-                />
-                <Form.Text className="text-muted">
-                  Alert when price goes below
-                </Form.Text>
+                <Form.Group className="mb-3">
+                  <Form.Label>Alert When Price Below</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="alert_price_low"
+                    value={formData.alert_price_low}
+                    onChange={handleInputChange}
+                    placeholder="Optional"
+                  />
+                </Form.Group>
               </Col>
             </Row>
-          </Form.Group>
-          
-          <Form.Group className="mb-3">
-            <Form.Check
-              type="checkbox"
-              label="Mark as favorite"
-              name="is_favorite"
-              checked={formData.is_favorite}
-              onChange={handleFormChange}
-            />
-          </Form.Group>
-          
-          <div className="d-flex justify-content-end">
-            <Button variant="secondary" className="me-2 rounded-pill" onClick={() => setShowEditModal(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit" className="rounded-pill">
-              Save Changes
-            </Button>
-          </div>
-        </Form>
+            
+            <Form.Group className="mb-3">
+              <Form.Check
+                type="checkbox"
+                label="Enable price notifications"
+                name="notification_enabled"
+                checked={formData.notification_enabled}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+            
+            <div className="d-flex justify-content-end">
+              <Button variant="secondary" className="me-2" onClick={() => setShowEditModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit">
+                Update
+              </Button>
+            </div>
+          </Form>
+        )}
       </Modal.Body>
     </Modal>
   );
   
   return (
     <>
-      {/* Hero Section - Based on component-slideshow-4 design */}
+      {/* Hero Section */}
       <div className="hero-section py-4">
         <Container>
           <Row className="align-items-center">
             <Col md={6}>
               <div className="hero-content">
-                <h1>My <span className="highlight">Watchlist</span></h1>
-                <p className="lead">Track your favorite stocks and get real-time predictions based on your trading strategies.</p>
-                <div className="hero-buttons">
-                  <Button variant="primary" className="rounded-pill" onClick={() => setShowAddModal(true)}>
-                    <i className="bi bi-plus-circle me-2"></i>Add Stock
-                  </Button>
-                  <Button variant="outline-primary" className="rounded-pill ms-2" as={Link} to="/my-strategies">
-                    My Strategies
-                  </Button>
-                </div>
-                <p className="small mt-3"><span className="text-primary">*</span>Stock predictions are based on historical data and technical analysis.</p>
+                <h1>My Watchlist</h1>
+                <p className="lead">
+                  Track your favorite stocks and get personalized predictions.
+                </p>
               </div>
             </Col>
-            <Col md={6}>
-              <div className="text-center">
-                <img src="/img/watchlist-hero.png" alt="Watchlist" className="img-fluid hero-image" />
-              </div>
+            <Col md={6} className="text-end">
+              <Button 
+                variant="primary" 
+                onClick={() => setShowAddModal(true)}
+                disabled={loading || stocks.length === 0}
+              >
+                <i className="bi bi-plus-circle me-2"></i>
+                Add to Watchlist
+              </Button>
             </Col>
           </Row>
         </Container>
       </div>
       
-      {/* Main Content Section */}
-      <Container fluid className="py-4 main-content">
-        <Row className="mb-4">
-          <Col>
-            <div className="section-heading">
-              <h2>My Watchlist</h2>
-              <p className="text-muted">Track your favorite stocks and get predictions</p>
-            </div>
-          </Col>
-          <Col md="auto" className="d-flex align-items-center">
-            <Button variant="primary" className="rounded-pill" onClick={() => setShowAddModal(true)}>
-              <i className="bi bi-plus-circle me-2"></i>Add Stock to Watchlist
-            </Button>
-          </Col>
-        </Row>
-      
-      {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
-      
-      <Card className="mb-4 shadow custom-card">
-        <Card.Header className="custom-card-header">
-          <Tabs
-            activeKey={activeTab}
-            onSelect={(k) => setActiveTab(k)}
-            className="custom-tabs"
-          >
-            <Tab eventKey="stocks" title="My Stocks">
-              {loading ? (
-                <div className="text-center p-4">
-                  <Spinner animation="border" variant="primary" />
-                </div>
-              ) : (
-                renderWatchlistTable()
-              )}
-            </Tab>
-            <Tab eventKey="predictions" title="Predictions">
-              {loading ? (
-                <div className="text-center p-4">
-                  <Spinner animation="border" variant="primary" />
-                </div>
-              ) : (
-                renderPredictionsTable()
-              )}
-            </Tab>
-            {showAlerts && (
-              <Tab eventKey="alerts" title="Alerts">
-                {/* Alerts content will go here */}
-                <div className="p-4">
-                  <p>Price alerts feature coming soon!</p>
-                </div>
+      <Container className="py-4">
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="danger" onClose={() => setError(null)} dismissible>
+            {error}
+          </Alert>
+        )}
+        
+        {/* Loading Spinner */}
+        {loading ? (
+          <div className="text-center py-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+            <p className="mt-3">Loading your watchlist...</p>
+          </div>
+        ) : (
+          <>
+            {/* Tabs */}
+            <Tabs
+              activeKey={activeTab}
+              onSelect={(k) => setActiveTab(k)}
+              className="mb-4"
+            >
+              <Tab eventKey="stocks" title="My Stocks">
+                {watchlistItems.length === 0 ? (
+                  <div className="text-center py-5">
+                    <p className="mb-4">You don't have any stocks in your watchlist yet.</p>
+                    <Button 
+                      variant="outline-primary" 
+                      onClick={() => setShowAddModal(true)}
+                      disabled={stocks.length === 0}
+                    >
+                      <i className="bi bi-plus-circle me-2"></i>
+                      Add Your First Stock
+                    </Button>
+                  </div>
+                ) : (
+                  <Table responsive hover>
+                    <thead>
+                      <tr>
+                        <th>Symbol</th>
+                        <th>Name</th>
+                        <th>Last Price</th>
+                        <th>Change</th>
+                        <th>Alerts</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {watchlistItems.map(item => (
+                        <tr key={item.id}>
+                          <td>
+                            {item.is_favorite && <i className="bi bi-star-fill text-warning me-2"></i>}
+                            <Link to={`/stocks?symbol=${item.ticker}`} className="fw-bold">
+                              {item.ticker}
+                            </Link>
+                          </td>
+                          <td>{item.name}</td>
+                          <td>{formatCurrency(item.last_price)}</td>
+                          <td className={getValueColor(item.price_change_pct)}>
+                            {(item.price_change_pct > 0 ? '+' : '') + item.price_change_pct.toFixed(2)}%
+                          </td>
+                          <td>
+                            {(item.alert_price_high || item.alert_price_low) ? (
+                              <div>
+                                {item.alert_price_high && (
+                                  <Badge bg="success" className="me-1">
+                                    Above {formatCurrency(item.alert_price_high)}
+                                  </Badge>
+                                )}
+                                {item.alert_price_low && (
+                                  <Badge bg="danger">
+                                    Below {formatCurrency(item.alert_price_low)}
+                                  </Badge>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-muted">No alerts</span>
+                            )}
+                          </td>
+                          <td>
+                            {item.notes ? (
+                              <span className="text-truncate d-inline-block" style={{maxWidth: '150px'}}>
+                                {item.notes}
+                              </span>
+                            ) : (
+                              <span className="text-muted">No notes</span>
+                            )}
+                          </td>
+                          <td>
+                            <Button 
+                              variant="outline-primary" 
+                              size="sm" 
+                              className="me-2"
+                              onClick={() => handleShowEditModal(item)}
+                            >
+                              <i className="bi bi-pencil"></i>
+                            </Button>
+                            <Button 
+                              variant="outline-danger" 
+                              size="sm"
+                              onClick={() => handleRemoveFromWatchlist(item.id)}
+                            >
+                              <i className="bi bi-trash"></i>
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
               </Tab>
-            )}
-          </Tabs>
-        </Card.Header>
-        <Card.Body className="p-0">
-          {/* Content rendered by the active tab */}
-        </Card.Body>
-      </Card>
+              
+              <Tab eventKey="predictions" title="Predictions">
+                <Card>
+                  <Card.Body>
+                    <Card.Title>Stock Predictions for Your Watchlist</Card.Title>
+                    <Card.Text>
+                      View AI-powered predictions for stocks in your watchlist.
+                    </Card.Text>
+                    
+                    {predictions.length === 0 ? (
+                      <div className="text-center py-3">
+                        <p>No prediction data available for your watchlist stocks.</p>
+                      </div>
+                    ) : (
+                      <Table responsive hover>
+                        <thead>
+                          <tr>
+                            <th>Symbol</th>
+                            <th>Current Price</th>
+                            <th>Predicted (7d)</th>
+                            <th>Predicted Change</th>
+                            <th>Confidence</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {predictions.map(prediction => (
+                            <tr key={prediction.ticker}>
+                              <td>
+                                <Link to={`/stocks?symbol=${prediction.ticker}`} className="fw-bold">
+                                  {prediction.ticker}
+                                </Link>
+                              </td>
+                              <td>{formatCurrency(prediction.current_price)}</td>
+                              <td>{formatCurrency(prediction.predicted_price)}</td>
+                              <td className={getValueColor(prediction.predicted_change_pct)}>
+                                {(prediction.predicted_change_pct > 0 ? '+' : '') + prediction.predicted_change_pct.toFixed(2)}%
+                              </td>
+                              <td>
+                                <div className="progress" style={{height: '20px'}}>
+                                  <div 
+                                    className={`progress-bar ${prediction.confidence > 70 ? 'bg-success' : 'bg-warning'}`}
+                                    role="progressbar" 
+                                    style={{width: `${prediction.confidence}%`}}
+                                    aria-valuenow={prediction.confidence} 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100"
+                                  >
+                                    {prediction.confidence}%
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <Badge bg={prediction.predicted_change_pct > 2 ? 'success' : 
+                                          prediction.predicted_change_pct < -2 ? 'danger' : 'secondary'}>
+                                  {prediction.predicted_change_pct > 2 ? 'BUY' : 
+                                   prediction.predicted_change_pct < -2 ? 'SELL' : 'HOLD'}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
+                  </Card.Body>
+                </Card>
+              </Tab>
+            </Tabs>
+          </>
+        )}
+      </Container>
       
-      {/* Feature highlights section - Based on Handlebars template */}
-      <div className="feature-section py-4">
-        <Container>
-          <Row className="justify-content-center">
-            <Col md={9}>
-              <Row>
-                <Col md={3} className="feature-item">
-                  <div className="icon-wrap">
-                    <i className="bi bi-graph-up"></i>
-                  </div>
-                  <div className="feature-text">
-                    <p className="font-weight-bold mb-0">Live Price Updates</p>
-                  </div>
-                </Col>
-                <Col md={3} className="feature-item">
-                  <div className="icon-wrap">
-                    <i className="bi bi-bell"></i>
-                  </div>
-                  <div className="feature-text">
-                    <p className="font-weight-bold mb-0">Price Alerts</p>
-                  </div>
-                </Col>
-                <Col md={3} className="feature-item">
-                  <div className="icon-wrap">
-                    <i className="bi bi-lightning"></i>
-                  </div>
-                  <div className="feature-text">
-                    <p className="font-weight-bold mb-0">Instant Analysis</p>
-                  </div>
-                </Col>
-                <Col md={3} className="feature-item">
-                  <div className="icon-wrap">
-                    <i className="bi bi-stars"></i>
-                  </div>
-                  <div className="feature-text">
-                    <p className="font-weight-bold mb-0">Custom Strategies</p>
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Container>
-      </div>
-      {renderAddToWatchlistModal()}
+      {renderAddWatchlistModal()}
       {renderEditWatchlistItemModal()}
     </>
   );

@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAHAAM Stock Prediction Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        .elegant-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            background: linear-gradient(120deg, #000046, #1CB5E0);
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: white;
+            padding: 180px 0 150px;
+            margin-bottom: 70px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        }
+        
+        /* Animated typing text */
+        .typing-text {
+            position: relative;
+            display: inline-block;
+            overflow: hidden;
+            border-right: 3px solid white;
+            white-space: nowrap;
+            margin: 0;
+            animation: typing 4s steps(40) 1s 1 normal both, blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: white }
+        }
+        
+        /* Glowing effects */
+        .glow-text {
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+            to { text-shadow: 0 0 20px rgba(255,255,255,0.8); }
+        }
+        
+        /* Vibrant Signal text */
+        .vibrant-text {
+            background: linear-gradient(to right, #FF416C, #FF4B2B);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            display: inline-block;
+            animation: colorShift 3s infinite alternate;
+        }
+        
+        @keyframes colorShift {
+            0% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(30deg); }
+            100% { filter: hue-rotate(0deg); }
+        }
+        
+        .vibrant-text::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(to right, #FF416C, #FF4B2B);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: blur(8px);
+            opacity: 0.7;
+            animation: pulse-text 2s infinite alternate;
+        }
+        
+        @keyframes pulse-text {
+            0% { opacity: 0.4; filter: blur(8px); }
+            100% { opacity: 0.7; filter: blur(12px); }
+        }
+        
+        /* 3D Button effect */
+        .btn-3d {
+            position: relative;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            transform: perspective(800px);
+        }
+        
+        .btn-3d:hover {
+            transform: perspective(800px) translateY(-5px) rotateX(5deg);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-3d::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            transform: translateZ(-1px);
+            z-index: -1;
+        }
+        
+        /* Particles effect */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: float-up 15s infinite linear;
+        }
+        
+        @keyframes float-up {
+            0% { transform: translateY(100%) translateX(0) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-300%) translateX(100px) scale(1); opacity: 0; }
+        }
+        .hero-video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .hero-video-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: 0;
+            object-fit: cover;
+        }
+        
+        .hero-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.85), rgba(10, 88, 202, 0.85));
+            opacity: 1;
+            z-index: 1;
+        }
+        
+        /* Hero chart elements */
+        .hero-chart {
+            position: absolute;
+            bottom: -10%;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            opacity: 0.15;
+            z-index: 0;
+            transform: rotate(-5deg);
+        }
+        
+        .hero-chart-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 3px;
+            animation: pulse 3s infinite;
+        }
+        
+        .hero-chart-candle {
+            position: absolute;
+            width: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+            animation: float 4s infinite ease-in-out;
+        }
+        
+        .hero-chart-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Hero badge */
+        .hero-badge {
+            position: absolute;
+            top: 30px;
+            right: 50px;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: bounce 2s infinite;
+            z-index: 2;
+        }
+        
+        .hero-badge i {
+            margin-right: 5px;
+            color: #ffc107;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .hero-section .container {
+            position: relative;
+            z-index: 1;
+        }
+        .hero-features {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            backdrop-filter: blur(5px);
+        }
+        .hero-feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: white;
+        }
+        .hero-feature-item i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        .feature-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #0d6efd;
+        }
+        .stock-card {
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .stock-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .price-up {
+            color: #198754;
+            font-weight: bold;
+        }
+        .price-down {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .footer {
+            background-color: #212529;
+            color: white;
+            padding: 40px 0;
+            margin-top: 80px;
+        }
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .section-title:after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            height: 4px;
+            width: 50px;
+            background-color: #0d6efd;
+            border-radius: 2px;
+        }
+        .benefit-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            border: none;
+            height: 100%;
+            position: relative;
+            background: #fff;
+        }
+        
+        .benefit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #0d6efd, #6610f2);
+            transform: scaleX(0);
+            transform-origin: 0 0;
+            transition: transform 0.5s ease;
+        }
+        
+        .benefit-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .benefit-card-number {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 5rem;
+            font-weight: 700;
+            color: rgba(13, 110, 253, 0.04);
+            line-height: 1;
+            z-index: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .benefit-card:hover .benefit-card-number {
+            color: rgba(13, 110, 253, 0.08);
+            transform: translateY(-5px);
+        }
+        .benefit-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        .benefit-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .testimonial-card {
+            border: none;
+            border-radius: 10px;
+            padding: 30px;
+            background: #fff;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .testimonial-card::before {
+            content: '\201C';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 6rem;
+            font-family: Georgia, serif;
+            color: rgba(13, 110, 253, 0.1);
+            line-height: 1;
+            z-index: -1;
+        }
+        .testimonial-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .testimonial-quote {
+            font-style: italic;
+            margin: 20px 0;
+            color: #6c757d;
+        }
+        .signal-card {
+            border-radius: 10px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            height: 100%;
+            transition: transform 0.3s;
+        }
+        .signal-card:hover {
+            transform: translateY(-5px);
+        }
+        .signal-card .card-header {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: white;
+            border: none;
+            padding: 1.5rem 1rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .signal-card .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(45deg);
+            pointer-events: none;
+        }
+        
+        .signal-card .card-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+        }
+        
+        .card-header-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 4rem;
+            opacity: 0.15;
+            transform: rotate(15deg);
+            transition: all 0.5s ease;
+        }
+        
+        .signal-card:hover .card-header-icon {
+            transform: rotate(0deg) scale(1.1);
+            opacity: 0.2;
+        }
+        .signal-icon {
+            font-size: 2.5rem;
+            margin: 15px 0;
+            color: #0d6efd;
+        }
+        .animated-number {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 0;
+            background: linear-gradient(45deg, #0d6efd, #6610f2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            position: relative;
+        }
+        
+        .animated-number::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, #0d6efd, transparent);
+        }
+        .stats-section {
+            background: linear-gradient(120deg, #f1f5fd, #e6f1ff);
+            padding: 80px 0;
+            margin: 60px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.03);
+        }
+        
+        .stats-section::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(13,110,253,0.1) 0%, rgba(13,110,253,0) 70%);
+            top: -150px;
+            left: -150px;
+        }
+        
+        .stats-section::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(102,16,242,0.1) 0%, rgba(102,16,242,0) 70%);
+            bottom: -150px;
+            right: -150px;
+        }
+        .counter-card {
+            text-align: center;
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .counter-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        /* Floating Elements */
+        .floating-elements {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .floating-circle, .floating-square, .floating-triangle, .floating-cross {
+            position: absolute;
+            opacity: 0.05;
+            filter: blur(1px);
+            animation-duration: 15s;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            z-index: -1;
+        }
+        
+        .floating-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #0d6efd, #a78bfa);
+            animation-name: float-circle;
+        }
+        
+        .floating-square {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #0ea5e9, #06b6d4);
+            animation-name: float-square;
+        }
+        
+        .floating-triangle {
+            width: 0;
+            height: 0;
+            border-left: 70px solid transparent;
+            border-right: 70px solid transparent;
+            border-bottom: 120px solid rgba(13, 110, 253, 0.2);
+            animation-name: float-triangle;
+        }
+        
+        .floating-cross {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            animation-name: float-cross;
+        }
+        
+        .floating-cross:before, .floating-cross:after {
+            content: '';
+            position: absolute;
+            background-color: rgba(13, 110, 253, 0.2);
+        }
+        
+        .floating-cross:before {
+            width: 100%;
+            height: 20px;
+            top: 30px;
+        }
+        
+        .floating-cross:after {
+            width: 20px;
+            height: 100%;
+            left: 30px;
+        }
+        
+        @keyframes float-circle {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(20px, 20px) rotate(90deg); }
+            50% { transform: translate(0, 40px) rotate(180deg); }
+            75% { transform: translate(-20px, 20px) rotate(270deg); }
+        }
+        
+        @keyframes float-square {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-30px, 10px) rotate(-90deg); }
+            50% { transform: translate(0, 30px) rotate(-180deg); }
+            75% { transform: translate(30px, 10px) rotate(-270deg); }
+        }
+        
+        @keyframes float-triangle {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(20px, -20px) rotate(120deg); }
+            66% { transform: translate(-20px, -20px) rotate(240deg); }
+        }
+        
+        @keyframes float-cross {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-15px, 15px) rotate(45deg); }
+            50% { transform: translate(0, 30px) rotate(90deg); }
+            75% { transform: translate(15px, 15px) rotate(45deg); }
+        }
+        
+        /* Particles Background */
+        .particles-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -2;
+        }
+        
+        /* Card Hover Effects */
+        .signal-card, .benefit-card, .testimonial-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .signal-card:hover, .benefit-card:hover, .testimonial-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(90deg, #0d6efd, #6610f2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+        
+        /* Animated borders */
+        .animated-border {
+            position: relative;
+        }
+        
+        .animated-border:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #0d6efd, #6610f2);
+            transition: width 0.4s ease;
+        }
+        
+        .animated-border:hover:after {
+            width: 100%;
+        }
+    </style>
+    <!-- Animate on Scroll Library -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Particles.js for Interactive Background -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+</head>
+<body>
+    <!-- Elegant Background -->
+    <div class="elegant-bg"></div>
+    
+    <!-- Floating Elements -->
+    <div class="floating-elements">
+        <div class="floating-circle" style="top: 20%; left: 5%;"></div>
+        <div class="floating-square" style="top: 60%; left: 85%;"></div>
+        <div class="floating-triangle" style="top: 80%; left: 15%;"></div>
+        <div class="floating-cross" style="top: 30%; left: 90%;"></div>
+    </div>
+    
+    <!-- Particles Container -->
+    <div id="particles-js" class="particles-container"></div>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-zahaam">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">ZAHAAM</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="index.html" data-translate="home">Beranda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html" data-translate="dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="stock-basic.html" data-translate="stocks">Saham</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="prediction.html" data-translate="ai_prediction">Prediksi AI</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="strategy.html" data-translate="trading_strategy">Strategi Trading</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <!-- Language Selector -->
+                <div class="me-3">
+                    <select id="languageSelector" class="form-select form-select-sm">
+                        <option value="id">ID</option>
+                        <option value="en">EN</option>
+                    </select>
+                </div>
+                
+                <div class="dark-mode-toggle me-3">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </div>
+                
+                <a href="profile.html" class="btn btn-outline-light me-2">
+                    <i class="bi bi-person-circle"></i> <span data-translate="profile">Profil</span>
+                </a>
+                <a href="#" class="btn btn-primary">
+                    <i class="bi bi-box-arrow-in-right"></i> <span data-translate="login">Masuk</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <!-- Hero Video Background -->
+    <div class="hero-video-container">
+        <video autoplay muted loop playsinline>
+            <source src="assets/images/zahaam video.mp4" type="video/mp4">
+        </video>
+    </div>
+    
+    <!-- Particles Animation -->
+    <div class="particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 0.5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 4.5s;"></div>
+    </div>
+    
+    <!-- Hero Chart Elements -->
+    <div class="hero-chart">
+        <div class="hero-chart-line" style="top: 30%; left: 10%;"></div>
+        <div class="hero-chart-line" style="top: 45%; left: 20%; width: 70%;"></div>
+        <div class="hero-chart-line" style="top: 60%; left: 5%; width: 80%;"></div>
+        <div class="hero-chart-candle" style="top: 25%; left: 20%; height: 30px;"></div>
+        <div class="hero-chart-candle" style="top: 35%; left: 35%; height: 50px;"></div>
+        <div class="hero-chart-candle" style="top: 40%; left: 50%; height: 20px;"></div>
+        <div class="hero-chart-candle" style="top: 30%; left: 65%; height: 40px;"></div>
+        <div class="hero-chart-candle" style="top: 35%; left: 80%; height: 25px;"></div>
+        <div class="hero-chart-dot" style="top: 30%; left: 20%;"></div>
+        <div class="hero-chart-dot" style="top: 40%; left: 50%;"></div>
+        <div class="hero-chart-dot" style="top: 35%; left: 80%;"></div>
+    </div>
+    
+    <!-- Hero Badge -->
+    <div class="hero-badge">
+        <i class="bi bi-award"></i> Signal terpercaya
+    </div>
+    
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 text-center text-lg-start">
+                <h1 class="display-4 fw-bold mb-2" data-aos="fade-right">ZAHAAM <span class="vibrant-text" data-text="Signal">Signal</span> and<br>Price Predictions</h1>
+                <h2 class="h4 fw-light mb-4 typing-text" data-aos="fade-right" data-aos-delay="100">Future of Stock Prediction</h2>
+                <p class="lead mb-4" data-aos="fade-right" data-aos-delay="200">Platform prediksi dan analisis saham <span class="fw-bold text-warning">AI-powered</span> terbaik untuk pasar Indonesia</p>
+                
+                <!-- Live Statistics Counter -->
+                <div class="d-flex justify-content-lg-start justify-content-center mb-4 text-white-50" data-aos="fade-right" data-aos-delay="300">
+                    <div class="me-4">
+                        <span class="fw-bold fs-4 text-white">25,000+</span>
+                        <div class="small">Pengguna Aktif</div>
+                    </div>
+                    <div class="me-4">
+                        <span class="fw-bold fs-4 text-white">85%</span>
+                        <div class="small">Akurasi</div>
+                    </div>
+                    <div>
+                        <span class="fw-bold fs-4 text-white">27%</span>
+                        <div class="small">Return</div>
+                    </div>
+                </div>
+                
+                <div data-aos="fade-right" data-aos-delay="400" class="mb-5">
+                    <a href="#" class="btn btn-light btn-lg px-4 me-2 animated-border btn-3d">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Mulai Sekarang
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-lg px-4 animated-border btn-3d">
+                        <i class="bi bi-info-circle me-2"></i>Pelajari
+                    </a>
+                </div>
+                
+                <div class="d-none d-lg-block">
+                    <div class="hero-features rounded-pill ps-3 pe-4 py-2 d-inline-flex align-items-center mb-3" data-aos="fade-up">
+                        <div class="badge bg-primary rounded-pill me-2 p-2">
+                            <i class="bi bi-lightning-fill"></i>
+                        </div>
+                        <span>AI-Powered Trading Signals</span>
+                    </div>
+                    <br>
+                    <div class="hero-features rounded-pill ps-3 pe-4 py-2 d-inline-flex align-items-center mb-3" data-aos="fade-up" data-aos-delay="100">
+                        <div class="badge bg-success rounded-pill me-2 p-2">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <span>Real-time Market Analysis</span>
+                    </div>
+                    <br>
+                    <div class="hero-features rounded-pill ps-3 pe-4 py-2 d-inline-flex align-items-center mb-3" data-aos="fade-up" data-aos-delay="200">
+                        <div class="badge bg-warning text-dark rounded-pill me-2 p-2">
+                            <i class="bi bi-gear-fill"></i>
+                        </div>
+                        <span>Custom Trading Strategies</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mt-5 mt-lg-0 d-none d-lg-block">
+                <div class="position-relative" data-aos="fade-left">
+                    <!-- Main Trading Card -->
+                    <div class="p-4 bg-white rounded-3 shadow-lg position-relative" style="z-index: 2; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
+                        <!-- Stock Trading Badge -->
+                        <div class="position-absolute" style="top: -10px; right: -10px;">
+                            <span class="badge bg-danger px-3 py-2 rounded-pill shadow-sm">
+                                <i class="bi bi-broadcast me-1"></i> LIVE
+                            </span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0 fw-bold">BBCA Stock</h6>
+                                <small class="text-muted">Bank Central Asia Tbk</small>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="mb-0 fw-bold text-success">9,525</h6>
+                                <small class="text-success"><i class="bi bi-arrow-up-short"></i>+3.53%</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Interactive Chart -->
+                        <div style="height: 120px; background: linear-gradient(90deg, rgba(13,110,253,0.1), rgba(25,135,84,0.1)); border-radius: 5px; position: relative; overflow: hidden;">
+                            <!-- Simplified Chart Mockup -->
+                            <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;">
+                                <svg width="100%" height="100%" viewBox="0 0 100 30" preserveAspectRatio="none">
+                                    <path d="M0,30 L5,25 L10,28 L15,20 L20,24 L25,19 L30,22 L35,15 L40,20 L45,15 L50,18 L55,10 L60,15 L65,8 L70,15 L75,9 L80,12 L85,5 L90,8 L95,3 L100,5 L100,30 L0,30 Z" fill="rgba(25,135,84,0.2)" />
+                                    <path d="M0,30 L5,25 L10,28 L15,20 L20,24 L25,19 L30,22 L35,15 L40,20 L45,15 L50,18 L55,10 L60,15 L65,8 L70,15 L75,9 L80,12 L85,5 L90,8 L95,3 L100,5" fill="none" stroke="#198754" stroke-width="1" />
+                                    <circle cx="85" cy="5" r="2" fill="#198754" />
+                                </svg>
+                            </div>
+                            
+                            <!-- Animated Pulse Point -->
+                            <div class="position-absolute" style="top: 40%; right: 15%; width: 8px; height: 8px; background-color: #198754; border-radius: 50%; box-shadow: 0 0 0 rgba(25,135,84,0.4); animation: pulse-ring 2s infinite;">
+                            </div>
+                            
+                            <!-- Time markers -->
+                            <div class="position-absolute" style="bottom: 5px; left: 0; width: 100%; display: flex; justify-content: space-between; padding: 0 10px;">
+                                <small class="text-muted" style="font-size: 8px;">09:00</small>
+                                <small class="text-muted" style="font-size: 8px;">12:00</small>
+                                <small class="text-muted" style="font-size: 8px;">15:30</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Signal Indicators -->
+                        <div class="mt-3 d-flex justify-content-between align-items-center">
+                            <div class="badge bg-primary text-white px-3 py-2 rounded-pill"><i class="bi bi-hand-thumbs-up me-1"></i>Buy Signal</div>
+                            <div>
+                                <div class="text-muted small mb-1">AI Confidence:</div>
+                                <div class="progress" style="height: 6px; width: 100px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 87%"></div>
+                                </div>
+                                <div class="text-end mt-1">
+                                    <small class="text-success fw-bold">87%</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Signal Alert -->
+                    <div class="position-absolute" style="top: 30px; left: -20px; width: 160px; z-index: 1;">
+                        <div class="p-3 bg-white rounded-3 shadow-lg" style="border-left: 4px solid #0d6efd;">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-circle p-2 me-2">
+                                    <i class="bi bi-lightning-fill"></i>
+                                </div>
+                                <div>
+                                    <small class="fw-bold">Signal Alert</small>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-success me-1">BUY</span>
+                                        <span class="small">TLKM</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Return Rate -->
+                    <div class="position-absolute" style="bottom: 20px; right: -30px; width: 140px; z-index: 1;">
+                        <div class="p-3 bg-white rounded-3 shadow-lg text-center" style="border-top: 4px solid #198754;">
+                            <div class="small fw-bold mb-2">Return Rate</div>
+                            <div class="fs-3 fw-bold text-success">+27%</div>
+                            <div class="small text-muted">Annual</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Mini Alert -->
+                    <div class="position-absolute" style="top: 50%; right: -15px; transform: translateY(-50%); z-index: 1;">
+                        <div class="bg-warning text-dark p-2 rounded-circle shadow-lg" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; animation: pulse 2s infinite;">
+                            <i class="bi bi-bell-fill"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional decorative elements -->
+                <div class="position-absolute" style="bottom: -30px; left: 50%; transform: translateX(-50%); z-index: 0;">
+                    <div class="d-flex">
+                        <div class="bg-white shadow-sm rounded-circle mx-1" style="width: 8px; height: 8px;"></div>
+                        <div class="bg-primary shadow-sm rounded-circle mx-1" style="width: 8px; height: 8px;"></div>
+                        <div class="bg-white shadow-sm rounded-circle mx-1" style="width: 8px; height: 8px;"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+
+<!-- Trading Signals Section -->
+<section class="container mb-5 py-5">
+    <h2 class="text-center section-title" data-aos="fade-up">ZAHAAM <span class="gradient-text">Trading Signals</span></h2>
+    <p class="text-center text-muted mb-5" data-aos="fade-up" data-aos-delay="100">Dapatkan sinyal trading yang akurat untuk membuat keputusan investasi yang tepat</p>
+    
+    <div class="row g-4">
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card signal-card">
+                <div class="card-header text-center py-3">
+                    <h4 class="mb-0">Sinyal Harian</h4>
+                    <i class="bi bi-calendar-check card-header-icon"></i>
+                </div>
+                <div class="card-body text-center">
+                    <div class="signal-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <h5>Analisis Pasar Harian</h5>
+                    <p class="text-muted">Dapatkan sinyal trading harian berdasarkan analisis teknikal dan fundamental terkini</p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">Prediksi pergerakan harga</li>
+                        <li class="list-group-item">Rekomendasi Buy/Sell/Hold</li>
+                        <li class="list-group-item">Support & Resistance level</li>
+                        <li class="list-group-item">Tingkat kepercayaan analisis</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline-primary">Lihat Contoh</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="card signal-card">
+                <div class="card-header text-center py-3">
+                    <h4 class="mb-0">Sinyal AI</h4>
+                    <i class="bi bi-cpu card-header-icon"></i>
+                </div>
+                <div class="card-body text-center">
+                    <div class="signal-icon">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                    <h5>Prediksi Machine Learning</h5>
+                    <p class="text-muted">Sinyal trading berdasarkan algoritma AI yang dilatih dengan data historis pasar</p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">Prediksi pergerakan 3-7 hari</li>
+                        <li class="list-group-item">Target harga jangka pendek</li>
+                        <li class="list-group-item">Prediksi volatilitas</li>
+                        <li class="list-group-item">Skor probabilitas 0-100%</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline-primary">Lihat Demo</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="400">
+            <div class="card signal-card">
+                <div class="card-header text-center py-3">
+                    <h4 class="mb-0">Sinyal Screener</h4>
+                    <i class="bi bi-filter-square card-header-icon"></i>
+                </div>
+                <div class="card-body text-center">
+                    <div class="signal-icon">
+                        <i class="bi bi-filter-square"></i>
+                    </div>
+                    <h5>Screener Saham Otomatis</h5>
+                    <p class="text-muted">Temukan saham potensial dengan filter screener yang dioptimalkan untuk berbagai strategi</p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">Filter fundamental terbaik</li>
+                        <li class="list-group-item">Screener pola teknikal</li>
+                        <li class="list-group-item">Filter momentum & trend</li>
+                        <li class="list-group-item">20+ kriteria penyaringan</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline-primary">Mulai Screener</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Market Overview -->
+<section class="container mb-5">
+    <h2 class="text-center mb-4">Market Overview</h2>
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Indonesia Stock Exchange (IDX)</h5>
+                    <span class="badge bg-primary">Live</span>
+                </div>
+                <div class="card-body pb-2">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h2 class="mb-0 fs-3">7,128.72</h2>
+                            <div class="price-up">
+                                <i class="bi bi-caret-up-fill"></i> +42.64 (+0.60%)
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-muted small mb-1">Volume</div>
+                            <div class="fw-bold">8.92B</div>
+                        </div>
+                    </div>
+                    <!-- Area Chart -->
+                    <div id="idxChart" style="height: 180px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <!-- Top Gainers -->
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Top Gainers</h5>
+                    <span class="badge bg-success">Today</span>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold">BBCA</div>
+                                    <div class="small">Bank Central Asia</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>9,525</div>
+                                    <div class="price-up">+3.53%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold">TLKM</div>
+                                    <div class="small">Telkom Indonesia</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>4,120</div>
+                                    <div class="price-up">+3.00%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold">BBRI</div>
+                                    <div class="small">Bank Rakyat Indonesia</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>4,570</div>
+                                    <div class="price-up">+2.46%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold">ASII</div>
+                                    <div class="small">Astra International</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>5,775</div>
+                                    <div class="price-up">+2.21%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="dashboard.html#stocks-table" class="small text-primary">View All Gainers</a>
+                                <i class="bi bi-arrow-right-short"></i>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Top Losers -->
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Top Losers</h5>
+                    <span class="badge bg-danger">Today</span>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold">EXCL</div>
+                                    <div class="small">XL Axiata</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>2,150</div>
+                                    <div class="price-down">-5.29%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold">KLBF</div>
+                                    <div class="small">Kalbe Farma</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>1,475</div>
+                                    <div class="price-down">-4.84%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold">INDF</div>
+                                    <div class="small">Indofood Sukses Makmur</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>6,225</div>
+                                    <div class="price-down">-3.86%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold">UNVR</div>
+                                    <div class="small">Unilever Indonesia</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>3,790</div>
+                                    <div class="price-down">-3.32%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="dashboard.html#stocks-table" class="small text-primary">View All Losers</a>
+                                <i class="bi bi-arrow-right-short"></i>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose ZAHAAM Section -->
+<section class="container mb-5 py-5">
+    <h2 class="text-center section-title" data-aos="fade-up">Mengapa Memilih <span class="gradient-text">ZAHAAM</span></h2>
+    <p class="text-center text-muted mb-5" data-aos="fade-up" data-aos-delay="100">Platform trading analisis & prediksi saham terbaik di Indonesia</p>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card benefit-card p-4">
+                <div class="benefit-card-number">01</div>
+                <div class="text-center">
+                    <div class="benefit-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4>Akurasi Tinggi</h4>
+                    <p class="text-muted">Algoritma AI ZAHAAM memiliki tingkat akurasi lebih dari 85% dalam memprediksi tren pergerakan harga saham</p>
+                    <ul class="list-unstyled text-start">
+                        <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Model AI dilatih dengan data 10+ tahun</li>
+                        <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Diperbarui secara real-time</li>
+                        <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Evaluasi & pengujian berkelanjutan</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card benefit-card p-4">
+                <div class="benefit-card-number">02</div>
+                <div class="text-center">
+                    <div class="benefit-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <h4>Kemudahan Penggunaan</h4>
+                    <p class="text-muted">Dirancang dengan antarmuka yang intuitif untuk trader pemula hingga profesional</p>
+                    <ul class="list-unstyled text-start">
+                        <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Dashboard yang informatif</li>
+                        <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Sinyal trading yang jelas</li>
+                        <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Tutorial dan panduan lengkap</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card benefit-card p-4">
+                <div class="benefit-card-number">03</div>
+                <div class="text-center">
+                    <div class="benefit-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h4>Hasil Terbukti</h4>
+                    <p class="text-muted">Ribuan trader telah meningkatkan performa portofolio mereka dengan ZAHAAM</p>
+                    <ul class="list-unstyled text-start">
+                        <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Rata-rata return 27% per tahun</li>
+                        <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Mengurangi risiko trading hingga 40%</li>
+                        <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Testimoni dari trader profesional</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row" data-aos="fade-up">
+            <div class="col-md-3">
+                <div class="counter-card">
+                    <h2 class="animated-number">25,000+</h2>
+                    <p class="text-muted">Pengguna Aktif</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="counter-card">
+                    <h2 class="animated-number">85%</h2>
+                    <p class="text-muted">Akurasi Prediksi</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="counter-card">
+                    <h2 class="animated-number">150+</h2>
+                    <p class="text-muted">Saham Dianalisis</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="counter-card">
+                    <h2 class="animated-number">27%</h2>
+                    <p class="text-muted">Return Rata-rata</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="container mb-5 py-5">
+    <h2 class="text-center section-title" data-aos="fade-up">Testimoni <span class="gradient-text">Pengguna</span></h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="testimonial-card">
+                <div class="d-flex align-items-center">
+                    <img src="assets/images/testimonial-1.jpg" alt="User" class="testimonial-img me-3">
+                    <div>
+                        <h5 class="mb-0">Budi Santoso</h5>
+                        <small class="text-muted">Full-time Trader</small>
+                    </div>
+                </div>
+                <p class="testimonial-quote">"Sejak menggunakan ZAHAAM, performa trading saya meningkat signifikan. Sinyal yang akurat dan analisis mendalam sangat membantu dalam pengambilan keputusan."</p>
+                <div class="text-warning">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="testimonial-card">
+                <div class="d-flex align-items-center">
+                    <img src="assets/images/testimonial-2.jpg" alt="User" class="testimonial-img me-3">
+                    <div>
+                        <h5 class="mb-0">Siti Rahayu</h5>
+                        <small class="text-muted">Investor Pemula</small>
+                    </div>
+                </div>
+                <p class="testimonial-quote">"Platform yang sangat user-friendly bahkan untuk pemula seperti saya. Saya bisa memahami pasar saham dengan lebih baik dan membuat keputusan investasi yang lebih cerdas."</p>
+                <div class="text-warning">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-half"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="testimonial-card">
+                <div class="d-flex align-items-center">
+                    <img src="assets/images/testimonial-3.jpg" alt="User" class="testimonial-img me-3">
+                    <div>
+                        <h5 class="mb-0">Arief Wicaksono</h5>
+                        <small class="text-muted">Analis Keuangan</small>
+                    </div>
+                </div>
+                <p class="testimonial-quote">"Sebagai analis, saya sangat terkesan dengan kedalaman data dan tools analisis yang disediakan ZAHAAM. Fitur backtesting strategi sangat powerful."</p>
+                <div class="text-warning">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5 text-center">
+                    <h3 class="mb-4">Siap memulai perjalanan trading Anda?</h3>
+                    <p class="lead mb-4">Bergabunglah dengan ribuan trader yang telah menggunakan platform ZAHAAM</p>
+                    <a href="register.html" class="btn btn-primary btn-lg px-5">Daftar Sekarang</a>
+                    <p class="mt-3 small text-muted">Tersedia versi free trial selama 14 hari</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="d-flex align-items-center mb-3">
+                    <h4 class="mb-0 me-2">ZAHAAM</h4>
+                    <span class="badge bg-primary">Beta</span>
+                </div>
+                <p class="text-muted mb-3" data-translate="advanced_stock_platform">Platform Analisis & Prediksi Saham Tingkat Lanjut yang didukung oleh teknologi machine learning dan AI.</p>
+                <div class="social-icons">
+                    <a href="#" class="me-3"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-github"></i></a>
+                    <a href="#"><i class="bi bi-envelope-fill"></i></a>
+                </div>
+            </div>
+            <div class="col-md-2 col-6 mb-4 mb-md-0">
+                <h6 class="fw-bold mb-3" data-translate="platform">Platform</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="index.html" class="footer-link"><i class="bi bi-house-door me-2"></i><span data-translate="home">Beranda</span></a></li>
+                    <li class="mb-2"><a href="dashboard.html" class="footer-link"><i class="bi bi-grid-1x2 me-2"></i><span data-translate="dashboard">Dashboard</span></a></li>
+                    <li class="mb-2"><a href="stock-basic.html" class="footer-link"><i class="bi bi-graph-up me-2"></i><span data-translate="stocks">Saham</span></a></li>
+                    <li class="mb-2"><a href="prediction.html" class="footer-link"><i class="bi bi-magic me-2"></i><span data-translate="predictions">Prediksi</span></a></li>
+                </ul>
+            </div>
+            <div class="col-md-2 col-6 mb-4 mb-md-0">
+                <h6 class="fw-bold mb-3" data-translate="resources">Sumber Daya</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-journal-text me-2"></i><span data-translate="docs">Dokumentasi</span></a></li>
+                    <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-code-slash me-2"></i>API</a></li>
+                    <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-mortarboard me-2"></i><span data-translate="learn">Pembelajaran</span></a></li>
+                    <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-question-circle me-2"></i><span data-translate="help">Bantuan</span></a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6 class="fw-bold mb-3" data-translate="subscribe_newsletter">Berlangganan Newsletter</h6>
+                <p class="text-muted small mb-3" data-translate="get_updates">Dapatkan update mingguan tentang wawasan pasar dan fitur platform ZAHAAM.</p>
+                <form>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Alamat email Anda" data-translate="your_email" aria-label="Email">
+                        <button class="btn btn-primary" type="button" data-translate="subscribe">Berlangganan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <hr class="my-4">
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start">
+                <p class="small text-muted mb-0">© 2025 ZAHAAM. <span data-translate="all_rights_reserved">Hak cipta dilindungi undang-undang.</span></p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <ul class="list-inline mb-0">
+                    <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="privacy_policy">Kebijakan Privasi</a></li>
+                    <li class="list-inline-item">•</li>
+                    <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="terms_of_service">Ketentuan Layanan</a></li>
+                    <li class="list-inline-item">•</li>
+                    <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="sitemap">Peta Situs</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ApexCharts JS -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<!-- Area Chart for IDX -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Data untuk area chart (IDX Composite selama 30 hari terakhir)
+        const idxData = [
+            { x: new Date('2025-05-01').getTime(), y: 7010 },
+            { x: new Date('2025-05-02').getTime(), y: 7032 },
+            { x: new Date('2025-05-03').getTime(), y: 7045 },
+            { x: new Date('2025-05-04').getTime(), y: 7035 },
+            { x: new Date('2025-05-05').getTime(), y: 7055 },
+            { x: new Date('2025-05-06').getTime(), y: 7048 },
+            { x: new Date('2025-05-07').getTime(), y: 7060 },
+            { x: new Date('2025-05-08').getTime(), y: 7075 },
+            { x: new Date('2025-05-09').getTime(), y: 7070 },
+            { x: new Date('2025-05-10').getTime(), y: 7078 },
+            { x: new Date('2025-05-11').getTime(), y: 7085 },
+            { x: new Date('2025-05-12').getTime(), y: 7065 },
+            { x: new Date('2025-05-13').getTime(), y: 7072 },
+            { x: new Date('2025-05-14').getTime(), y: 7080 },
+            { x: new Date('2025-05-15').getTime(), y: 7090 },
+            { x: new Date('2025-05-16').getTime(), y: 7083 },
+            { x: new Date('2025-05-17').getTime(), y: 7091 },
+            { x: new Date('2025-05-18').getTime(), y: 7088 },
+            { x: new Date('2025-05-19').getTime(), y: 7097 },
+            { x: new Date('2025-05-20').getTime(), y: 7103 },
+            { x: new Date('2025-05-21').getTime(), y: 7098 },
+            { x: new Date('2025-05-22').getTime(), y: 7087 },
+            { x: new Date('2025-05-23').getTime(), y: 7091 },
+            { x: new Date('2025-05-24').getTime(), y: 7086 },
+            { x: new Date('2025-05-25').getTime(), y: 7095 },
+            { x: new Date('2025-05-26').getTime(), y: 7105 },
+            { x: new Date('2025-05-27').getTime(), y: 7112 },
+            { x: new Date('2025-05-28').getTime(), y: 7094 },
+            { x: new Date('2025-05-29').getTime(), y: 7086 },
+            { x: new Date('2025-05-30').getTime(), y: 7129 }
+        ];
+        
+        // Konfigurasi chart
+        const options = {
+            series: [{
+                name: 'IDX Composite',
+                data: idxData
+            }],
+            chart: {
+                type: 'area',
+                height: 180,
+                toolbar: {
+                    show: false
+                },
+                sparkline: {
+                    enabled: false
+                },
+                zoom: {
+                    enabled: false
+                },
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+            colors: ['#0d6efd'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1,
+                    stops: [0, 100]
+                }
+            },
+            markers: {
+                size: 0
+            },
+            grid: {
+                show: false,
+                padding: {
+                    left: 0,
+                    right: 0
+                }
+            },
+            xaxis: {
+                type: 'datetime',
+                labels: {
+                    show: false
+                },
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false
+                },
+                tooltip: {
+                    enabled: false
+                }
+            },
+            yaxis: {
+                labels: {
+                    show: false
+                },
+                min: 7000,
+                max: 7150
+            },
+            tooltip: {
+                x: {
+                    format: 'dd MMM yyyy'
+                },
+                y: {
+                    formatter: function(val) {
+                        return val.toFixed(2);
+                    }
+                },
+                theme: 'light'
+            },
+            dataLabels: {
+                enabled: false
+            }
+        };
+        
+        // Inisialisasi chart
+        const chart = new ApexCharts(document.querySelector("#idxChart"), options);
+        chart.render();
+    });
+</script>
+
+<!-- Initialize AOS and Particles.js -->
+<script>
+    // Initialize AOS (Animate on Scroll)
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false
+        });
+        
+        // Initialize Particles.js
+        if (typeof particlesJS !== 'undefined') {
+            particlesJS('particles-js', {
+                particles: {
+                    number: {
+                        value: 80,
+                        density: {
+                            enable: true,
+                            value_area: 800
+                        }
+                    },
+                    color: {
+                        value: '#0d6efd'
+                    },
+                    shape: {
+                        type: 'circle',
+                        stroke: {
+                            width: 0,
+                            color: '#000000'
+                        },
+                        polygon: {
+                            nb_sides: 5
+                        }
+                    },
+                    opacity: {
+                        value: 0.3,
+                        random: false,
+                        anim: {
+                            enable: false,
+                            speed: 1,
+                            opacity_min: 0.1,
+                            sync: false
+                        }
+                    },
+                    size: {
+                        value: 3,
+                        random: true,
+                        anim: {
+                            enable: false,
+                            speed: 40,
+                            size_min: 0.1,
+                            sync: false
+                        }
+                    },
+                    line_linked: {
+                        enable: true,
+                        distance: 150,
+                        color: '#0d6efd',
+                        opacity: 0.2,
+                        width: 1
+                    },
+                    move: {
+                        enable: true,
+                        speed: 2,
+                        direction: 'none',
+                        random: false,
+                        straight: false,
+                        out_mode: 'out',
+                        bounce: false,
+                        attract: {
+                            enable: false,
+                            rotateX: 600,
+                            rotateY: 1200
+                        }
+                    }
+                },
+                interactivity: {
+                    detect_on: 'canvas',
+                    events: {
+                        onhover: {
+                            enable: true,
+                            mode: 'grab'
+                        },
+                        onclick: {
+                            enable: true,
+                            mode: 'push'
+                        },
+                        resize: true
+                    },
+                    modes: {
+                        grab: {
+                            distance: 140,
+                            line_linked: {
+                                opacity: 0.5
+                            }
+                        },
+                        push: {
+                            particles_nb: 4
+                        }
+                    }
+                },
+                retina_detect: true
+            });
+        }
+    });
+</script>
+</body>
+</html>

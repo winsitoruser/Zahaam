@@ -391,7 +391,7 @@ async def get_latest_stock_data(db, ticker, fetch_if_outdated=False):
     # This maintains the API -> DB -> Frontend flow
     return latest_price, latest_indicator
 
-async def fetch_and_save_single_stock(db, ticker):
+async def fetch_and_save_single_stock(db, ticker, interval="1d"):
     """Fetch and save data for a single stock following the API -> DB -> Frontend flow
     
     This function implements the flow where:
@@ -399,11 +399,29 @@ async def fetch_and_save_single_stock(db, ticker):
     2. Saved directly to database
     3. No direct return to frontend (that's handled by separate endpoints)
     4. If API fails, no action needed as endpoints already return DB data
+    
+    Parameters:
+    - db: Database session
+    - ticker: Stock ticker symbol (e.g., 'BBCA.JK')
+    - interval: Data interval (default: '1d', options: '1d', '1h', '15m', '5m')
     """
     try:
         # Fetch data from Yahoo Finance
         try:
-            df, info = fetch_yahoo_data(ticker, period="1y", interval="1d")
+            # Penentuan period berdasarkan interval untuk keseimbangan data
+            if interval == "1d":
+                period = "1y"
+            elif interval == "1h":
+                period = "7d"
+            elif interval == "15m":
+                period = "5d"
+            elif interval == "5m":
+                period = "1d"
+            else:
+                period = "1y"
+                
+            logger.info(f"Fetching {ticker} data with interval={interval}, period={period}")
+            df, info = fetch_yahoo_data(ticker, period=period, interval=interval)
             
             # Reset index to include Date as a column
             df = df.reset_index()

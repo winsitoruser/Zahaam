@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Form, Modal, Spinner, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Form, Badge, Modal, Spinner, Alert } from 'react-bootstrap';
+import axios from 'axios';
 import Chart from 'react-apexcharts';
 import { formatCurrency, formatNumber, getValueColor } from '../services/api';
 
@@ -23,11 +24,10 @@ const Portfolio = () => {
         setLoading(true);
         
         // In a real app, this would come from an API or database
-        // For now, we'll use localStorage
-        const savedPortfolio = localStorage.getItem('stockPortfolio');
+        const response = await axios.get('/stocks/db');
         
-        if (savedPortfolio) {
-          setPortfolio(JSON.parse(savedPortfolio));
+        if (response.data) {
+          setPortfolio(response.data);
         } else {
           // Sample portfolio data
           const samplePortfolio = [

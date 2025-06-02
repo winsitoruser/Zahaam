@@ -106,6 +106,7 @@ async def get_latest_stock_prices(db: Session = Depends(get_db)):
 async def get_stock_data_from_db(
     ticker: str, 
     days: int = 365, 
+    interval: str = "1d",
     auto_refresh: bool = True,
     db: Session = Depends(get_db)
 ):
@@ -120,6 +121,7 @@ async def get_stock_data_from_db(
     Parameters:
     - ticker: Stock ticker symbol (e.g., 'BBCA.JK')
     - days: Number of days of historical data to return (default: 365)
+    - interval: Data interval (default: '1d', options: '1d', '1h', '15m', '5m')
     - auto_refresh: Whether to automatically trigger refresh for outdated data (default: True)
     """
     # Find the stock in the database
@@ -136,25 +138,40 @@ async def get_stock_data_from_db(
     end_date = datetime.now()
     start_date = end_date - timedelta(days=days)
     
-    # Query stock prices
-    prices = (
+    # Check if the database schema has the interval column
+    from sqlalchemy import inspect
+    inspector = inspect(db.get_bind())
+    has_interval_column = 'interval' in [col['name'] for col in inspector.get_columns('stock_prices')]
+    
+    # Query stock prices with appropriate interval filter
+    prices_query = (
         db.query(StockPrice)
         .filter(StockPrice.stock_id == stock.id)
         .filter(StockPrice.date >= start_date)
         .filter(StockPrice.date <= end_date)
-        .order_by(StockPrice.date)
-        .all()
     )
     
-    # Query indicators
-    indicators = (
+    # Add interval filter if the column exists
+    if has_interval_column:
+        prices_query = prices_query.filter(StockPrice.interval == interval)
+    
+    # Execute query and get all prices
+    prices = prices_query.order_by(StockPrice.date).all()
+    
+    # Query indicators with appropriate interval filter
+    indicators_query = (
         db.query(StockIndicator)
         .filter(StockIndicator.stock_id == stock.id)
         .filter(StockIndicator.date >= start_date)
         .filter(StockIndicator.date <= end_date)
-        .order_by(StockIndicator.date)
-        .all()
     )
+    
+    # Add interval filter if the column exists
+    if has_interval_column:
+        indicators_query = indicators_query.filter(StockIndicator.interval == interval)
+    
+    # Execute query and get all indicators
+    indicators = indicators_query.order_by(StockIndicator.date).all()
     
     # Create a map of date to indicator for easy lookup
     indicator_map = {indicator.date.strftime('%Y-%m-%d'): indicator for indicator in indicators}
@@ -235,7 +252,8 @@ async def get_stock_data_from_db(
 async def refresh_stock_data(
     ticker: str,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    interval: str = "1d"
 ):
     """
     Refresh stock data for a specific ticker
@@ -244,6 +262,10 @@ async def refresh_stock_data(
     1. API → DB → Frontend
     2. Returns current DB data immediately
     3. Triggers background refresh for future requests
+    
+    Parameters:
+    - ticker: Stock ticker symbol (e.g., 'BBCA.JK')
+    - interval: Data interval (default: '1d', options: '1d', '1h', '15m', '5m')
     """
     # Check if ticker exists
     stock = db.query(Stock).filter(Stock.ticker == ticker).first()
@@ -251,7 +273,7 @@ async def refresh_stock_data(
         raise HTTPException(status_code=404, detail="Stock not found")
     
     # Add the fetch job to background tasks
-    background_tasks.add_task(fetch_and_save_single_stock, db, ticker)
+    background_tasks.add_task(fetch_and_save_single_stock, db, ticker, interval)
     
     # Get current data from DB to return immediately
     latest_price, latest_indicator = await get_latest_stock_data(db, ticker, fetch_if_outdated=False)

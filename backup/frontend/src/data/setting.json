@@ -1,0 +1,80 @@
+{
+  "siteInfo": {
+    "pageTitle": "Liquid HTML5 Template",
+    "metaDescription": "Premium HTML5 Template by Indonez",
+    "metaKeywords": [
+      "blockit",
+      "uikit3",
+      "indonez",
+      "handlebars",
+      "scss",
+      "javascript"
+    ],
+    "metaAuthor": "Indonez",
+    "metaThemeColor": "#E9E8F0",
+    "favicon": "img/favicon.ico",
+    "touchIcon": "img/apple-touch-icon.png"
+  },
+  "colors": {
+    "primaryColor": "#FD6A4F",
+    "secondaryColor": "#463A5C",
+    "successColor": "#3BD297",
+    "infoColor": "#1980EC",
+    "warningColor": "#FAA05A",
+    "dangerColor": "#EE4F6F",
+    "lightColor": "#E9E8F0",
+    "darkColor": "#3F3453",
+    "backgroundColor": "#FFFFFF",
+    "bodyColor": "#717070",
+    "linkColor": "#FD6A4F"
+  },
+  "authors": [
+    {
+      "id": "2LKIG3",
+      "name": "Indonez",
+      "email": "templates@indonez.com",
+      "avatar": "img/blockit/in-avatar.svg",
+      "bio": "Freelancer SEO copywriter who’s \"extremely good at one thing\" helping companies rank for their target keywords."
+    },
+    {
+      "id": "tXeY2N",
+      "name": "Warren Wong",
+      "email": "warren@email.com",
+      "avatar": "img/user/author-85z9UC.jpg",
+      "bio": "Political anthropologist whose work is focused on contextualizing the force and consequences of governance through time."
+    }
+  ],
+  "blog": {
+    "asBlog": [
+      "blog",
+      "blog"
+    ],
+    "categories": [
+      "Health",
+      "Politics",
+      "Technology",
+      "Travel",
+      "Investing"
+    ],
+    "postPerPage": "3",
+    "showWidgets": {
+      "allHide": false,
+      "search": true,
+      "categories": true,
+      "latestPosts": true,
+      "tags": true
+    },
+    "displayAuthor": true,
+    "displayTag": true,
+    "displayShareButtons": true,
+    "disqussShortname": "html-demo"
+  },
+  "optimization": {
+    "minifyAssets": {
+      "html": false,
+      "css": false,
+      "js": false
+    },
+    "preloadCritical": true
+  }
+}

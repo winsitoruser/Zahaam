@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indonesian Stocks List - ZAHAAM Stock</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="css/zahaam-styles.css" rel="stylesheet">
+    <!-- Custom Styles for Stock List -->
+    <style>
+        .stock-table th {
+            font-weight: 600;
+            color: var(--dark);
+            border-top: none;
+            padding: 1rem 0.75rem;
+        }
+        
+        .stock-table td {
+            padding: 1rem 0.75rem;
+            vertical-align: middle;
+        }
+        
+        .stock-row {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .stock-row:hover {
+            background-color: rgba(58, 123, 213, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        .stock-symbol {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .stock-price {
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+        
+        .market-cap-pill {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+        
+        .market-cap-large {
+            background-color: rgba(0, 200, 83, 0.1);
+            color: var(--success);
+        }
+        
+        .market-cap-medium {
+            background-color: rgba(33, 150, 243, 0.1);
+            color: var(--info);
+        }
+        
+        .market-cap-small {
+            background-color: rgba(255, 171, 0, 0.1);
+            color: var(--warning);
+        }
+        
+        .sector-pill {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+            font-weight: 500;
+            background-color: var(--light);
+        }
+        
+        .pagination-zahaam {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .page-item:not(:first-child) .page-link {
+            margin-left: 5px;
+        }
+        
+        .page-link {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50% !important;
+            border: none;
+            color: var(--dark);
+            font-weight: 500;
+            background-color: transparent;
+        }
+        
+        .page-link:hover {
+            background-color: rgba(58, 123, 213, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .page-item.disabled .page-link {
+            background-color: transparent;
+            color: var(--medium);
+        }
+        
+        .favorite-star {
+            color: var(--light-dark);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .favorite-star:hover, .favorite-star.active {
+            color: var(--warning);
+        }
+        
+        .stock-filter-card {
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+        }
+        
+        .skeleton-loader {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            height: 24px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+        
+        .dark-mode .skeleton-loader {
+            background: linear-gradient(90deg, #2e2e2e 25%, #393939 50%, #2e2e2e 75%);
+            background-size: 200% 100%;
+        }
+        
+        .dark-mode .sector-pill {
+            background-color: var(--dark-medium);
+            color: var(--light);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-zahaam">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">ZAHAAM</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="stocks.html">Stocks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="prediction.html">AI Prediction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="strategy.html">Trading Strategy</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <div class="dark-mode-toggle me-3">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </div>
+                    <a href="profile.html" class="btn btn-outline-light me-2">
+                        <i class="bi bi-person-circle"></i> Profile
+                    </a>
+                    <a href="#" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-7">
+                <h2 class="mb-2">Indonesian Stocks</h2>
+                <p class="text-muted">Browse and analyze stocks listed on the Indonesia Stock Exchange (IDX)</p>
+            </div>
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Search by symbol or company name">
+                    <button class="btn btn-primary" type="button" id="searchButton">
+                        Search
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Card -->
+        <div class="card stock-filter-card">
+            <div class="card-body p-3">
+                <div class="row align-items-center">
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <label for="sectorFilter" class="form-label">Sector</label>
+                        <select class="form-select" id="sectorFilter">
+                            <option value="all">All Sectors</option>
+                            <option value="Banking">Banking</option>
+                            <option value="Consumer Goods">Consumer Goods</option>
+                            <option value="Infrastructure">Infrastructure</option>
+                            <option value="Mining">Mining</option>
+                            <option value="Property">Property</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Telecommunications">Telecommunications</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <label for="marketCapFilter" class="form-label">Market Cap</label>
+                        <select class="form-select" id="marketCapFilter">
+                            <option value="all">All Caps</option>
+                            <option value="large">Large Cap (>10T)</option>
+                            <option value="medium">Mid Cap (1T-10T)</option>
+                            <option value="small">Small Cap (<1T)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <label for="sortBy" class="form-label">Sort By</label>
+                        <select class="form-select" id="sortBy">
+                            <option value="symbol">Symbol (A-Z)</option>
+                            <option value="price">Price (High-Low)</option>
+                            <option value="change">% Change (High-Low)</option>
+                            <option value="volume">Volume (High-Low)</option>
+                            <option value="marketCap">Market Cap (High-Low)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end justify-content-end">
+                        <button class="btn btn-outline-primary me-2" id="resetFilters">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                        <button class="btn btn-primary" id="applyFilters">
+                            <i class="bi bi-funnel"></i> Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stocks Table Card -->
+        <div class="card mt-4">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-borderless stock-table mb-0">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Symbol</th>
+                                <th>Company</th>
+                                <th>Sector</th>
+                                <th class="text-end">Last Price</th>
+                                <th class="text-end">Change</th>
+                                <th class="text-end">Volume</th>
+                                <th class="text-end">Market Cap</th>
+                                <th class="text-end">P/E Ratio</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="stocksTableBody">
+                            <!-- Will be populated by JS -->
+                            <tr>
+                                <td colspan="10" class="text-center py-5">
+                                    <div class="spinner-zahaam"></div>
+                                    <p class="mt-3 text-muted">Loading stocks data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="pagination-zahaam">
+            <ul class="pagination" id="paginationContainer">
+                <!-- Will be populated by JS -->
+            </ul>
+        </nav>
+
+        <!-- Stock Market Info -->
+        <div class="row mt-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-info-circle me-2 text-primary"></i> 
+                            About IDX
+                        </h5>
+                        <p class="card-text">The Indonesia Stock Exchange (IDX) is the stock exchange of Indonesia, formed from the merger of the Jakarta Stock Exchange and the Surabaya Stock Exchange. It is one of the fastest growing stock exchanges in the Asia-Pacific region.</p>
+                        <p class="card-text text-muted">Trading Hours: 09:00 - 15:30 WIB (Monday - Friday)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-graph-up-arrow me-2 text-success"></i>
+                            Market Indices
+                        </h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>IDX Composite</span>
+                            <span class="fw-bold text-success">7,254.32 <small>+0.75%</small></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>LQ45</span>
+                            <span class="fw-bold text-success">976.89 <small>+0.82%</small></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>IDX30</span>
+                            <span class="fw-bold text-success">512.67 <small>+0.91%</small></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-star me-2 text-warning"></i>
+                            Most Active Stocks
+                        </h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="stock-symbol">BBRI</span>
+                            <span class="fw-bold text-success">4,580 <small>+2.5%</small></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="stock-symbol">TLKM</span>
+                            <span class="fw-bold text-success">3,780 <small>+1.2%</small></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="stock-symbol">ASII</span>
+                            <span class="fw-bold text-danger">5,900 <small>-0.8%</small></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="d-flex align-items-center mb-3">
+                        <h4 class="mb-0 me-2">ZAHAAM</h4>
+                        <span class="badge bg-primary">Beta</span>
+                    </div>
+                    <p class="text-muted mb-3" data-translate="advanced_stock_platform">Platform Analisis & Prediksi Saham Tingkat Lanjut yang didukung oleh teknologi machine learning dan AI.</p>
+                    <div class="social-icons">
+                        <a href="#" class="me-3"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="me-3"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="me-3"><i class="bi bi-github"></i></a>
+                        <a href="#"><i class="bi bi-envelope-fill"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-4 mb-md-0">
+                    <h6 class="fw-bold mb-3" data-translate="platform">Platform</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="index.html" class="footer-link"><i class="bi bi-house-door me-2"></i><span data-translate="home">Beranda</span></a></li>
+                        <li class="mb-2"><a href="dashboard.html" class="footer-link"><i class="bi bi-grid-1x2 me-2"></i><span data-translate="dashboard">Dashboard</span></a></li>
+                        <li class="mb-2"><a href="stock-basic.html" class="footer-link"><i class="bi bi-graph-up me-2"></i><span data-translate="stocks">Saham</span></a></li>
+                        <li class="mb-2"><a href="prediction.html" class="footer-link"><i class="bi bi-magic me-2"></i><span data-translate="predictions">Prediksi</span></a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 col-6 mb-4 mb-md-0">
+                    <h6 class="fw-bold mb-3" data-translate="resources">Sumber Daya</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-journal-text me-2"></i><span data-translate="docs">Dokumentasi</span></a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-code-slash me-2"></i>API</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-mortarboard me-2"></i><span data-translate="learn">Pembelajaran</span></a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-question-circle me-2"></i><span data-translate="help">Bantuan</span></a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold mb-3" data-translate="subscribe_newsletter">Berlangganan Newsletter</h6>
+                    <p class="text-muted small mb-3" data-translate="get_updates">Dapatkan update mingguan tentang wawasan pasar dan fitur platform ZAHAAM.</p>
+                    <form>
+                        <div class="input-group mb-3">
+                            <input type="email" class="form-control" placeholder="Alamat email Anda" data-translate="your_email" aria-label="Email">
+                            <button class="btn btn-primary" type="button" data-translate="subscribe">Berlangganan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="small text-muted mb-0">© 2025 ZAHAAM. <span data-translate="all_rights_reserved">Hak cipta dilindungi undang-undang.</span></p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="privacy_policy">Kebijakan Privasi</a></li>
+                        <li class="list-inline-item">•</li>
+                        <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="terms_of_service">Ketentuan Layanan</a></li>
+                        <li class="list-inline-item">•</li>
+                        <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="sitemap">Peta Situs</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/stock-list.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dark Mode Toggle
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            
+            // Check for saved dark mode preference
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            // Dark mode toggle event listener
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

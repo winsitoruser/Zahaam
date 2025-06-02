@@ -1,0 +1,114 @@
+[
+  {
+    "title": "Home",
+    "slug": "home",
+    "link": "index.html",
+    "dropdown": {
+      "child": [
+        {
+          "title": "Homepage 2",
+          "slug": "homepage-2",
+          "link": "homepage2.html",
+          "parent": "Home"
+        },
+        {
+          "title": "Homepage 3",
+          "slug": "homepage-3",
+          "link": "homepage3.html",
+          "parent": "Home"
+        },
+        {
+          "title": "Homepage 4",
+          "slug": "homepage-4",
+          "link": "homepage4.html",
+          "parent": "Home"
+        }
+      ]
+    }
+  },
+  {
+    "title": "Markets",
+    "slug": "markets",
+    "link": "markets.html"
+  },
+  {
+    "title": "Company",
+    "slug": "company",
+    "link": "#",
+    "dropdown": {
+      "child": [
+        {
+          "title": "About",
+          "slug": "about",
+          "link": "about.html",
+          "parent": "Company"
+        },
+        {
+          "title": "Blog",
+          "slug": "blog",
+          "link": "blog.html",
+          "parent": "Company"
+        },
+        {
+          "title": "Careers",
+          "slug": "careers",
+          "link": "careers.html",
+          "parent": "Company"
+        },
+        {
+          "title": "Contact",
+          "slug": "contact",
+          "link": "contact.html",
+          "parent": "Company"
+        }
+      ]
+    }
+  },
+  {
+    "title": "Education",
+    "slug": "education",
+    "link": "education.html"
+  },
+  {
+    "title": "Resources",
+    "slug": "resources",
+    "link": "#",
+    "dropdown": {
+      "child": [
+        {
+          "title": "Documentation",
+          "slug": "documentation",
+          "link": "https://getuikit.com/docs/introduction",
+          "parent": "Resources",
+          "icon": "fa-square-arrow-up-right"
+        },
+        {
+          "title": "Help Center",
+          "slug": "help-center",
+          "link": "help-center.html",
+          "parent": "Resources"
+        },
+        {
+          "title": "Customers",
+          "slug": "customers",
+          "link": "customers.html",
+          "parent": "Resources"
+        },
+        {
+          "title": "Roadmap",
+          "slug": "roadmap",
+          "link": "roadmap.html",
+          "parent": "Resources"
+        },
+        {
+          "title": "Legal Docs",
+          "slug": "legal-docs",
+          "link": "legal-docs.html",
+          "parent": "Resources",
+          "icon": "fa-gavel"
+        }
+      ],
+      "childText": "Adipiscing elit sed do eiusmod incididunt ut labore dolore magna lorem ipsum sit dolor amet consectetur"
+    }
+  }
+]

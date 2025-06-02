@@ -182,6 +182,9 @@ async def get_stock_data(ticker: str, period: str = "1y", interval: str = "1d"):
         df['SMA_50'] = ta.sma(df['Close'], length=50)
         df['RSI'] = ta.rsi(df['Close'])
         
+        # Replace NaN values with None for proper JSON serialization
+        df = df.replace({np.nan: None})
+        
         # Get company info
         info = stock.info
         company_info = {
@@ -198,6 +201,11 @@ async def get_stock_data(ticker: str, period: str = "1y", interval: str = "1d"):
             'fiftyTwoWeekLow': info.get('fiftyTwoWeekLow', 0),
             'fiftyTwoWeekHigh': info.get('fiftyTwoWeekHigh', 0),
         }
+        
+        # Replace any NaN values in company info with None
+        for key, value in company_info.items():
+            if isinstance(value, float) and np.isnan(value):
+                company_info[key] = None
         
         # Prepare response
         response = {

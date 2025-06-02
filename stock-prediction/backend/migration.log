@@ -1,0 +1,33 @@
+2025-06-01 06:40:33,205 - __main__ - INFO - ===== MEMULAI PROSES MIGRASI KE POSTGRESQL =====
+
+2025-06-01 06:40:33,207 - __main__ - ERROR - PostgreSQL connection failed: No module named 'psycopg2'
+2025-06-01 06:40:33,222 - __main__ - ERROR - Traceback (most recent call last):
+  File "D:\Zahaam\stock-prediction\backend\pg_migration.py", line 314, in test_connection
+    import psycopg2
+ModuleNotFoundError: No module named 'psycopg2'
+
+2025-06-01 06:40:33,222 - __main__ - ERROR - Koneksi ke PostgreSQL gagal. Silakan periksa kembali pengaturan koneksi.
+2025-06-01 06:41:21,345 - __main__ - INFO - ===== MEMULAI PROSES MIGRASI KE POSTGRESQL =====
+
+2025-06-01 06:41:21,763 - __main__ - INFO - Testing connection to PostgreSQL at localhost:5432...
+2025-06-01 06:41:25,866 - __main__ - ERROR - PostgreSQL connection failed: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-06-01 06:41:25,883 - __main__ - ERROR - Traceback (most recent call last):
+  File "D:\Zahaam\stock-prediction\backend\pg_migration.py", line 317, in test_connection
+    conn = psycopg2.connect(
+        host=pg_host,
+    ...<3 lines>...
+        port=pg_port
+    )
+  File "C:\Users\WINDOWS 11 PRO\AppData\Roaming\Python\Python313\site-packages\psycopg2\__init__.py", line 135, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+2025-06-01 06:41:25,884 - __main__ - ERROR - Koneksi ke PostgreSQL gagal. Silakan periksa kembali pengaturan koneksi.

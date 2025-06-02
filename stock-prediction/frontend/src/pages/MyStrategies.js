@@ -85,7 +85,7 @@ const MyStrategies = () => {
   const fetchMyStrategies = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8000/api/strategies');
+      const response = await axios.get('/strategies');
       setStrategies(response.data.strategies);
     } catch (err) {
       console.error('Error fetching strategies:', err);
@@ -97,7 +97,7 @@ const MyStrategies = () => {
 
   const fetchStrategyTemplates = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/strategy/templates');
+      const response = await axios.get('/strategy/templates');
       setStrategyTemplates(response.data.templates);
     } catch (err) {
       console.error('Error fetching strategy templates:', err);
@@ -107,7 +107,7 @@ const MyStrategies = () => {
   const handleCreateStrategy = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/strategy', formData);
+      const response = await axios.post('/strategy', formData);
       setShowModal(false);
       fetchMyStrategies(); // Refresh the list
 
@@ -125,7 +125,7 @@ const MyStrategies = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:8000/api/strategy/${strategyId}`);
+      await axios.delete(`/strategy/${strategyId}`);
       fetchMyStrategies(); // Refresh the list
     } catch (err) {
       console.error('Error deleting strategy:', err);
@@ -145,7 +145,7 @@ const MyStrategies = () => {
   const handleUpdateStrategy = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:8000/api/strategy/${currentStrategy.id}`, formData);
+      await axios.put(`/strategy/${currentStrategy.id}`, formData);
       setShowModal(false);
       fetchMyStrategies(); // Refresh the list
     } catch (err) {

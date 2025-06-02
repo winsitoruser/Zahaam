@@ -2,10 +2,10 @@ FROM node:16 AS build
 
 WORKDIR /app
 
-COPY frontend/package*.json ./
+COPY stock-prediction/frontend/package*.json ./
 RUN npm install
 
-COPY frontend/ ./
+COPY stock-prediction/frontend/ ./
 RUN npm run build
 
 # Use nginx to serve static files

@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAHAAM - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+        }
+        
+        /* Main Layout Container */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            margin-top: 56px; /* Tinggi navbar */
+        }
+        
+        .sidebar {
+            width: 240px;
+            flex-shrink: 0;
+            background-color: #fff;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            z-index: 1;
+            position: sticky;
+            top: 56px; /* Sama dengan margin-top main-layout */
+            height: calc(100vh - 56px);
+            overflow-y: auto;
+        }
+        
+        .sidebar-sticky {
+            padding-top: 1rem;
+        }
+        
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+            padding: 0.75rem 1rem;
+        }
+        
+        .sidebar .nav-link:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar .nav-link.active {
+            color: #0d6efd;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            min-width: 0; /* Penting untuk flexbox */
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+        .stat-card .stat-icon {
+            font-size: 3rem;
+            opacity: 0.2;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+        .price-up {
+            color: #198754;
+        }
+        .price-down {
+            color: #dc3545;
+        }
+        .ticker-symbol {
+            font-weight: 700;
+        }
+        .stock-name {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        #marketChartContainer, #volumeChartContainer {
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-zahaam fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">ZAHAAM</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html" data-translate="home">Beranda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="dashboard.html" data-translate="dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="stock-basic.html" data-translate="stocks">Saham</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="prediction.html" data-translate="ai_prediction">Prediksi AI</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="strategy.html" data-translate="trading_strategy">Strategi Trading</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <!-- Language Selector -->
+                <div class="me-3">
+                    <select id="languageSelector" class="form-select form-select-sm">
+                        <option value="id">ID</option>
+                        <option value="en">EN</option>
+                    </select>
+                </div>
+                
+                <div class="dark-mode-toggle me-3">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </div>
+                
+                <!-- Notification Component -->
+                <div class="dropdown me-3">
+                    <a class="btn btn-outline-light position-relative" href="#" role="button" id="notification-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notification-badge">
+                            0
+                        </span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" id="notification-dropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <!-- Notifications will be loaded here via JavaScript -->
+                    </div>
+                </div>
+                
+                <a href="profile.html" class="btn btn-outline-light me-2">
+                    <i class="bi bi-person-circle"></i> <span data-translate="profile">Profil</span>
+                </a>
+                <a href="#" class="btn btn-primary">
+                    <i class="bi bi-box-arrow-in-right"></i> <span data-translate="login">Masuk</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="main-layout">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-sticky">
+            <ul class="nav flex-column" id="sidebarMenu">
+                <li class="nav-item">
+                    <a class="nav-link active" href="dashboard.html">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="stock-basic.html">
+                    <i class="bi bi-graph-up"></i> Stock Details
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="stockListLink">
+                    <i class="bi bi-table"></i> Stock List
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="watchlist.html">
+                    <i class="bi bi-star"></i> Watchlist
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="prediction.html">
+                    <i class="bi bi-robot"></i> AI Predictions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="strategy.html">
+                    <i class="bi bi-gear"></i> Strategies
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="alerts.html">
+                    <i class="bi bi-bell"></i> Alerts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="reports.html">
+                    <i class="bi bi-file-text"></i> Reports
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="profile.html">
+                    <i class="bi bi-person"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="help.html">
+                    <i class="bi bi-question-circle"></i> Help
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h1 class="h2">Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                <i class="bi bi-calendar"></i> This week
+            </button>
+        </div>
+    </div>
+
+    <!-- Market Overview Stats -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="stat-card bg-primary">
+                    <i class="bi bi-graph-up stat-icon"></i>
+                    <h6 class="mb-3">IDX Composite</h6>
+                    <h3 class="mb-0">7,128.72</h3>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-caret-up-fill"></i> +42.64 (+0.60%)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="stat-card bg-success">
+                    <i class="bi bi-currency-exchange stat-icon"></i>
+                    <h6 class="mb-3">Trading Volume</h6>
+                    <h3 class="mb-0">8.92B</h3>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-caret-up-fill"></i> +15.3%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="stat-card bg-warning">
+                    <i class="bi bi-arrow-left-right stat-icon"></i>
+                    <h6 class="mb-3">Market Breadth</h6>
+                    <h3 class="mb-0">189:254</h3>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark">
+                            Adv:Dec
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="stat-card bg-info">
+                    <i class="bi bi-clock-history stat-icon"></i>
+                    <h6 class="mb-3">Last Updated</h6>
+                    <h3 class="mb-0" id="currentTime">16:30:00</h3>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark" id="currentDate">
+                            29 May 2025
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Chart -->
+    <div class="row mt-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">IDX Composite Performance</h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-primary active">1D</button>
+                        <button type="button" class="btn btn-outline-primary">1W</button>
+                        <button type="button" class="btn btn-outline-primary">1M</button>
+                        <button type="button" class="btn btn-outline-primary">3M</button>
+                        <button type="button" class="btn btn-outline-primary">1Y</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="marketChartContainer"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Movers</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="ticker-symbol">BBCA</div>
+                                    <div class="stock-name">Bank Central Asia</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>9,525</div>
+                                    <div class="price-up">+3.53%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="ticker-symbol">TLKM</div>
+                                    <div class="stock-name">Telkom Indonesia</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>4,120</div>
+                                    <div class="price-up">+3.00%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="ticker-symbol">BMRI</div>
+                                    <div class="stock-name">Bank Mandiri</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>6,250</div>
+                                    <div class="price-up">+2.46%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="ticker-symbol">EXCL</div>
+                                    <div class="stock-name">XL Axiata</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>2,150</div>
+                                    <div class="price-down">-5.29%</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="ticker-symbol">KLBF</div>
+                                    <div class="stock-name">Kalbe Farma</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>1,475</div>
+                                    <div class="price-down">-4.84%</div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Volume & Sector Performance -->
+    <div class="row mt-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Trading Volume</h5>
+                </div>
+                <div class="card-body">
+                    <div id="volumeChartContainer"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Sector Performance</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary active">Daily</button>
+                            <button type="button" class="btn btn-outline-secondary">Weekly</button>
+                            <button type="button" class="btn btn-outline-secondary">Monthly</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%">Sector</th>
+                                <th style="width: 20%" class="text-end">Change</th>
+                                <th style="width: 40%">Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Financial Services</td>
+                                <td class="price-up text-end">+1.82%</td>
+                                <td>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 62%" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Technology</td>
+                                <td class="price-up text-end">+1.45%</td>
+                                <td>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 55%" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Consumer Goods</td>
+                                <td class="price-up text-end">+0.92%</td>
+                                <td>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 38%" aria-valuenow="38" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Property & Real Estate</td>
+                                <td class="price-up text-end">+0.64%</td>
+                                <td>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 31%" aria-valuenow="31" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Mining</td>
+                                <td class="price-down text-end">-0.75%</td>
+                                <td>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 34%" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Agriculture</td>
+                                <td class="price-down text-end">-1.23%</td>
+                                <td>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 48%" aria-valuenow="48" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Predictions & Top Stocks -->
+    <div class="row mt-4">
+        <!-- Multi-Timeframe Predictions -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">AI Predictions & Signals</h5>
+                    <div>
+                        <select id="dashboardPredictionSymbol" class="form-select form-select-sm d-inline-block me-2" style="width: auto;">
+                            <option value="BBRI">BBRI</option>
+                            <option value="BBCA">BBCA</option>
+                            <option value="TLKM">TLKM</option>
+                            <option value="ASII">ASII</option>
+                            <option value="UNVR">UNVR</option>
+                        </select>
+                        <button id="refreshDashboardPredictions" class="btn btn-sm btn-primary">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="dashboardPredictionLoading" class="text-center py-4">
+                        <div class="spinner-zahaam mb-3"></div>
+                        <p class="text-muted">Loading prediction data...</p>
+                    </div>
+                    <div id="dashboardPredictionContent" style="display: none;">
+                        <!-- Chart for current prediction -->
+                        <div class="chart-container mb-3" style="height: 200px;">
+                            <div id="dashboardPredictionChart"></div>
+                        </div>
+                        
+                        <!-- Multi-timeframe signal cards -->
+                        <div class="row g-2" id="dashboardPredictionSignals">
+                            <!-- Will be populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top 5 Bullish Stocks -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Top 5 Saham Bullish</h5>
+                    <span class="badge bg-success">Strong Buy</span>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 20%">Kode</th>
+                                <th style="width: 35%">Nama</th>
+                                <th style="width: 20%" class="text-end">Harga</th>
+                                <th style="width: 25%" class="text-end">Sinyal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topBullishTableBody">
+                            <tr>
+                                <td colspan="4" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="ms-2">Memuat data sinyal trading...</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>ASII</strong></td>
+                                <td>Astra International</td>
+                                <td class="text-end">5,775</td>
+                                <td class="text-end">
+                                    <span class="badge bg-success d-inline-flex align-items-center">
+                                        <i class="bi bi-graph-up me-1"></i> Moderate
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>BMRI</strong></td>
+                                <td>Bank Mandiri</td>
+                                <td class="text-end">6,350</td>
+                                <td class="text-end">
+                                    <span class="badge bg-success d-inline-flex align-items-center">
+                                        <i class="bi bi-graph-up me-1"></i> Moderate
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Top 5 Saham Bearish</h5>
+                    <span class="badge bg-danger">Strong Sell</span>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 20%">Kode</th>
+                                <th style="width: 35%">Nama</th>
+                                <th style="width: 20%" class="text-end">Harga</th>
+                                <th style="width: 25%" class="text-end">Sinyal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topBearishTableBody">
+                            <tr>
+                                <td colspan="4" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="ms-2">Memuat data sinyal trading...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- News Row -->
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">News & Announcements</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-md-6 border-end">
+                            <div class="p-3">
+                                <a href="#" class="text-decoration-none">
+                                    <div class="d-flex w-100 justify-content-between mb-1">
+                                        <h6 class="mb-1 text-primary">IDX Introduces New Trading Rules</h6>
+                                        <small class="text-muted">2h ago</small>
+                                    </div>
+                                    <p class="mb-0 text-dark">Indonesia Stock Exchange announces new circuit breaker rules starting next month...</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3">
+                                <a href="#" class="text-decoration-none">
+                                    <div class="d-flex w-100 justify-content-between mb-1">
+                                        <h6 class="mb-1 text-primary">Bank Indonesia Holds Interest Rate</h6>
+                                        <small class="text-muted">5h ago</small>
+                                    </div>
+                                    <p class="mb-0 text-dark">Central bank keeps benchmark rate at 5.75% in line with market expectations...</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 border-end border-top">
+                            <div class="p-3">
+                                <a href="#" class="text-decoration-none">
+                                    <div class="d-flex w-100 justify-content-between mb-1">
+                                        <h6 class="mb-1 text-primary">BBRI Reports Strong Q1 Earnings</h6>
+                                        <small class="text-muted">9h ago</small>
+                                    </div>
+                                    <p class="mb-0 text-dark">Bank Rakyat Indonesia posts 15.7% increase in net profit compared to same period last year...</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 border-top">
+                            <div class="p-3">
+                                <a href="#" class="text-decoration-none">
+                                    <div class="d-flex w-100 justify-content-between mb-1">
+                                        <h6 class="mb-1 text-primary">Mining Sector Outperforms Market</h6>
+                                        <small class="text-muted">1d ago</small>
+                                    </div>
+                                    <p class="mb-0 text-dark">Rising commodity prices boost Indonesian mining stocks with sector index up 3.2% this week...</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Indonesian Stocks Table Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Daftar Saham Indonesia</h5>
+                        <div class="d-flex gap-2">
+                            <div class="input-group input-group-sm" style="width: 200px;">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control bg-light border-0" id="stockSearch" placeholder="Cari kode atau nama saham...">
+                            </div>
+                            <select class="form-select form-select-sm bg-light border-0" id="sectorFilter" style="width: 150px;">
+                                <option value="all">Semua Sektor</option>
+                            </select>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary">Top 10</button>
+                                <button type="button" class="btn btn-outline-primary">Semua</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stock-table-container border-top border-bottom">
+                    <table class="table table-hover table-sm mb-0" id="stocksTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th data-sort="code" width="70">Kode</th>
+                                <th data-sort="name" width="180">Nama</th>
+                                <th data-sort="sector" width="120">Sektor</th>
+                                <th data-sort="price" class="text-end" width="100">Harga</th>
+                                <th data-sort="change" class="text-end" width="80">%</th>
+                                <th data-sort="volume" class="text-end" width="100">Volume</th>
+                                <th class="text-center" width="60">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data akan diisi oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card-footer bg-white d-flex justify-content-between align-items-center py-2">
+                    <div>
+                        <small class="text-muted">Menampilkan <span id="currentPage">1</span> dari <span id="totalPages">1</span> halaman (<span id="totalStocks">0</span> saham)</small>
+                    </div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0" id="stocksPagination">
+                            <!-- Pagination akan diisi oleh JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div><!-- Tutup div main-content -->
+</div><!-- Tutup div main-layout -->
+
+<!-- Footer -->
+<footer class="footer py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="d-flex align-items-center mb-3">
+                    <h4 class="mb-0 me-2">ZAHAAM</h4>
+                    <span class="badge bg-primary">Beta</span>
+                </div>
+                <p class="text-muted mb-3" data-translate="advanced_stock_platform">Platform Analisis & Prediksi Saham Tingkat Lanjut yang didukung oleh teknologi machine learning dan AI.</p>
+                <div class="social-icons">
+                    <a href="#" class="me-3"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-github"></i></a>
+                    <a href="#"><i class="bi bi-envelope-fill"></i></a>
+                </div>
+            </div>
+            <div class="col-md-2 col-6 mb-4 mb-md-0">
+                <h6 class="fw-bold mb-3" data-translate="platform">Platform</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="index.html" class="footer-link"><i class="bi bi-house-door me-2"></i><span data-translate="home">Beranda</span></a></li>
+                    <li class="mb-2"><a href="dashboard.html" class="footer-link"><i class="bi bi-grid-1x2 me-2"></i><span data-translate="dashboard">Dashboard</span></a></li>
+                    <li class="mb-2"><a href="stock-basic.html" class="footer-link"><i class="bi bi-graph-up me-2"></i><span data-translate="stocks">Saham</span></a></li>
+                    <li class="mb-2"><a href="prediction.html" class="footer-link"><i class="bi bi-magic me-2"></i><span data-translate="predictions">Prediksi</span></a></li>
+                </ul>
+            </div>
+            <div class="col-md-2 col-6 mb-4 mb-md-0">
+                <h6 class="fw-bold mb-3" data-translate="resources">Sumber Daya</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-journal-text me-2"></i><span data-translate="docs">Dokumentasi</span></a></li>
+                    <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-code-slash me-2"></i>API</a></li>
+                    <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-mortarboard me-2"></i><span data-translate="learn">Pembelajaran</span></a></li>
+                    <li class="mb-2"><a href="#" class="footer-link"><i class="bi bi-question-circle me-2"></i><span data-translate="help">Bantuan</span></a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6 class="fw-bold mb-3" data-translate="subscribe_newsletter">Berlangganan Newsletter</h6>
+                <p class="text-muted small mb-3" data-translate="get_updates">Dapatkan update mingguan tentang wawasan pasar dan fitur platform ZAHAAM.</p>
+                <form>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Alamat email Anda" data-translate="your_email" aria-label="Email">
+                        <button class="btn btn-primary" type="button" data-translate="subscribe">Berlangganan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <hr class="my-4">
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start">
+                <p class="small text-muted mb-0">© 2025 ZAHAAM. <span data-translate="all_rights_reserved">Hak cipta dilindungi undang-undang.</span></p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <ul class="list-inline mb-0">
+                    <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="privacy_policy">Kebijakan Privasi</a></li>
+                    <li class="list-inline-item">•</li>
+                    <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="terms_of_service">Ketentuan Layanan</a></li>
+                    <li class="list-inline-item">•</li>
+                    <li class="list-inline-item"><a href="#" class="footer-link small" data-translate="sitemap">Peta Situs</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styling */
+    .footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .footer-link {
+        color: #6c757d;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .footer-link:hover {
+        color: #0d6efd;
+        text-decoration: none;
+    }
+    
+    .social-icons a {
+        color: #6c757d;
+        font-size: 1.2rem;
+        transition: color 0.2s ease;
+    }
+    
+    .social-icons a:hover {
+        color: #0d6efd;
+    }
+    
+    /* Navbar styling */
+    .navbar-zahaam {
+        background: linear-gradient(135deg, #0a2463 0%, #1a56db 100%);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* Dark mode toggle */
+    .dark-mode-toggle {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 24px;
+    }
+    
+    .dark-mode-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+        background-color: #2196F3;
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(16px);
+    }
+    
+    /* Styling untuk tabel saham yang baru */
+    .stock-table-container {
+        max-height: 400px;
+        overflow-y: auto;
+        font-size: 0.85rem;
+    }
+    
+    .table-compact th,
+    .table-compact td {
+        padding: 0.5rem 0.4rem;
+    }
+    
+    #stocksTable {
+        font-size: 0.85rem;
+        margin-bottom: 0;
+    }
+    
+    #stocksTable thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: #f8f9fa;
+    }
+    
+    #stocksTable th {
+        padding: 0.75rem 0.5rem;
+        font-weight: 500;
+        color: #495057;
+        white-space: nowrap;
+        cursor: pointer;
+        border-top: none;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    #stocksTable td {
+        padding: 0.6rem 0.5rem;
+        vertical-align: middle;
+        border-color: #f3f3f3;
+    }
+    
+    #stocksTable tbody tr {
+        transition: all 0.15s ease;
+    }
+    
+    #stocksTable tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.04);
+    }
+    
+    /* Kode saham styling */
+    #stocksTable td:first-child a {
+        font-weight: 600;
+        color: #0d6efd;
+        text-decoration: none;
+    }
+    
+    #stocksTable td:first-child a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Sorting indikator */
+    th.sort-asc::after {
+        content: ' \2191';
+        color: #0d6efd;
+        margin-left: 3px;
+    }
+    
+    th.sort-desc::after {
+        content: ' \2193';
+        color: #0d6efd;
+        margin-left: 3px;
+    }
+    
+    /* Styling untuk perubahan harga */
+    .price-up {
+        color: #198754;
+        font-weight: 500;
+    }
+    
+    .price-down {
+        color: #dc3545;
+        font-weight: 500;
+    }
+    
+    /* Animasi arrow naik turun */
+    .animate-arrow {
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .price-up .animate-arrow {
+        animation: bounceUp 1.5s infinite;
+        color: #198754;
+    }
+    
+    .price-down .animate-arrow {
+        animation: bounceDown 1.5s infinite;
+        color: #dc3545;
+    }
+    
+    @keyframes bounceUp {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+    }
+    
+    @keyframes bounceDown {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(3px); }
+    }
+    
+    /* Efek highlight saat data berubah */
+    .price-highlight {
+        animation: flashHighlight 1s;
+    }
+    
+    @keyframes flashHighlight {
+        0% { background-color: rgba(255, 255, 255, 0); }
+        50% { background-color: rgba(25, 135, 84, 0.1); }
+        100% { background-color: rgba(255, 255, 255, 0); }
+    }
+    
+    /* Tombol aksi */
+    .stock-action {
+        color: #6c757d;
+        background: transparent;
+        border: none;
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        margin: 0 1px;
+        transition: all 0.15s;
+    }
+    
+    .stock-action:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .stock-action.detail:hover {
+        color: #0d6efd;
+    }
+    
+    .stock-action.predict:hover {
+        color: #198754;
+    }
+    
+    /* Pagination styling */
+    .pagination {
+        gap: 2px;
+    }
+    
+    .pagination .page-link {
+        border-radius: 4px;
+        color: #495057;
+        border-color: #f0f0f0;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+    }
+</style>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+<!-- Custom Scripts -->
+<script src="js/dashboard-predictions.js"></script>
+<!-- Stock Data and Table -->
+<script src="js/stocks-data.js"></script>
+<script src="js/stocks-table.js"></script>
+<!-- Translations -->
+<script src="js/translations.js"></script>
+
+<script>
+    // Update current time and date
+    function updateDateTime() {
+        const now = new Date();
+        const timeElement = document.getElementById('currentTime');
+        const dateElement = document.getElementById('currentDate');
+        
+        timeElement.textContent = now.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+        
+        dateElement.textContent = now.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+    
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    
+    // Market chart
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sample data
+        const marketData = {
+            dates: ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+            values: [7088, 7102, 7115, 7090, 7105, 7120, 7115, 7129]
+        };
+        
+        const volumeData = {
+            dates: ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+            values: [1.2, 2.5, 1.8, 1.5, 2.8, 3.5, 3.2, 2.8]
+        };
+        
+        // Market chart options
+        const marketChartOptions = {
+            series: [{
+                name: 'IDX Composite',
+                data: marketData.values
+            }],
+            chart: {
+                type: 'area',
+                height: 300,
+                toolbar: {
+                    show: false
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+            xaxis: {
+                categories: marketData.dates
+            },
+            yaxis: {
+                labels: {
+                    formatter: function(val) {
+                        return val.toFixed(0);
+                    }
+                }
+            },
+            colors: ['#0d6efd'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.2,
+                    stops: [0, 90, 100]
+                }
+            },
+            tooltip: {
+                x: {
+                    format: 'HH:mm'
+                }
+            }
+        };
+        
+        // Volume chart options
+        const volumeChartOptions = {
+            series: [{
+                name: 'Volume (Billion IDR)',
+                data: volumeData.values
+            }],
+            chart: {
+                type: 'bar',
+                height: 230,
+                toolbar: {
+                    show: false
+                }
+            },
+            colors: ['#20c997'],
+            plotOptions: {
+                bar: {
+                    borderRadius: 4
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            xaxis: {
+                categories: volumeData.dates
+            }
+        };
+        
+        // Render charts
+        const marketChart = new ApexCharts(document.querySelector('#marketChartContainer'), marketChartOptions);
+        marketChart.render();
+        
+        const volumeChart = new ApexCharts(document.querySelector('#volumeChartContainer'), volumeChartOptions);
+        volumeChart.render();
+    });
+</script>
+
+<!-- Sidebar Menu JavaScript -->
+<script src="js/sidebar-menu.js"></script>
+
+</body>
+</html>

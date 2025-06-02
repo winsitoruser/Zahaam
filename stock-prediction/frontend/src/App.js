@@ -1,54 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { Container, Row, Col, Navbar, Nav, Spinner, Alert } from 'react-bootstrap';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Prediction from './pages/Prediction';
 import MyWatchlist from './pages/MyWatchlist';
+import StockAnalysis from './pages/StockAnalysis';
+import Portfolio from './pages/Portfolio';
+import MyStrategies from './pages/MyStrategies';
+import Layout from './components/layout/Layout';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
+import './styles/custom.css';
 
 function App() {
   return (
     <Router>
-      <div className="App">
-        <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className="mb-4">
-          <Container>
-            <Navbar.Brand as={Link} to="/">
-              <i className="bx bx-line-chart me-2"></i>
-              Indonesian Stock Market Prediction
-            </Navbar.Brand>
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
-              <Nav className="me-auto">
-                <Nav.Link as={Link} to="/dashboard">Dashboard</Nav.Link>
-                <Nav.Link as={Link} to="/stocks">Stocks</Nav.Link>
-                <Nav.Link as={Link} to="/portfolio">Portfolio</Nav.Link>
-                <Nav.Link as={Link} to="/prediction">Prediction</Nav.Link>
-                <Nav.Link as={Link} to="/my-strategies">Strategi Saya</Nav.Link>
-                <Nav.Link as={Link} to="/my-watchlist">My Watchlist</Nav.Link>
-              </Nav>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
-
-        <div className="main-content">
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/prediction" element={<Prediction />} />
-            <Route path="/my-watchlist" element={<MyWatchlist />} />
-            <Route path="*" element={<Dashboard />} />
-          </Routes>
-        </div>
-        
-        <footer className="bg-dark text-white mt-5 py-4">
-          <Container>
-            <div className="text-center">
-              <p className="mb-0">© {new Date().getFullYear()} Indonesian Stock Market Prediction. All rights reserved.</p>
-            </div>
-          </Container>
-        </footer>
-      </div>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route 
+            path="/dashboard" 
+            element={<Dashboard />} 
+          />
+          <Route 
+            path="/stocks" 
+            element={<StockAnalysis />} 
+          />
+          <Route 
+            path="/portfolio" 
+            element={<Portfolio />} 
+          />
+          <Route 
+            path="/prediction" 
+            element={<Prediction />} 
+          />
+          <Route 
+            path="/my-strategies" 
+            element={<MyStrategies />} 
+          />
+          <Route 
+            path="/my-watchlist" 
+            element={<MyWatchlist />} 
+          />
+          <Route 
+            path="/stock-details" 
+            element={<StockAnalysis />} 
+          />
+          <Route 
+            path="/stock-list" 
+            element={<StockAnalysis />} 
+          />
+          <Route 
+            path="/watchlist" 
+            element={<MyWatchlist />} 
+          />
+          <Route 
+            path="/strategy" 
+            element={<MyStrategies />} 
+          />
+          <Route 
+            path="*" 
+            element={<Dashboard />} 
+          />
+        </Routes>
+      </Layout>
     </Router>
   );
 }
