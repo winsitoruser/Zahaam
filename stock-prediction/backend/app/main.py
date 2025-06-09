@@ -6,6 +6,14 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from typing import List, Optional, Dict, Any
 import yfinance as yf
 import pandas as pd
+# Import our numpy compatibility layer first
+from app.utils.numpy_compat import npNaN
+
+# Monkey patch numpy for pandas_ta
+import numpy
+numpy.NaN = npNaN
+
+# Now import pandas_ta
 import pandas_ta as ta
 import numpy as np
 from datetime import datetime, timedelta
@@ -18,12 +26,16 @@ from app.core.database import engine, Base, SessionLocal, get_db
 from app.models.stocks import Stock, StockPrice, StockIndicator
 from app.data.indonesian_stocks import INDONESIAN_STOCKS
 from app.core.init_db import init_db
-from app.api import stocks as stocks_api
-from app.api import prediction as prediction_api
-from app.api import user_strategies as strategies_api
-from app.api import watchlist as watchlist_api
-from app.api import big_data as big_data_api
-from app.api import notifications as notifications_api
+
+# Import API routers
+from app.api import stocks, prediction, user_strategies as strategies, watchlist, big_data, notifications, admin, auth, ml_prediction
+from app.api.routers import news_sentiment_api
+
+# Import scheduler
+from app.core.scheduler import JobScheduler, setup_default_jobs
+
+# Import rate limiter
+from app.core.rate_limiter import RateLimitMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -46,12 +58,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Rate limiting middleware - 120 requests per minute per client/endpoint
+app.add_middleware(RateLimitMiddleware, window_seconds=60, max_requests=120)
+
 # Initialize database tables and data
 @app.on_event("startup")
 async def on_startup():
-    logger.info("Initializing database...")
-    init_db()
-    logger.info("Database initialized successfully")
+    logger.info("Initializing application...")
+    try:
+        # Initialize database with retry logic
+        if init_db(max_retries=5):
+            logger.info("PostgreSQL database initialized successfully")
+        else:
+            logger.error("Failed to initialize PostgreSQL database after retries")
+            # You could raise an exception here to stop app startup if needed
+            # raise RuntimeError("Database initialization failed")
+            
+        # Setup and start background job scheduler
+        logger.info("Setting up background job scheduler")
+        setup_default_jobs()
+        scheduler = JobScheduler.get_instance()
+        scheduler.start()
+        logger.info("Background job scheduler started successfully")
+        
+    except Exception as e:
+        logger.error(f"Error during application startup: {e}")
+        # Continue running anyway to allow troubleshooting
 
 # For template rendering
 try:
@@ -109,13 +141,17 @@ try:
 except Exception as e:
     logger.error(f"Error setting up static files and templates: {str(e)}")
 
-# Include API routes
-app.include_router(stocks_api.router)
-app.include_router(prediction_api.router)
-app.include_router(strategies_api.router)
-app.include_router(watchlist_api.router)
-app.include_router(big_data_api.router)
-app.include_router(notifications_api.router)
+# Register API routers
+app.include_router(stocks.router, prefix="/api/stocks", tags=["stocks"])
+app.include_router(prediction.router, prefix="/api/prediction", tags=["prediction"])
+app.include_router(strategies.router, prefix="/api/strategies", tags=["strategies"])
+app.include_router(watchlist.router, prefix="/api/watchlist", tags=["watchlist"])
+app.include_router(big_data.router, prefix="/api/bigdata", tags=["big-data"])
+app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
+app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(ml_prediction.router, prefix="/api/ml", tags=["ml-prediction"])
+app.include_router(news_sentiment_api.router)
 
 # List of Indonesian stock tickers (from data/indonesian_stocks.py)
 

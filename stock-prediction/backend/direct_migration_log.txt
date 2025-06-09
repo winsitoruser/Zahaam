@@ -1,0 +1,107 @@
+2025-06-09 13:46:55,927 - __main__ - INFO - Starting direct SQLite to PostgreSQL migration
+2025-06-09 13:46:55,941 - __main__ - INFO - SQLite version: 3.43.2 2023-10-10 13:08:14 1b37c146ee9ebb7acd0160c0ab1fd11017a419fa8a3187386ed8cb32b709aapl (64-bit)
+2025-06-09 13:46:56,031 - __main__ - INFO - PostgreSQL client: psql (PostgreSQL) 14.17 (Homebrew)
+2025-06-09 13:46:56,214 - __main__ - INFO - pg_dump: pg_dump (PostgreSQL) 14.17 (Homebrew)
+2025-06-09 13:46:56,288 - __main__ - INFO - PostgreSQL connection successful: version                                                            
+-------------------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 14.17 (Homebrew) on aarch64-apple-darwin24.2.0, compiled by Apple clang version 16.0.0 (clang-1600.0.26.6), 64-bit
+(1 row)
+2025-06-09 13:46:56,289 - __main__ - INFO - Created temporary directory for migration: /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl
+2025-06-09 13:46:56,490 - app.core.database - INFO - Connecting to PostgreSQL database at localhost:5432/stock_prediction
+2025-06-09 13:46:56,558 - __main__ - INFO - Created all tables in PostgreSQL using SQLAlchemy models
+2025-06-09 13:46:56,569 - __main__ - INFO - Found 17 tables in SQLite: ['data_points', 'notification_settings', 'stock_prices', 'data_processing_jobs', 'notifications', 'stocks', 'data_sources', 'stock_indicators', 'user_strategies', 'market_data_snapshots', 'stock_metrics', 'users', 'ml_models', 'stock_news_mentions', 'watchlist_items', 'news_articles', 'stock_predictions']
+2025-06-09 13:46:56,569 - __main__ - INFO - Processing table data_points
+2025-06-09 13:46:56,576 - __main__ - INFO - Table data_points columns: ['id', 'source_id', 'ticker', 'data_type', 'date', 'data', 'raw_data', 'processed']
+2025-06-09 13:46:56,582 - __main__ - INFO - Table data_points data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/data_points.csv
+2025-06-09 13:46:56,606 - __main__ - INFO - Data imported to PostgreSQL table data_points: COPY 0
+
+2025-06-09 13:46:56,606 - __main__ - INFO - Processing table notification_settings
+2025-06-09 13:46:56,615 - __main__ - INFO - Table notification_settings columns: ['id', 'user_id', 'enable_signal_change', 'enable_price_alerts', 'enable_news', 'enable_prediction_updates', 'enable_system', 'min_priority', 'watched_tickers', 'email_notifications', 'created_at', 'updated_at']
+2025-06-09 13:46:56,624 - __main__ - INFO - Table notification_settings data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/notification_settings.csv
+2025-06-09 13:46:56,644 - __main__ - INFO - Data imported to PostgreSQL table notification_settings: COPY 0
+
+2025-06-09 13:46:56,645 - __main__ - INFO - Processing table stock_prices
+2025-06-09 13:46:56,651 - __main__ - INFO - Table stock_prices columns: ['id', 'stock_id', 'date', 'open', 'high', 'low', 'close', 'volume', 'interval']
+2025-06-09 13:46:56,660 - __main__ - INFO - Table stock_prices data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/stock_prices.csv
+2025-06-09 13:46:56,685 - __main__ - ERROR - Failed to import data to stock_prices: ERROR:  duplicate key value violates unique constraint "stock_prices_pkey"
+DETAIL:  Key (id)=(1) already exists.
+CONTEXT:  COPY stock_prices, line 1
+
+2025-06-09 13:46:56,685 - __main__ - INFO - Processing table data_processing_jobs
+2025-06-09 13:46:56,691 - __main__ - INFO - Table data_processing_jobs columns: ['id', 'job_type', 'status', 'started_at', 'completed_at', 'parameters', 'results', 'error_message']
+2025-06-09 13:46:56,697 - __main__ - INFO - Table data_processing_jobs data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/data_processing_jobs.csv
+2025-06-09 13:46:56,716 - __main__ - INFO - Data imported to PostgreSQL table data_processing_jobs: COPY 0
+
+2025-06-09 13:46:56,716 - __main__ - INFO - Processing table notifications
+2025-06-09 13:46:56,722 - __main__ - INFO - Table notifications columns: ['id', 'user_id', 'ticker', 'type', 'priority', 'title', 'message', 'data', 'is_read', 'created_at', 'expires_at']
+2025-06-09 13:46:56,727 - __main__ - INFO - Table notifications data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/notifications.csv
+2025-06-09 13:46:56,746 - __main__ - INFO - Data imported to PostgreSQL table notifications: COPY 0
+
+2025-06-09 13:46:56,746 - __main__ - INFO - Processing table stocks
+2025-06-09 13:46:56,752 - __main__ - INFO - Table stocks columns: ['id', 'ticker', 'name', 'sector', 'last_updated', 'is_active']
+2025-06-09 13:46:56,758 - __main__ - INFO - Table stocks data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/stocks.csv
+2025-06-09 13:46:56,785 - __main__ - ERROR - Failed to import data to stocks: ERROR:  duplicate key value violates unique constraint "stocks_pkey"
+DETAIL:  Key (id)=(1) already exists.
+CONTEXT:  COPY stocks, line 1
+
+2025-06-09 13:46:56,785 - __main__ - INFO - Processing table data_sources
+2025-06-09 13:46:56,791 - __main__ - INFO - Table data_sources columns: ['id', 'name', 'description', 'api_endpoint', 'credentials', 'is_active', 'priority', 'last_checked', 'status', 'UNIQUE']
+2025-06-09 13:46:56,796 - __main__ - INFO - Table data_sources data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/data_sources.csv
+2025-06-09 13:46:56,816 - __main__ - ERROR - Failed to import data to data_sources: ERROR:  syntax error at or near "UNIQUE"
+LINE 1: ...tials, is_active, priority, last_checked, status, UNIQUE ) F...
+                                                             ^
+
+2025-06-09 13:46:56,816 - __main__ - INFO - Processing table stock_indicators
+2025-06-09 13:46:56,821 - __main__ - INFO - Table stock_indicators columns: ['id', 'stock_id', 'date', 'sma_20', 'sma_50', 'sma_200', 'ema_12', 'ema_26', 'rsi_14', 'macd', 'macd_signal', 'macd_histogram', 'bb_upper', 'bb_middle', 'bb_lower', 'signal', 'signal_strength', 'notes', 'interval']
+2025-06-09 13:46:56,826 - __main__ - INFO - Table stock_indicators data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/stock_indicators.csv
+2025-06-09 13:46:56,850 - __main__ - ERROR - Failed to import data to stock_indicators: ERROR:  duplicate key value violates unique constraint "stock_indicators_pkey"
+DETAIL:  Key (id)=(1) already exists.
+CONTEXT:  COPY stock_indicators, line 1
+
+2025-06-09 13:46:56,850 - __main__ - INFO - Processing table user_strategies
+2025-06-09 13:46:56,856 - __main__ - INFO - Table user_strategies columns: ['id', 'name', 'description', 'user_id', 'created_at', 'updated_at', 'is_public', 'strategy_params', 'buy_conditions', 'sell_conditions', 'stop_loss_method', 'stop_loss_value', 'take_profit_method', 'take_profit_value', 'win_rate', 'avg_profit', 'max_drawdown', 'total_trades']
+2025-06-09 13:46:56,861 - __main__ - INFO - Table user_strategies data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/user_strategies.csv
+2025-06-09 13:46:56,880 - __main__ - INFO - Data imported to PostgreSQL table user_strategies: COPY 0
+
+2025-06-09 13:46:56,881 - __main__ - INFO - Processing table market_data_snapshots
+2025-06-09 13:46:56,886 - __main__ - INFO - Table market_data_snapshots columns: ['id', 'date', 'sp500', 'nasdaq', 'dow_jones', 'vix', 'sector_performance', 'interest_rate', 'inflation_rate', 'unemployment_rate', 'gdp_growth', 'advancing_stocks', 'declining_stocks', 'total_volume', 'average_volume']
+2025-06-09 13:46:56,891 - __main__ - INFO - Table market_data_snapshots data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/market_data_snapshots.csv
+2025-06-09 13:46:56,910 - __main__ - INFO - Data imported to PostgreSQL table market_data_snapshots: COPY 0
+
+2025-06-09 13:46:56,910 - __main__ - INFO - Processing table stock_metrics
+2025-06-09 13:46:56,915 - __main__ - INFO - Table stock_metrics columns: ['id', 'stock_id', 'date', 'pe_ratio', 'pb_ratio', 'dividend_yield', 'eps', 'revenue', 'profit_margin', 'debt_to_equity', 'market_cap', 'avg_volume', 'relative_volume', 'beta', 'historical_volatility', 'atr', 'news_sentiment', 'social_sentiment']
+2025-06-09 13:46:56,920 - __main__ - INFO - Table stock_metrics data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/stock_metrics.csv
+2025-06-09 13:46:56,939 - __main__ - INFO - Data imported to PostgreSQL table stock_metrics: COPY 0
+
+2025-06-09 13:46:56,940 - __main__ - INFO - Processing table users
+2025-06-09 13:46:56,945 - __main__ - INFO - Table users columns: ['id', 'username', 'email', 'hashed_password', 'is_active', 'created_at']
+2025-06-09 13:46:56,950 - __main__ - INFO - Table users data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/users.csv
+2025-06-09 13:46:56,969 - __main__ - INFO - Data imported to PostgreSQL table users: COPY 0
+
+2025-06-09 13:46:56,969 - __main__ - INFO - Processing table ml_models
+2025-06-09 13:46:56,975 - __main__ - INFO - Table ml_models columns: ['id', 'name', 'description', 'model_type', 'target', 'version', 'created_at', 'updated_at', 'metrics', 'parameters', 'is_active', 'model_data']
+2025-06-09 13:46:56,980 - __main__ - INFO - Table ml_models data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/ml_models.csv
+2025-06-09 13:46:56,998 - __main__ - INFO - Data imported to PostgreSQL table ml_models: COPY 0
+
+2025-06-09 13:46:56,998 - __main__ - INFO - Processing table stock_news_mentions
+2025-06-09 13:46:57,004 - __main__ - INFO - Table stock_news_mentions columns: ['id', 'stock_id', 'news_id', 'mention_count', 'is_primary', 'impact_score']
+2025-06-09 13:46:57,008 - __main__ - INFO - Table stock_news_mentions data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/stock_news_mentions.csv
+2025-06-09 13:46:57,027 - __main__ - INFO - Data imported to PostgreSQL table stock_news_mentions: COPY 0
+
+2025-06-09 13:46:57,028 - __main__ - INFO - Processing table watchlist_items
+2025-06-09 13:46:57,033 - __main__ - INFO - Table watchlist_items columns: ['id', 'user_id', 'ticker', 'added_at', 'notes', 'is_favorite', 'alert_price_high', 'alert_price_low']
+2025-06-09 13:46:57,037 - __main__ - INFO - Table watchlist_items data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/watchlist_items.csv
+2025-06-09 13:46:57,056 - __main__ - INFO - Data imported to PostgreSQL table watchlist_items: COPY 0
+
+2025-06-09 13:46:57,056 - __main__ - INFO - Processing table news_articles
+2025-06-09 13:46:57,062 - __main__ - INFO - Table news_articles columns: ['id', 'ticker', 'title', 'source', 'published_at', 'url', 'summary', 'sentiment', 'importance', 'keywords', 'created_at']
+2025-06-09 13:46:57,067 - __main__ - INFO - Table news_articles data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/news_articles.csv
+2025-06-09 13:46:57,085 - __main__ - INFO - Data imported to PostgreSQL table news_articles: COPY 0
+
+2025-06-09 13:46:57,086 - __main__ - INFO - Processing table stock_predictions
+2025-06-09 13:46:57,091 - __main__ - INFO - Table stock_predictions columns: ['id', 'stock_id', 'model_id', 'prediction_date', 'target_date', 'predicted_price', 'confidence', 'upper_bound', 'lower_bound', 'signal', 'signal_strength', 'entry_price', 'stop_loss', 'take_profit', 'risk_reward', 'features_used', 'explanation']
+2025-06-09 13:46:57,097 - __main__ - INFO - Table stock_predictions data dumped to /var/folders/rh/2dh5gnz95yx4x6qmrt3jy9gc0000gn/T/tmpzoaq5ptl/stock_predictions.csv
+2025-06-09 13:46:57,115 - __main__ - INFO - Data imported to PostgreSQL table stock_predictions: COPY 0
+
+2025-06-09 13:46:57,116 - __main__ - INFO - Migration completed: 13 of 17 tables migrated successfully
+2025-06-09 13:46:57,116 - __main__ - WARNING - Migration completed with some issues
