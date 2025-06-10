@@ -1,0 +1,405 @@
+version: '3.8'
+
+services:
+  #############################################
+  # INFRASTRUCTURE & MESSAGING SERVICES
+  #############################################
+  
+  # RabbitMQ message broker
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    ports:
+      - "5672:5672"  # AMQP protocol
+      - "15672:15672"  # Management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis for results backend and caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  #############################################
+  # ZAHAAM BACKEND - PRICE PREDICTIONS & AI ENGINE
+  #############################################
+  
+  # PostgreSQL database for AI Engine
+  postgres_ai:
+    image: postgres:14-alpine
+    container_name: zahaam-postgres-ai
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=zahaam_ai
+      - POSTGRES_PASSWORD=zahaam_ai_secure_password
+      - POSTGRES_DB=zahaam_ai
+    volumes:
+      - postgres_ai_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zahaam_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - zahaam-network
+      
+  # AI Engine & Prediction API
+  ai_prediction_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: zahaam-ai-prediction-api
+    command: uvicorn app.main:ai_app --host 0.0.0.0 --port 8001 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://zahaam_ai:zahaam_ai_secure_password@postgres_ai:5432/zahaam_ai
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=zahaam_jwt_secret_key
+      - JWT_ALGORITHM=HS256
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+    depends_on:
+      - postgres_ai
+      - rabbitmq
+      - redis
+    restart: unless-stopped
+    networks:
+      - zahaam-network
+  
+  # Celery worker for processing ML tasks
+  celery_worker_ml:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    command: celery -A app.core.celery_app worker -Q ml_queue -n ml_worker@%h -l info
+    volumes:
+      - .:/app
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+      - PYTHONPATH=/app
+    depends_on:
+      - rabbitmq
+      - redis
+    restart: unless-stopped
+
+  # Celery worker for processing stock data tasks
+  celery_worker_stocks:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    command: celery -A app.core.celery_app worker -Q stock_queue -n stock_worker@%h -l info
+    volumes:
+      - .:/app
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+      - PYTHONPATH=/app
+    depends_on:
+      - rabbitmq
+      - redis
+    restart: unless-stopped
+
+  #############################################
+  # ZAHAAM BACKEND - USER CLUSTER DB & BACKEND FUNCTIONS
+  #############################################
+
+  # PostgreSQL database for User Cluster
+  postgres_user:
+    image: postgres:14-alpine
+    container_name: zahaam-postgres-user
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=zahaam_user
+      - POSTGRES_PASSWORD=zahaam_user_secure_password
+      - POSTGRES_DB=zahaam_user
+    volumes:
+      - postgres_user_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zahaam_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - zahaam-network
+      
+  # User Cluster API
+  user_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: zahaam-user-api
+    command: uvicorn app.main:user_app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://zahaam_user:zahaam_user_secure_password@postgres_user:5432/zahaam_user
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=zahaam_jwt_secret_key
+      - JWT_ALGORITHM=HS256
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+    depends_on:
+      - postgres_user
+      - rabbitmq
+      - redis
+    restart: unless-stopped
+    networks:
+      - zahaam-network
+
+  # Admin Backend API
+  admin_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: zahaam-admin-api
+    command: uvicorn app.main:admin_app --host 0.0.0.0 --port 8002 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://zahaam_user:zahaam_user_secure_password@postgres_user:5432/zahaam_user
+      - AI_DATABASE_URL=postgresql://zahaam_ai:zahaam_ai_secure_password@postgres_ai:5432/zahaam_ai
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=zahaam_admin_jwt_secret_key
+      - JWT_ALGORITHM=HS256
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+    depends_on:
+      - postgres_user
+      - postgres_ai
+      - rabbitmq
+      - redis
+    restart: unless-stopped
+    networks:
+      - zahaam-network
+  
+  # Celery worker for maintenance tasks
+  celery_worker_maintenance:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    command: celery -A app.core.celery_app worker -Q maintenance_queue -n maintenance_worker@%h -l info
+    volumes:
+      - .:/app
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+      - PYTHONPATH=/app
+    depends_on:
+      - rabbitmq
+      - redis
+    restart: unless-stopped
+
+  #############################################
+  # MARKET & NEWS DATA COLLECTION
+  #############################################
+  
+  # Market Data Collection Service
+  market_data_collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    container_name: zahaam-market-data
+    command: python -m app.market_data.collector
+    volumes:
+      - .:/app
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - YAHOO_FINANCE_API_KEY=${YAHOO_FINANCE_API_KEY:-demo}
+      - NEWSAPI_KEY=${NEWSAPI_KEY:-demo}
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+      - DATABASE_URL=postgresql://zahaam_ai:zahaam_ai_secure_password@postgres_ai:5432/zahaam_ai
+      - PYTHONPATH=/app
+    depends_on:
+      - rabbitmq
+      - redis
+      - postgres_ai
+    restart: unless-stopped
+    networks:
+      - zahaam-network
+
+  # Social Media & News Data Collection Service
+  news_data_collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    container_name: zahaam-news-data
+    command: python -m app.news_data.collector
+    volumes:
+      - .:/app
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - NEWSAPI_KEY=${NEWSAPI_KEY:-demo}
+      - TWITTER_API_KEY=${TWITTER_API_KEY:-demo}
+      - TWITTER_API_SECRET=${TWITTER_API_SECRET:-demo}
+      - TWITTER_ACCESS_TOKEN=${TWITTER_ACCESS_TOKEN:-demo}
+      - TWITTER_ACCESS_SECRET=${TWITTER_ACCESS_SECRET:-demo}
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+      - DATABASE_URL=postgresql://zahaam_ai:zahaam_ai_secure_password@postgres_ai:5432/zahaam_ai
+      - PYTHONPATH=/app
+    depends_on:
+      - rabbitmq
+      - redis
+      - postgres_ai
+    restart: unless-stopped
+    networks:
+      - zahaam-network
+  
+  # Celery beat scheduler
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    command: celery -A app.core.celery_app beat -l info
+    volumes:
+      - .:/app
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+      - PYTHONPATH=/app
+    depends_on:
+      - rabbitmq
+      - redis
+    restart: unless-stopped
+
+  #############################################
+  # MONITORING & MANAGEMENT TOOLS
+  #############################################
+
+  # Flower - Celery monitoring tool
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    command: celery -A app.core.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_URL=redis://redis:6379/0
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=zahaam-token-secret
+      - INFLUXDB_ORG=zahaam
+      - INFLUXDB_BUCKET=stock_metrics
+      - PYTHONPATH=/app
+    depends_on:
+      - rabbitmq
+      - redis
+      - celery_worker_ml
+      - celery_worker_stocks
+    restart: unless-stopped
+
+  # InfluxDB service for time-series data storage
+  influxdb:
+    image: influxdb:2.7
+    container_name: zahaam-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=zahaam
+      - DOCKER_INFLUXDB_INIT_PASSWORD=zahaam-secure-password
+      - DOCKER_INFLUXDB_INIT_ORG=zahaam
+      - DOCKER_INFLUXDB_INIT_BUCKET=stock_metrics
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=zahaam-token-secret
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    restart: unless-stopped
+    networks:
+      - zahaam-network
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: zahaam-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=zahaam-grafana-admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    networks:
+      - zahaam-network
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+  postgres_user_data:  # User Cluster Database data
+  postgres_ai_data:    # AI Engine Database data
+  influxdb-data:
+  grafana-data:
+
+networks:
+  zahaam-network:
+    driver: bridge

@@ -1,0 +1,27 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install required system packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        python3-dev \
+        libpq-dev \
+        netcat-openbsd && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt celery_requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r celery_requirements.txt
+
+# Copy application code
+COPY . .
+
+# Health check script
+COPY ./celery-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/celery-entrypoint.sh
+
+ENTRYPOINT ["celery-entrypoint.sh"]
