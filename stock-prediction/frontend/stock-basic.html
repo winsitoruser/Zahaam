@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BBRI - Stock Detail | ZAHAAM</title>
+    <title>Stock Detail | ZAHAAM</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -119,19 +119,22 @@
     <div class="stock-header card">
         <div class="row">
             <div class="col-md-6">
-                <h2 class="mb-0">BBRI</h2>
-                <p class="text-muted mb-2">Bank Rakyat Indonesia (Persero) Tbk</p>
+                <h2 class="mb-0" id="stock-symbol">Loading...</h2>
+                <h4 class="text-muted mb-0" id="stock-name">Loading...</h4>
+                <p class="text-muted mb-2" id="stock-description"></p>
                 <div class="d-flex align-items-center">
-                    <span class="badge bg-secondary me-2">Finance</span>
+                    <span class="stock-badge stock-badge-sector me-2" id="stock-sector">Loading...</span>
                     <span class="badge bg-secondary">Banking</span>
                 </div>
             </div>
             <div class="col-md-6 text-md-end">
-                <h3 class="mb-1">Rp 4,580</h3>
-                <div class="price-up">
-                    <i class="bi bi-caret-up-fill"></i> +35 (+0.77%)
+                <h3 class="mb-1" id="current-price">Loading...</h3>
+                <div class="price-change" id="price-change">
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                 </div>
-                <small class="text-muted">Last update: May 29, 2025 16:00</small>
+                <small class="text-muted" id="last-update">Loading data...</small>
             </div>
         </div>
     </div>
@@ -264,7 +267,7 @@
                                 </div>
                                 <div>
                                     <small class="text-muted">Entry Price:</small>
-                                    <div class="fw-bold">Rp 4,580</div>
+                                    <div class="current-price" id="current-price">Loading...</div>
                                 </div>
                                 <div class="mt-2">
                                     <small class="text-muted">Signal Strength:</small>
@@ -665,108 +668,141 @@
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.min.js"></script>
-<script src="js/stock-chart.js"></script>
-<script src="js/market-depth.js"></script>
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.js"></script>
+<script src="js/stocks-data.js"></script>
+<script src="js/api-service.js"></script>
 <script src="js/stock-history.js"></script>
+<script src="js/config.js"></script>
 <script src="js/stock-multi-timeframe.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Sample data for BBRI
-        const stockData = {
-            dates: ['2025-05-22', '2025-05-23', '2025-05-24', '2025-05-25', '2025-05-26', '2025-05-27', '2025-05-28', '2025-05-29'],
-            ohlc: [
-                [4520, 4550, 4510, 4535],
-                [4535, 4560, 4530, 4545],
-                [4545, 4570, 4535, 4560],
-                [4560, 4580, 4555, 4575],
-                [4575, 4590, 4565, 4585],
-                [4585, 4600, 4570, 4590],
-                [4590, 4610, 4580, 4595],
-                [4595, 4620, 4570, 4580]
-            ],
-            volume: [22450600, 21345700, 23567800, 20345600, 24567800, 26789500, 23456700, 25450200],
-            sma20: [4510, 4520, 4530, 4540, 4550, 4560, 4570, 4580],
-            sma50: [4420, 4425, 4430, 4435, 4440, 4445, 4450, 4455]
-        };
+        // Variables to store chart and stock data
+        let chart;
+        let chartData = {};
         
-        // Chart options
-        const options = {
-            series: [{
-                name: 'BBRI',
-                type: 'candlestick',
-                data: stockData.dates.map((date, i) => ({
-                    x: new Date(date),
-                    y: stockData.ohlc[i]
-                }))
-            }, {
-                name: 'SMA 20',
-                type: 'line',
-                data: stockData.dates.map((date, i) => ({
-                    x: new Date(date),
-                    y: stockData.sma20[i]
-                }))
-            }, {
-                name: 'SMA 50',
-                type: 'line',
-                data: stockData.dates.map((date, i) => ({
-                    x: new Date(date),
-                    y: stockData.sma50[i]
-                }))
-            }],
-            chart: {
-                height: 400,
-                type: 'candlestick',
-                toolbar: {
-                    show: true,
-                    tools: {
-                        download: true,
-                        selection: true,
-                        zoom: true,
-                        zoomin: true,
-                        zoomout: true,
-                        pan: true,
-                        reset: true
+        // Function to create and render chart from historical data
+        function renderStockChart(symbol, historyData) {
+            // Process history data into chart format
+            const processedData = processChartData(historyData, symbol);
+            chartData = processedData;
+            
+            // Chart options
+            const options = {
+                series: [{
+                    name: symbol,
+                    type: 'candlestick',
+                    data: processedData.dates.map((date, i) => ({
+                        x: new Date(date),
+                        y: processedData.ohlc[i]
+                    }))
+                }, {
+                    name: 'SMA 20',
+                    type: 'line',
+                    data: processedData.dates.map((date, i) => ({
+                        x: new Date(date),
+                        y: processedData.sma20[i]
+                    }))
+                }, {
+                    name: 'SMA 50',
+                    type: 'line',
+                    data: processedData.dates.map((date, i) => ({
+                        x: new Date(date),
+                        y: processedData.sma50[i]
+                    }))
+                }],
+                chart: {
+                    height: 400,
+                    type: 'candlestick',
+                    toolbar: {
+                        show: true,
+                        tools: {
+                            download: true,
+                            selection: true,
+                            zoom: true,
+                            zoomin: true,
+                            zoomout: true,
+                            pan: true,
+                            reset: true
+                        }
                     }
+                },
+                title: {
+                    text: `${symbol} Stock Price`,
+                    align: 'left'
+                },
+                xaxis: {
+                    type: 'datetime'
+                },
+                yaxis: {
+                    tooltip: {
+                        enabled: true
+                    }
+                },
+                colors: ['#000', '#2196F3', '#FFA500'],
+                stroke: {
+                    width: [1, 2, 2]
                 }
-            },
-            title: {
-                text: 'BBRI Stock Price',
-                align: 'left'
-            },
-            xaxis: {
-                type: 'datetime'
-            },
-            yaxis: {
-                tooltip: {
-                    enabled: true
-                }
-            },
-            colors: ['#000', '#2196F3', '#FFA500'],
-            stroke: {
-                width: [1, 2, 2]
-            }
-        };
+            };
+            
+            // Create and render chart
+            chart = new ApexCharts(document.querySelector('#chartContainer'), options);
+            chart.render();
+        }
         
-        // Create and render chart
-        const chart = new ApexCharts(document.querySelector('#chartContainer'), options);
-        chart.render();
+        // Process history data for chart
+        function processChartData(historyData, symbol) {
+            const dates = [];
+            const ohlc = [];
+            const volume = [];
+            const closing = [];
+            
+            // Sort data by date ascending
+            historyData.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Extract data for chart
+            historyData.forEach(item => {
+                dates.push(item.date);
+                ohlc.push([item.open, item.high, item.low, item.close]);
+                volume.push(item.volume);
+                closing.push(item.close);
+            });
+            
+            // Calculate simple moving averages (dummy for now)
+            // In a real app, these would be calculated properly
+            const sma20 = closing.map((_, i) => {
+                if (i < 19) return null;
+                const slice = closing.slice(i - 19, i + 1);
+                return slice.reduce((sum, val) => sum + val, 0) / 20;
+            });
+            
+            const sma50 = closing.map((_, i) => {
+                if (i < 49) return null;
+                const slice = closing.slice(i - 49, i + 1);
+                return slice.reduce((sum, val) => sum + val, 0) / 50;
+            });
+            
+            return { dates, ohlc, volume, sma20, sma50 };
+        }
         
         // Toggle indicators
-        document.querySelector('#sma20').addEventListener('change', function() {
-            if (this.checked) {
-                chart.showSeries('SMA 20');
-            } else {
-                chart.hideSeries('SMA 20');
-            }
-        });
-        
-        document.querySelector('#sma50').addEventListener('change', function() {
-            if (this.checked) {
-                chart.showSeries('SMA 50');
-            } else {
-                chart.hideSeries('SMA 50');
-            }
-        });
+        function setupChartControls() {
+            document.querySelector('#sma20').addEventListener('change', function() {
+                if (this.checked) {
+                    chart.showSeries('SMA 20');
+                } else {
+                    chart.hideSeries('SMA 20');
+                }
+            });
+            
+            document.querySelector('#sma50').addEventListener('change', function() {
+                if (this.checked) {
+                    chart.showSeries('SMA 50');
+                } else {
+                    chart.hideSeries('SMA 50');
+                }
+            });
+        }
         
         // Add dark mode toggle functionality
         const setupDarkMode = () => {
@@ -800,6 +836,7 @@
         };
         
         setupDarkMode();
+        setupChartControls();
         
         // Get stock symbol from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -807,10 +844,116 @@
         
         // Update page title and header with stock symbol
         document.title = `${stockSymbol} - Stock Detail | ZAHAAM`;
-        document.querySelector('.stock-symbol').textContent = stockSymbol;
         
-        // Fetch and display stock history
-        fetchStockHistory(stockSymbol, '1mo');
+        // Update stock symbol in header - using correct ID selector
+        const symbolElement = document.getElementById('stock-symbol');
+        if (symbolElement) {
+            symbolElement.textContent = stockSymbol;
+        }
+        
+        // Update header data using data from stocks-data.js (indonesianStocks)
+        
+        // Function to get stock data from indonesianStocks array
+        const getStockDataFromIndStocks = (symbol) => {
+            // Check if indonesianStocks is defined
+            if (typeof indonesianStocks === 'undefined' || !Array.isArray(indonesianStocks)) {
+                console.error('indonesianStocks data not available');
+                return {
+                    name: 'Unknown Company',
+                    sector: 'Unknown Sector',
+                    description: `${symbol} - Information not available`
+                };
+            }
+            
+            // Find stock in indonesianStocks array
+            const stock = indonesianStocks.find(item => item.code === symbol);
+            
+            // If found, return the data, otherwise return default
+            if (stock) {
+                return {
+                    name: stock.name || 'Unknown Company',
+                    sector: stock.sector || 'Unknown Sector',
+                    description: `${stock.name} (${symbol})`
+                };
+            } else {
+                console.warn(`Stock data for ${symbol} not found in indonesianStocks`);
+                return {
+                    name: 'Unknown Company',
+                    sector: 'Unknown Sector',
+                    description: `${symbol} - Information not available`
+                };
+            }
+        };
+        
+        // Get stock data using the new function
+        const currentStock = getStockDataFromIndStocks(stockSymbol);
+        
+        // Update company name
+        const nameElement = document.getElementById('stock-name');
+        if (nameElement) {
+            nameElement.textContent = currentStock.name;
+        }
+        
+        // Update company sector
+        const sectorElement = document.getElementById('stock-sector');
+        if (sectorElement) {
+            sectorElement.textContent = currentStock.sector;
+        }
+        
+        // Update company description
+        const descriptionElement = document.getElementById('stock-description');
+        if (descriptionElement) {
+            descriptionElement.textContent = currentStock.description;
+        }
+        
+        // Fetch and display stock history, then update chart
+        fetchStockHistory(stockSymbol, '1mo').then(historyData => {
+            if (historyData) {
+                // Process data for chart and render it
+                renderStockChart(stockSymbol, historyData);
+                
+                // Also update the current price and other header information if available
+                if (historyData.length > 0) {
+                    const latestData = historyData[0]; // Most recent data point
+                    
+                    // Update all price elements with ID selectors
+                    const priceElements = document.querySelectorAll('#current-price');
+                    priceElements.forEach(element => {
+                        element.textContent = `Rp ${formatNumber(latestData.close)}`;
+                    });
+                    
+                    // Update change element with ID selector
+                    const changeElement = document.getElementById('price-change');
+                    if (changeElement) {
+                        const priceChange = latestData.close - latestData.open;
+                        const priceChangePercent = (priceChange / latestData.open) * 100;
+                        const changeClass = priceChange >= 0 ? 'price-up' : 'price-down';
+                        const changeIcon = priceChange >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill';
+                        
+                        changeElement.className = `price-change ${changeClass}`;
+                        changeElement.innerHTML = `
+                            <i class="bi ${changeIcon}"></i> ${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(0)} (${Math.abs(priceChangePercent).toFixed(2)}%)
+                        `;
+                    }
+                    
+                    // Update last update timestamp
+                    const lastUpdateElement = document.getElementById('last-update');
+                    if (lastUpdateElement) {
+                        const now = new Date();
+                        const dateStr = now.toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                        });
+                        const timeStr = now.toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        lastUpdateElement.textContent = `Last update: ${dateStr} ${timeStr}`;
+                    }
+                }
+            }
+        });
     });
 </script>
 

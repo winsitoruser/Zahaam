@@ -375,9 +375,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.min.js"></script>
-    <!-- Custom JS -->
-    <script src="js/translations.js"></script>
+    <!-- Custom Scripts -->
+    <script src="js/stocks-data.js"></script>
     <script src="js/prediction-chart.js"></script>
+    <script src="js/api-service.js"></script>
     <script src="js/prediction-signals.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -425,11 +426,84 @@
                 }
             };
             
+            // Get stock symbol from URL parameters
+            const getUrlParameter = (name) => {
+                const params = new URLSearchParams(window.location.search);
+                return params.get(name);
+            };
+            
+            // Get the stock symbol from URL or default to BBRI
+            const stockSymbol = getUrlParameter('symbol') || 'BBRI';
+            console.log('Stock symbol from URL:', stockSymbol);
+            
+            // Function to get stock data from indonesianStocks array
+            const getStockDataFromIndStocks = (symbol) => {
+                // Check if indonesianStocks is defined
+                if (typeof indonesianStocks === 'undefined' || !Array.isArray(indonesianStocks)) {
+                    console.error('indonesianStocks data not available');
+                    return { name: `${symbol}`, fullName: `Unknown Company (${symbol})` };
+                }
+                
+                // Find stock in indonesianStocks array
+                const stock = indonesianStocks.find(item => item.code === symbol);
+                
+                // If found, return the data, otherwise return default
+                if (stock) {
+                    return { 
+                        name: stock.name || `Unknown Company (${symbol})`,
+                        fullName: `${stock.name || 'Unknown Company'} (${symbol})`
+                    };
+                } else {
+                    console.warn(`Stock data for ${symbol} not found in indonesianStocks`);
+                    return { name: `${symbol}`, fullName: `Unknown Company (${symbol})` };
+                }
+            };
+            
+            // Get stock data
+            const stockData = getStockDataFromIndStocks(stockSymbol);
+            
+            // Update page title with proper company name
+            document.title = `${stockData.fullName} - AI Prediction | ZAHAAM`;
+            
+            // Update stock info section with company name
+            const stockInfoElement = document.getElementById('stockInfo');
+            if (stockInfoElement) {
+                setTimeout(() => {
+                    // This is just to simulate data loading from server
+                    stockInfoElement.innerHTML = `
+                        <div class="mb-3">
+                            <h4 class="mb-2">${stockData.fullName}</h4>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="fs-4 fw-bold me-3" id="stock-price">Rp 4,580</div>
+                                <span class="price-change price-up"><i class="bi bi-caret-up-fill"></i> 0.77%</span>
+                            </div>
+                            <div class="text-muted small">Last updated: ${new Date().toLocaleString('id-ID')}</div>
+                        </div>
+                    `;
+                }, 800);
+            }
+            
+            // Set the selected option in the dropdown
+            const selectElement = document.getElementById('stockSelector');
+            if (selectElement) {
+                // Check if the option exists
+                const optionExists = Array.from(selectElement.options).some(option => option.value === stockSymbol);
+                
+                if (optionExists) {
+                    selectElement.value = stockSymbol;
+                } else {
+                    console.warn(`Stock ${stockSymbol} not found in dropdown options, using default`);
+                }
+            }
+            
             // Show loading spinner before loading chart
             addLoadingSpinner('predictionChart');
             
-            // Initialize the prediction chart with default values
-            initPredictionChart('predictionChart', 'BBRI');
+            // Update page title with stock symbol
+            document.title = `${stockSymbol} - AI Prediction | ZAHAAM`;
+            
+            // Initialize the prediction chart with the symbol from URL
+            initPredictionChart('predictionChart', stockSymbol);
             
             // Add event listener to the predict button
             document.getElementById('predictBtn').addEventListener('click', function() {
