@@ -6,6 +6,14 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from typing import List, Optional, Dict, Any
 import yfinance as yf
 import pandas as pd
+# Import our numpy compatibility layer first
+from app.utils.numpy_compat import npNaN
+
+# Monkey patch numpy for pandas_ta
+import numpy
+numpy.NaN = npNaN
+
+# Now import pandas_ta
 import pandas_ta as ta
 import numpy as np
 from datetime import datetime, timedelta
@@ -18,24 +26,38 @@ from app.core.database import engine, Base, SessionLocal, get_db
 from app.models.stocks import Stock, StockPrice, StockIndicator
 from app.data.indonesian_stocks import INDONESIAN_STOCKS
 from app.core.init_db import init_db
-from app.api import stocks as stocks_api
-from app.api import prediction as prediction_api
-from app.api import user_strategies as strategies_api
-from app.api import watchlist as watchlist_api
-from app.api import big_data as big_data_api
-from app.api import notifications as notifications_api
+
+# Import API routers
+from app.api import stocks, prediction, user_strategies as strategies, watchlist, big_data, notifications, admin, auth, ml_prediction, backtesting, ai_lab
+from app.api.routers import news_sentiment_api
+
+# Import scheduler
+from app.core.scheduler import JobScheduler, setup_default_jobs
+
+# Import rate limiter
+from app.core.rate_limiter import RateLimitMiddleware
+
+# Import monitoring middleware
+from app.utils.monitoring import MonitoringMiddleware
+
+# Import tasks API router
+from app.api.tasks_api import router as tasks_router
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler()
-    ]
-)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Stock Market Prediction API")
+# Configuration
+Settings = importlib.import_module("app.core.config").Settings()
+
+app = FastAPI(
+    title="Stock Market Prediction API",
+    description="API for stock market prediction and analysis",
+    version="0.2.0",
+    openapi_url="/api/openapi.json",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+)
 
 # CORS middleware configuration
 app.add_middleware(
@@ -46,12 +68,70 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Rate limiting middleware - 120 requests per minute per client/endpoint
+app.add_middleware(RateLimitMiddleware, window_seconds=60, max_requests=120)
+
+# Metrics monitoring middleware
+app.add_middleware(MonitoringMiddleware)
+
 # Initialize database tables and data
 @app.on_event("startup")
 async def on_startup():
-    logger.info("Initializing database...")
-    init_db()
-    logger.info("Database initialized successfully")
+    """Initialize resources on startup"""
+    try:
+        # Setup database connection
+        logger.info("Initializing database connection")
+        db = SessionLocal()
+        try:
+            # Test database connection
+            version = db.execute("SELECT version()").scalar()
+            logger.info(f"Connected to database: {version}")
+        except Exception as e:
+            logger.error(f"Error connecting to database: {str(e)}")
+        finally:
+            db.close()
+            
+        # Initialize Celery (if running in same process)
+        logger.info("Initializing Celery connection")
+        try:
+            from app.core.celery_app import celery_app
+            logger.info(f"Celery initialized with broker: {celery_app.conf.broker_url}")
+        except Exception as e:
+            logger.error(f"Error initializing Celery: {str(e)}")
+            
+        # Initialize and start system monitoring
+        logger.info("Initializing system monitoring")
+        try:
+            from app.utils.monitoring import SystemMonitoring
+            from app.utils.influxdb_client import InfluxDBMetrics
+            
+            # Check InfluxDB connection
+            influx = InfluxDBMetrics.get_instance()
+            if influx.health_check():
+                logger.info("InfluxDB connection successful")
+                
+                # Start system monitoring
+                monitor = SystemMonitoring.get_instance()
+                monitor.start_monitoring()
+                logger.info("System monitoring started")
+            else:
+                logger.warning("InfluxDB health check failed - monitoring will be limited")
+        except Exception as e:
+            logger.error(f"Error initializing monitoring: {str(e)}")
+            
+        # Note: The old scheduler is being replaced by Celery Beat
+        # For backward compatibility during transition, we'll keep the scheduler code
+        # but disable automatic startup
+        logger.info("Setting up background job scheduler (legacy)")
+        from app.core.scheduler import JobScheduler, setup_default_jobs
+        scheduler = JobScheduler.get_instance()
+        # scheduler.start()  # Disabled: now using Celery Beat instead
+        # setup_default_jobs()  # Disabled: now defined in celery_app.py
+        logger.info("Legacy scheduler initialized but not started (using Celery instead)")
+        
+    except Exception as e:
+        logger.error(f"Error during application startup: {e}")
+        # Continue running anyway to allow troubleshooting
 
 # For template rendering
 try:
@@ -109,13 +189,23 @@ try:
 except Exception as e:
     logger.error(f"Error setting up static files and templates: {str(e)}")
 
-# Include API routes
-app.include_router(stocks_api.router)
-app.include_router(prediction_api.router)
-app.include_router(strategies_api.router)
-app.include_router(watchlist_api.router)
-app.include_router(big_data_api.router)
-app.include_router(notifications_api.router)
+# Register API routers
+app.include_router(stocks.router, prefix="/api/stocks", tags=["stocks"])
+app.include_router(prediction.router, prefix="/api/prediction", tags=["prediction"])
+app.include_router(strategies.router, prefix="/api/strategies", tags=["strategies"])
+app.include_router(watchlist.router, prefix="/api/watchlist", tags=["watchlist"])
+app.include_router(big_data.router, prefix="/api/bigdata", tags=["big-data"])
+app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
+app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(ml_prediction.router, prefix="/api/ml", tags=["ml-prediction"])
+app.include_router(news_sentiment_api.router)
+app.include_router(backtesting.router, prefix="/api/backtesting", tags=["backtesting"])
+app.include_router(ai_lab.router, prefix="/api/ai-lab", tags=["ai-lab"])
+
+# Import the tasks API router
+from app.api.tasks_api import router as tasks_router
+app.include_router(tasks_router, prefix="/api", tags=["tasks"])
 
 # List of Indonesian stock tickers (from data/indonesian_stocks.py)
 

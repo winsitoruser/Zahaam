@@ -1,0 +1,24 @@
+2025-06-09 13:42:17,751 - __main__ - INFO - Starting SQLite to PostgreSQL migration
+2025-06-09 13:42:18,376 - __main__ - INFO - Successfully connected to PostgreSQL
+2025-06-09 13:42:18,387 - app.core.database - INFO - Connecting to PostgreSQL database at localhost:5432/stock_prediction
+2025-06-09 13:42:18,401 - __main__ - INFO - Created all tables in PostgreSQL
+2025-06-09 13:42:18,402 - __main__ - ERROR - Failed to get tables from SQLite: Not an executable object: "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+2025-06-09 13:42:18,468 - __main__ - INFO - Updated sequence for table stocks
+2025-06-09 13:42:18,483 - __main__ - INFO - Updated sequence for table stock_prices
+2025-06-09 13:42:18,507 - __main__ - INFO - Updated sequence for table stock_indicators
+2025-06-09 13:42:18,520 - __main__ - INFO - Updated sequence for table stock_metrics
+2025-06-09 13:42:18,530 - __main__ - INFO - Updated sequence for table market_data_snapshots
+2025-06-09 13:42:18,542 - __main__ - ERROR - Failed to update sequences: (psycopg2.errors.DatatypeMismatch) COALESCE types text and integer cannot be matched
+LINE 3: ...    COALESCE((SELECT MAX(id) FROM notifications), 0) + 1, fa...
+                                                             ^
+
+[SQL: 
+                        SELECT setval(pg_get_serial_sequence('notifications', 'id'), 
+                        COALESCE((SELECT MAX(id) FROM notifications), 0) + 1, false)
+                        ]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-06-09 13:42:18,543 - __main__ - ERROR - Failed to get tables from SQLite: Not an executable object: "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+2025-06-09 13:42:18,543 - __main__ - INFO - Validation successful - all data correctly migrated
+2025-06-09 13:42:18,543 - __main__ - INFO - Migration completed in 0.79 seconds
+2025-06-09 13:42:18,543 - __main__ - INFO - Successfully migrated 0 of 0 tables
+2025-06-09 13:42:18,543 - __main__ - INFO - Migration was SUCCESSFUL!
