@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Table, Spinner, Alert } from 'react-bootstrap';
-import Chart from 'react-apexcharts';
+import Plot from 'react-plotly.js';
 import { fetchStockData, formatCurrency, formatNumber, getValueColor } from '../services/api';
 
 const Prediction = () => {
@@ -144,97 +144,84 @@ const Prediction = () => {
     }
   };
   
-  // Chart options for the prediction chart
-  const chartOptions = {
-    chart: {
-      height: 380,
-      type: 'line',
-      zoom: {
-        enabled: true
+  // Prepare data for Plotly chart
+  const preparePlotlyData = () => {
+    if (!predictionData) return [];
+    
+    const dates = predictionData.predictedData.map(item => item.date);
+    const predictedValues = predictionData.predictedData.map(item => item.predicted);
+    const lowerValues = predictionData.predictedData.map(item => item.lower);
+    const upperValues = predictionData.predictedData.map(item => item.upper);
+    
+    return [
+      // Prediction line
+      {
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Predicted Price',
+        x: dates,
+        y: predictedValues,
+        line: { color: '#3f51b5', width: 3 },
+        hovertemplate: '%{x}<br>%{y:,.2f} IDR<extra>Predicted</extra>'
       },
-      toolbar: {
-        show: true
+      // Lower bound
+      {
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Lower Bound',
+        x: dates,
+        y: lowerValues,
+        line: { color: '#f44336', width: 2, dash: 'dot' },
+        hovertemplate: '%{x}<br>%{y:,.2f} IDR<extra>Lower Bound</extra>'
+      },
+      // Upper bound
+      {
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Upper Bound',
+        x: dates,
+        y: upperValues,
+        line: { color: '#4caf50', width: 2, dash: 'dot' },
+        hovertemplate: '%{x}<br>%{y:,.2f} IDR<extra>Upper Bound</extra>'
+      },
+      // Fill area between bounds
+      {
+        type: 'scatter',
+        x: [...dates, ...dates.slice().reverse()],
+        y: [...upperValues, ...lowerValues.slice().reverse()],
+        fill: 'toself',
+        fillcolor: 'rgba(76, 175, 80, 0.1)',
+        line: { color: 'transparent' },
+        name: 'Confidence Interval',
+        showlegend: false,
+        hoverinfo: 'skip'
       }
-    },
-    colors: ['#3f51b5', '#f44336', '#4caf50'],
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      width: [3, 2, 2],
-      curve: 'straight',
-      dashArray: [0, 0, 0]
-    },
-    title: {
-      text: `${selectedStock} Price Prediction`,
-      align: 'left'
-    },
-    legend: {
-      tooltipHoverFormatter: function(val, opts) {
-        return val + ' - ' + opts.w.globals.series[opts.seriesIndex][opts.dataPointIndex] + '';
-      }
-    },
-    markers: {
-      size: 0,
-      hover: {
-        sizeOffset: 6
-      }
-    },
-    xaxis: {
-      categories: predictionData?.predictedData.map(item => item.date) || [],
-    },
-    yaxis: {
-      labels: {
-        formatter: function(value) {
-          return formatCurrency(value, 'IDR').replace('IDR', '').trim();
-        }
-      }
-    },
-    tooltip: {
-      y: [
-        {
-          title: {
-            formatter: function (val) {
-              return val + " (Predicted)";
-            }
-          }
-        },
-        {
-          title: {
-            formatter: function (val) {
-              return val + " (Lower Bound)";
-            }
-          }
-        },
-        {
-          title: {
-            formatter: function (val) {
-              return val + " (Upper Bound)";
-            }
-          }
-        }
-      ]
-    },
-    grid: {
-      borderColor: '#f1f1f1'
-    }
+    ];
   };
   
-  // Chart series for the prediction chart
-  const chartSeries = predictionData ? [
-    {
-      name: "Predicted Price",
-      data: predictionData.predictedData.map(item => item.predicted)
+  // Layout config for Plotly chart
+  const plotlyLayout = {
+    title: {
+      text: `${selectedStock} Price Prediction`,
+      font: { size: 18 }
     },
-    {
-      name: "Lower Bound",
-      data: predictionData.predictedData.map(item => item.lower)
+    height: 380,
+    margin: { l: 50, r: 20, t: 50, b: 30 },
+    xaxis: {
+      title: 'Date',
+      gridcolor: '#f1f1f1'
     },
-    {
-      name: "Upper Bound",
-      data: predictionData.predictedData.map(item => item.upper)
-    }
-  ] : [];
+    yaxis: {
+      title: 'Price (IDR)',
+      tickprefix: '',
+      tickformat: ',.0f',
+      gridcolor: '#f1f1f1'
+    },
+    legend: { orientation: 'h', y: -0.2 },
+    hovermode: 'closest',
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)'
+  };
   
   return (
     <Container>
@@ -317,11 +304,11 @@ const Prediction = () => {
               </div>
             </Card.Header>
             <Card.Body>
-              <Chart
-                options={chartOptions}
-                series={chartSeries}
-                type="line"
-                height={380}
+              <Plot
+                data={preparePlotlyData()}
+                layout={plotlyLayout}
+                config={{ responsive: true, displayModeBar: false }}
+                style={{ width: '100%', height: '100%' }}
               />
             </Card.Body>
           </Card>

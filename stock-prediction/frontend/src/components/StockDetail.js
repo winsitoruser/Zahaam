@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Card, Row, Col, Badge } from 'react-bootstrap';
-import Chart from 'react-apexcharts';
+import Plot from 'react-plotly.js';
 import { formatCurrency, formatPercentage, getValueColor } from '../services/api';
 
 const StockDetail = ({ stockData }) => {
@@ -10,78 +10,50 @@ const StockDetail = ({ stockData }) => {
 
   const { ticker, data, indicators, company } = stockData;
   
-  // Prepare chart data
-  const chartOptions = {
-    chart: {
-      type: 'candlestick',
-      height: 350,
-      toolbar: {
-        show: true,
-        tools: {
-          download: true,
-          selection: true,
-          zoom: true,
-          zoomin: true,
-          zoomout: true,
-          pan: true,
-          reset: true
-        },
-      },
-    },
-    title: {
-      text: `${company?.name || ticker} (${ticker})`,
-      align: 'left',
-      style: {
-        fontSize: '16px',
-        fontWeight: 'bold'
-      }
-    },
-    xaxis: {
-      type: 'datetime'
-    },
-    yaxis: {
-      tooltip: {
-        enabled: true
-      },
-      labels: {
-        formatter: (value) => formatCurrency(value, 'IDR').replace('IDR', '').trim()
-      }
-    },
-    plotOptions: {
-      candlestick: {
-        colors: {
-          upward: '#00B746',
-          downward: '#EF403C'
-        },
-        wick: {
-          useFillColor: true
-        }
-      }
-    },
-    tooltip: {
-      enabled: true,
-      x: {
-        show: true,
-        format: 'dd MMM yyyy',
-        formatter: undefined,
-      },
-    },
-  };
-
-  const chartSeries = [
+  // Prepare data for Plotly chart
+  const plotData = [
     {
-      name: 'candlestick',
-      data: data.map(item => ({
-        x: new Date(item.Date).getTime(),
-        y: [
-          parseFloat(item.Open),
-          parseFloat(item.High),
-          parseFloat(item.Low),
-          parseFloat(item.Close)
-        ]
-      }))
+      type: 'candlestick',
+      name: ticker,
+      x: data.map(item => new Date(item.Date)),
+      open: data.map(item => parseFloat(item.Open)),
+      high: data.map(item => parseFloat(item.High)),
+      low: data.map(item => parseFloat(item.Low)),
+      close: data.map(item => parseFloat(item.Close)),
+      increasing: { line: { color: '#00B746' } },
+      decreasing: { line: { color: '#EF403C' } },
+      hoverinfo: 'x+open+high+low+close',
     }
   ];
+
+  // Plotly layout configuration
+  const plotLayout = {
+    title: {
+      text: `${company?.name || ticker} (${ticker})`,
+      font: { size: 16, family: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif' }
+    },
+    height: 350,
+    margin: { l: 50, r: 20, t: 40, b: 20 },
+    xaxis: { 
+      rangeslider: { visible: false },
+      type: 'date'
+    },
+    yaxis: {
+      title: 'Price (IDR)',
+      tickprefix: '',
+      tickformat: ',.0f'
+    },
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)'
+  };
+
+  // Plotly config for toolbar and responsiveness
+  const plotConfig = {
+    responsive: true,
+    displayModeBar: true,
+    modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+    displaylogo: false
+  };
 
   // Calculate price change
   const priceChange = company?.currentPrice - company?.previousClose;
@@ -110,11 +82,11 @@ const StockDetail = ({ stockData }) => {
         </div>
 
         <div className="mb-4" style={{ height: '350px' }}>
-          <Chart
-            options={chartOptions}
-            series={chartSeries}
-            type="candlestick"
-            height="100%"
+          <Plot
+            data={plotData}
+            layout={plotLayout}
+            config={plotConfig}
+            style={{ width: '100%', height: '100%' }}
           />
         </div>
 

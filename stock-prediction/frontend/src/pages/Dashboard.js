@@ -1,38 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Alert, Form, Spinner, Table, Badge, InputGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import '../components/dashboard/dashboard.css';
-import './futuristic-dashboard.css'; // Import CSS baru untuk dashboard futuristik
-import { fetchStocks } from '../services/api';
+import { Container, Row, Col, Card, Button, Form, Badge, InputGroup } from 'react-bootstrap';
+import { 
+  FaChartLine, 
+  FaTachometerAlt, 
+  FaChartBar, 
+  FaBell, 
+  FaSearch, 
+  FaCog, 
+  FaRegNewspaper, 
+  FaTable, 
+  FaRegChartBar,
+  FaGithub,
+  FaTwitter,
+  FaLinkedin,
+  FaFilter,
+  FaBolt,
+  FaBroadcastTower
+} from 'react-icons/fa';
+import * as api from '../services/apiIntegration';
+import { AuthContext } from '../contexts/AuthContext';
 import MarketNews from '../components/MarketNews';
 
-// Import komponen dashboard baru
+// Import dashboard components
 import MarketOverview from '../components/dashboard/MarketOverview';
 import SectorOverview from '../components/dashboard/SectorOverview';
 import TopStocksWidget from '../components/dashboard/TopStocksWidget';
 import StockTable from '../components/dashboard/StockTable';
 
-// Helper functions
-const formatNumber = (num) => {
-  return new Intl.NumberFormat('id-ID').format(num);
-};
+// Import styles
+import './larkon-dashboard.css';
 
-const formatCurrency = (num) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
-};
-
-const getValueColor = (value) => {
-  if (value > 0) return 'text-success';
-  if (value < 0) return 'text-danger';
-  return 'text-secondary';
-};
+// Using API service for helper functions
 
 const Dashboard = () => {
   const [topGainers, setTopGainers] = useState([]);
   const [topLosers, setTopLosers] = useState([]);
   const [marketIndex, setMarketIndex] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  
+  // Authentication context
+  const { isAuthenticated, authToken } = useContext(AuthContext);
 
-  // State untuk data sektor dan daftar saham
+  // State for sector data and stock lists
   const [sectors, setSectors] = useState([]);
   const [allStocks, setAllStocks] = useState([]);
   const [mostActive, setMostActive] = useState([]);
@@ -48,421 +59,518 @@ const Dashboard = () => {
     declining: 254,
     unchanged: 98
   });
+  
+  // Format the last updated time
+  const getFormattedUpdateTime = () => {
+    if (!lastUpdated) return 'Loading...';
+    return lastUpdated.toLocaleTimeString('id-ID', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
 
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch list of stocks dari API
-        const data = await fetchStocks();
-        
-        // Menghasilkan data dummy untuk pengembangan UI
-        // Dalam implementasi sebenarnya, data ini akan diambil dari API
-        
-        // Data saham
-        const stocksData = [
-          { ticker: 'BBCA', name: 'Bank Central Asia Tbk', price: 9525, change: 3.53, volume: 12500000, sector: 'Keuangan' },
-          { ticker: 'BBRI', name: 'Bank Rakyat Indonesia Tbk', price: 4640, change: 2.12, volume: 18750000, sector: 'Keuangan' },
-          { ticker: 'BMRI', name: 'Bank Mandiri Tbk', price: 6250, change: 2.46, volume: 9870000, sector: 'Keuangan' },
-          { ticker: 'TLKM', name: 'Telkom Indonesia Tbk', price: 4120, change: 3.0, volume: 7650000, sector: 'Telekomunikasi' },
-          { ticker: 'ASII', name: 'Astra International Tbk', price: 5475, change: 2.34, volume: 8920000, sector: 'Otomotif & Komponen' },
-          { ticker: 'UNVR', name: 'Unilever Indonesia Tbk', price: 4750, change: 2.04, volume: 5430000, sector: 'Barang Konsumen' },
-          { ticker: 'ICBP', name: 'Indofood CBP Sukses Makmur Tbk', price: 8725, change: -3.06, volume: 3560000, sector: 'Barang Konsumen' },
-          { ticker: 'INDF', name: 'Indofood Sukses Makmur Tbk', price: 6150, change: -2.77, volume: 4250000, sector: 'Barang Konsumen' },
-          { ticker: 'EXCL', name: 'XL Axiata Tbk', price: 2150, change: -5.29, volume: 6780000, sector: 'Telekomunikasi' },
-          { ticker: 'KLBF', name: 'Kalbe Farma Tbk', price: 1475, change: -4.84, volume: 9870000, sector: 'Kesehatan' },
-          { ticker: 'ANTM', name: 'Aneka Tambang Tbk', price: 2340, change: 1.75, volume: 10250000, sector: 'Pertambangan' },
-          { ticker: 'PTBA', name: 'Bukit Asam Tbk', price: 3150, change: -1.25, volume: 7650000, sector: 'Pertambangan' },
-          { ticker: 'INCO', name: 'Vale Indonesia Tbk', price: 5250, change: 0.86, volume: 5430000, sector: 'Pertambangan' },
-          { ticker: 'SMGR', name: 'Semen Indonesia Tbk', price: 8150, change: -0.98, volume: 3560000, sector: 'Industri Dasar' },
-          { ticker: 'JPFA', name: 'Japfa Comfeed Indonesia Tbk', price: 1590, change: 2.58, volume: 6780000, sector: 'Agrikultur' },
-          { ticker: 'CPIN', name: 'Charoen Pokphand Indonesia Tbk', price: 5125, change: 1.79, volume: 4250000, sector: 'Agrikultur' },
-          { ticker: 'INKP', name: 'Indah Kiat Pulp & Paper Tbk', price: 7850, change: -1.51, volume: 2340000, sector: 'Industri Dasar' },
-          { ticker: 'TPIA', name: 'Chandra Asri Pacific Tbk', price: 10250, change: 3.12, volume: 1890000, sector: 'Industri Dasar' },
-          { ticker: 'ERAA', name: 'Erajaya Swasembada Tbk', price: 825, change: -2.37, volume: 7890000, sector: 'Perdagangan & Jasa' },
-          { ticker: 'MNCN', name: 'Media Nusantara Citra Tbk', price: 1240, change: 0.81, volume: 6540000, sector: 'Perdagangan & Jasa' },
-          // Tambahkan lebih banyak saham untuk demo
-          { ticker: 'PGAS', name: 'Perusahaan Gas Negara Tbk', price: 1570, change: 1.29, volume: 8760000, sector: 'Infrastruktur' },
-          { ticker: 'JSMR', name: 'Jasa Marga Tbk', price: 4020, change: -0.74, volume: 3290000, sector: 'Infrastruktur' },
-          { ticker: 'AKRA', name: 'AKR Corporindo Tbk', price: 1285, change: 2.15, volume: 7650000, sector: 'Perdagangan & Jasa' },
-          { ticker: 'SCMA', name: 'Surya Citra Media Tbk', price: 1660, change: -1.19, volume: 4560000, sector: 'Perdagangan & Jasa' },
-          { ticker: 'BRPT', name: 'Barito Pacific Tbk', price: 985, change: 3.68, volume: 9870000, sector: 'Industri Dasar' },
-          { ticker: 'ITMG', name: 'Indo Tambangraya Megah Tbk', price: 16250, change: -2.41, volume: 2450000, sector: 'Pertambangan' },
-          { ticker: 'INTP', name: 'Indocement Tunggal Prakarsa Tbk', price: 9750, change: 0.93, volume: 2750000, sector: 'Industri Dasar' },
-          { ticker: 'UNTR', name: 'United Tractors Tbk', price: 27500, change: 1.85, volume: 1980000, sector: 'Perdagangan & Jasa' },
-          { ticker: 'BSDE', name: 'Bumi Serpong Damai Tbk', price: 1120, change: -1.32, volume: 8540000, sector: 'Properti & Real Estate' },
-          { ticker: 'SMRA', name: 'Summarecon Agung Tbk', price: 890, change: 2.30, volume: 6580000, sector: 'Properti & Real Estate' }
-        ];
-        
-        // Menyimpan data saham
+  // Dashboard data loading function - extracted outside useEffect for reusability
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null); // Reset error state before new load
+      
+      // Use batch API request for fetching all dashboard data at once
+      // This optimizes network requests and leverages client-side caching
+      const {
+        stocks: stocksData,
+        marketSummary: fetchedMarketSummary,
+        sectors: sectorData
+      } = await api.fetchDashboardData();
+      
+      // Set the lastUpdated timestamp
+      setLastUpdated(new Date());
+      
+      // Process data for the dashboard with defensive checks
+      if (stocksData && Array.isArray(stocksData)) {
+        // Set all stocks
         setAllStocks(stocksData);
         
-        // Menambahkan properti percentChange ke setiap saham
-        stocksData.forEach(stock => {
-          // Menghitung percentChange berdasarkan price dan change
-          stock.percentChange = (stock.change / stock.price) * 100;
-        });
-        
-        // Top Gainers - diurutkan berdasarkan perubahan harga (positif)
+        // Set top gainers - sort by highest change percentage
         const gainers = [...stocksData]
-          .filter(stock => stock.change > 0)
-          .sort((a, b) => b.change - a.change)
+          .filter(stock => stock && typeof stock.change === 'number' && stock.change > 0)
+          .sort((a, b) => (b?.change || 0) - (a?.change || 0))
           .slice(0, 5);
         setTopGainers(gainers);
         
-        // Top Losers - diurutkan berdasarkan perubahan harga (negatif)
+        // Set top losers - sort by lowest change percentage
         const losers = [...stocksData]
-          .filter(stock => stock.change < 0)
-          .sort((a, b) => a.change - b.change)
+          .filter(stock => stock && typeof stock.change === 'number' && stock.change < 0)
+          .sort((a, b) => (a?.change || 0) - (b?.change || 0))
           .slice(0, 5);
         setTopLosers(losers);
         
-        // Most Active - diurutkan berdasarkan volume
+        // Set most active stocks by volume
         const active = [...stocksData]
-          .sort((a, b) => b.volume - a.volume)
+          .filter(stock => stock && typeof stock.volume === 'number')
+          .sort((a, b) => (b?.volume || 0) - (a?.volume || 0))
           .slice(0, 5);
         setMostActive(active);
-        
-        // Agregasi data sektor
-        const sectorMap = {};
-        stocksData.forEach(stock => {
-          if (!sectorMap[stock.sector]) {
-            sectorMap[stock.sector] = {
-              name: stock.sector,
-              stocks: [],
-              performance: 0,
-              stockCount: 0,
-              totalMarketCap: 0,
-              percentage: 0
-            };
-          }
-          sectorMap[stock.sector].stocks.push(stock);
-          sectorMap[stock.sector].stockCount++;
-          // Menghitung rata-rata performa sektor
-          sectorMap[stock.sector].performance += stock.change;
-        });
-        
-        // Mengolah data sektor
-        let sectorsData = Object.values(sectorMap);
-        
-        // Definisi warna untuk masing-masing sektor
-        const sectorColors = {
-          'Keuangan': '#2E86C1',
-          'Telekomunikasi': '#3498DB',
-          'Otomotif & Komponen': '#5DADE2',
-          'Barang Konsumen': '#85C1E9',
-          'Kesehatan': '#AED6F1',
-          'Pertambangan': '#17A589',
-          'Industri Dasar': '#1ABC9C',
-          'Agrikultur': '#48C9B0',
-          'Perdagangan & Jasa': '#76D7C4',
-          'Infrastruktur': '#A3E4D7',
-          'Properti & Real Estate': '#D4AC0D'
-        };
-        
-        sectorsData.forEach(sector => {
-          sector.performance = sector.performance / sector.stockCount;
-          sector.percentage = Math.round((sector.stockCount / stocksData.length) * 100);
-          sector.color = sectorColors[sector.name] || '#F1C40F'; // Assign warna ke sektor
-        });
-        
-        setSectors(sectorsData);
-        
-        // Simulasi data IHSG untuk chart
-        const ihsgHistorical = [
-          { x: new Date('2025-05-15').getTime(), y: 6872.67 },
-          { x: new Date('2025-05-16').getTime(), y: 6888.23 },
-          { x: new Date('2025-05-17').getTime(), y: 6895.52 },
-          { x: new Date('2025-05-18').getTime(), y: 6909.78 },
-          { x: new Date('2025-05-19').getTime(), y: 6921.43 },
-          { x: new Date('2025-05-20').getTime(), y: 6918.25 },
-          { x: new Date('2025-05-21').getTime(), y: 6932.67 },
-          { x: new Date('2025-05-22').getTime(), y: 6945.73 },
-          { x: new Date('2025-05-23').getTime(), y: 6967.84 },
-          { x: new Date('2025-05-24').getTime(), y: 6958.32 },
-          { x: new Date('2025-05-25').getTime(), y: 6972.46 },
-          { x: new Date('2025-05-26').getTime(), y: 6985.21 },
-          { x: new Date('2025-05-27').getTime(), y: 7012.54 },
-          { x: new Date('2025-05-28').getTime(), y: 6998.74 },
-          { x: new Date('2025-05-29').getTime(), y: 7025.36 }
-        ];
-        
-        setIhsgData(ihsgHistorical.map(item => item.y));
-        setMarketIndex(ihsgHistorical);
-        
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-      } finally {
-        setLoading(false);
       }
-    };
-    
-    loadDashboardData();
-  }, []);
-
-  // Index chart options
-  const indexChartOptions = {
-    chart: {
-      type: 'area',
-      height: 250,
-      toolbar: {
-        show: false
-      },
-      zoom: {
-        enabled: false
+      
+      // Set market summary data
+      if (fetchedMarketSummary) {
+        setMarketSummary(fetchedMarketSummary);
       }
-    },
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      curve: 'smooth',
-      width: 3
-    },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.7,
-        opacityTo: 0.2,
-        stops: [0, 90, 100]
+      
+      // Set sectors data if available
+      if (sectorData && Array.isArray(sectorData)) {
+        setSectors(sectorData);
       }
-    },
-    xaxis: {
-      type: 'datetime',
-      categories: marketIndex.map(item => item.date),
-      labels: {
-        formatter: function(value) {
-          return new Date(value).toLocaleDateString('id-ID', {
-            month: 'short',
-            day: 'numeric'
-          });
-        }
-      },
-      axisBorder: {
-        show: false
-      },
-      axisTicks: {
-        show: false
+      
+      // Set market index data if available in the response
+      if (fetchedMarketSummary && fetchedMarketSummary.indices && Array.isArray(fetchedMarketSummary.indices)) {
+        setMarketIndex(fetchedMarketSummary.indices);
       }
-    },
-    yaxis: {
-      labels: {
-        formatter: function(value) {
-          return value.toFixed(0);
-        }
+      
+      // Set IHSG historical data if available
+      if (fetchedMarketSummary && fetchedMarketSummary.ihsgData && Array.isArray(fetchedMarketSummary.ihsgData)) {
+        setIhsgData(fetchedMarketSummary.ihsgData);
       }
-    },
-    tooltip: {
-      x: {
-        format: 'dd MMM yyyy'
+      
+      // If stocksData is invalid, log warning
+      if (!stocksData || !Array.isArray(stocksData)) {
+        console.warn('Unexpected API response format for stocks');
+        setError('Unexpected data format received from server');
       }
-    },
-    colors: ['#3f51b5']
-  };
-  
-  const indexChartSeries = [
-    {
-      name: 'IDX Composite',
-      data: marketIndex.map(item => item.value)
+      
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading dashboard data', error);
+      setError('Failed to load dashboard data. Using fallback data.');
+      // In case of error, we can still display the UI with default values
+      setLoading(false);
     }
-  ];
-  
-  // Calculate index change
-  const calculateIndexChange = () => {
-    if (marketIndex.length < 2) return { value: 0, percent: 0 };
-    
-    const latest = marketIndex[marketIndex.length - 1].value;
-    const previous = marketIndex[marketIndex.length - 2].value;
-    const change = latest - previous;
-    const percentChange = (change / previous) * 100;
-    
-    return {
-      value: change,
-      percent: percentChange
-    };
   };
+
+  useEffect(() => {
+    // Load data on component mount
+    loadDashboardData();
+    
+    // Set up automated refresh interval - refresh data every minute
+    // Only if the component is mounted and visible
+    const refreshInterval = setInterval(() => {
+      // Check if document is visible before refreshing to save resources
+      if (!document.hidden) {
+        loadDashboardData();
+      }
+    }, 60000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(refreshInterval);
+  }, []);
   
-  const indexChange = calculateIndexChange();
-  
-  if (loading) {
-    return (
-      <div className="text-center py-5">
-        <Spinner animation="border" role="status" className="pulse-animation">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      </div>
-    );
-  }
-  
+  // Optional effect to refresh data when authentication state changes
+  // This ensures we get authorized data when a user logs in
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Reload data to get personalized/authenticated content
+      loadDashboardData();
+    }
+  }, [isAuthenticated]);
+
   return (
-    <div className="dashboard-container dashboard-futuristic">
-      {/* Header Floating Bar */}
-      <div className="dashboard-header-floating">
-        <Container fluid>
-          <Row className="align-items-center">
-            <Col md={6} className="d-flex align-items-center">
-              <div className="dashboard-logo">
-                <i className="bi bi-graph-up-arrow"></i>
-              </div>
-              <div className="ms-3">
-                <h1 className="dashboard-title mb-0">NEXUS TRADE</h1>
-                <div className="dashboard-subtitle">Advanced Market Intelligence</div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center justify-content-end">
-                <div className="dashboard-date-badge me-3">
-                  <i className="bi bi-calendar3 me-2"></i>
-                  {new Date().toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </div>
-                <div className="search-container">
-                  <InputGroup>
-                    <InputGroup.Text className="search-icon">
-                      <i className="bi bi-search"></i>
-                    </InputGroup.Text>
-                    <Form.Control 
-                      placeholder="Search ticker or company..." 
-                      className="search-input"
-                      aria-label="Search stocks"
-                    />
-                  </InputGroup>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </Container>
+    <Container fluid className="p-3">
+      {/* Error alert if there's an error */}
+      {error && (
+        <div className="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+          <div className="d-flex align-items-center">
+            <FaBell className="me-2" />
+            <strong>{error}</strong>
+          </div>
+          <button type="button" className="btn-close" onClick={() => setError(null)} aria-label="Close"></button>
+        </div>
+      )}
+      
+      {/* Top bar with live indicator, search and actions */}
+      <Row className="mb-4 align-items-center">
+        <Col xs={12} md={6}>
+          <div className="d-flex align-items-center">
+            <div className="live-indicator me-3">
+              <FaBroadcastTower className={`live-icon ${loading ? 'pulse' : ''}`} />
+              <span className="ms-2">Live Data</span>
+            </div>
+            <Badge bg="primary" className="me-2">IHSG</Badge>
+            <h3 className="mb-0">{marketSummary.ihsg}</h3>
+            <h6 className={`mb-0 ms-2 ${getValueColor(marketSummary.change)}`}>
+              {marketSummary.change > 0 ? '+' : ''}{marketSummary.change}%
+            </h6>
+            <div className="last-updated ms-3">
+              <small className="text-muted">Updated: {getFormattedUpdateTime()}</small>
+            </div>
+          </div>
+        </Col>
+        <Col xs={12} md={6}>
+          <div className="d-flex justify-content-md-end mt-3 mt-md-0">
+            <InputGroup className="dashboard-search me-2">
+              <InputGroup.Text><FaSearch /></InputGroup.Text>
+              <Form.Control type="text" placeholder="Search stocks..." />
+            </InputGroup>
+            <Button variant="outline-primary" className="icon-button me-2">
+              <FaBell />
+            </Button>
+            <Button variant="outline-primary" className="icon-button me-2">
+              <FaCog />
+            </Button>
+            <Button 
+              variant="primary" 
+              className="icon-button"
+              onClick={() => loadDashboardData()} 
+              disabled={loading}
+            >
+              {loading ? <div className="spinner-border spinner-border-sm" role="status"></div> : <FaFilter />}
+            </Button>
+          </div>
+        </Col>
+      </Row>
+
+      {/* Welcome Header */}
+      <div className="welcome-header mb-4">
+        <h4 className="welcome-title">Welcome to ZAHAAM Stock Platform</h4>
+        <p className="welcome-subtitle">
+          {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </p>
       </div>
 
-      <Container fluid className="dashboard-content">
-        {/* Market Pulse Section */}
-        <div className="dashboard-section market-pulse-section">
-          <div className="section-header">
-            <h2 className="section-title">Market Pulse</h2>
-            <div className="section-subtitle">Real-time market insights</div>
+      {/* Main Dashboard Content */}
+      {/* Market Overview Section - Full Width */}
+      <Row className="g-4 mb-4">
+        <Col xs={12}>
+          <div className="futuristic-card primary-card">
+            <div className="card-glow"></div>
+            <div className="card-content h-100">
+              <MarketOverview
+                marketSummary={marketSummary}
+                ihsgData={ihsgData}
+                loading={loading}
+              />
+            </div>
           </div>
-          
-          <Row className="g-4">
-            {/* Market Overview Card - Enhanced */}
-            <Col lg={5} md={12}>
-              <div className="futuristic-card primary-card">
-                <div className="card-glow"></div>
-                <div className="card-content h-100">
-                  <MarketOverview ihsgData={ihsgData} marketSummary={marketSummary} />
+        </Col>
+      </Row>
+
+      {/* Sector Overview and Market Summary - Side by Side */}
+      <Row className="g-4">
+        {/* Sector Overview Section */}
+        <Col md={6}>
+          <Card className="shadow-sm h-100">
+            <Card.Header className="bg-white">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center">
+                  <div className="header-icon-circle bg-success text-white me-2">
+                    <FaChartBar />
+                  </div>
+                  <h5 className="mb-0">Sector Overview</h5>
+                </div>
+                <Badge bg="info" className="badge-interactive">
+                  <FaBolt className="me-1" />
+                  Live
+                </Badge>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              <SectorOverview 
+                sectors={sectors}
+                loading={loading}
+              />
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Market Summary */}
+        <Col md={6}>
+          <Card className="shadow-sm h-100">
+            <Card.Header className="bg-white">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center">
+                  <div className="header-icon-circle bg-primary text-white me-2">
+                    <FaTachometerAlt />
+                  </div>
+                  <h5 className="mb-0">Market Summary</h5>
                 </div>
               </div>
-            </Col>
-            
-            {/* Sector Overview - Enhanced */}
-            <Col lg={7} md={12}>
-              <div className="futuristic-card secondary-card">
-                <div className="card-glow"></div>
-                <div className="card-content h-100">
-                  <SectorOverview sectors={sectors} />
+            </Card.Header>
+            <Card.Body>
+              <div className="market-summary">
+                <div className="summary-item">
+                  <span className="summary-label">Trading Volume</span>
+                  <span className="summary-value">{formatNumber(marketSummary.volume)}</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Trading Value</span>
+                  <span className="summary-value">{formatCurrency(marketSummary.value)}</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Market Cap</span>
+                  <span className="summary-value">{formatCurrency(marketSummary.marketCap)}</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Frequency</span>
+                  <span className="summary-value">{formatNumber(marketSummary.frequency)}</span>
+                </div>
+                <div className="summary-chart">
+                  <div className="d-flex justify-content-between">
+                    <div className="chart-stat">
+                      <span className="text-success">{marketSummary.advancing}</span>
+                      <small>Advancing</small>
+                    </div>
+                    <div className="chart-stat">
+                      <span className="text-danger">{marketSummary.declining}</span>
+                      <small>Declining</small>
+                    </div>
+                    <div className="chart-stat">
+                      <span className="text-secondary">{marketSummary.unchanged}</span>
+                      <small>Unchanged</small>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </Col>
-          </Row>
-        </div>
-        
-        {/* Market Leaders Section */}
-        <div className="dashboard-section market-leaders-section mt-5">
-          <div className="section-header">
-            <h2 className="section-title">Market Leaders</h2>
-            <div className="section-subtitle">Top performing stocks and market movers</div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Market Leaders Section - Full Width with 3 cards */}
+      <Row className="mt-4">
+        <Col xs={12} className="mb-3">
+          <div className="d-flex align-items-center justify-content-between">
+            <h5 className="mb-0">Market Leaders</h5>
+            <Button variant="outline-primary" size="sm">View All</Button>
           </div>
-          
-          <div className="futuristic-card accent-card">
-            <div className="card-glow"></div>
-            <div className="card-content">
-              <TopStocksWidget gainers={topGainers} losers={topLosers} mostActive={mostActive} />
-            </div>
-          </div>
-        </div>
-        
-        {/* Market Data Grid Section */}
-        <div className="dashboard-section market-data-section mt-5">
-          <div className="section-header with-actions">
-            <div>
-              <h2 className="section-title">Market Data</h2>
-              <div className="section-subtitle">Comprehensive stock performance data</div>
-            </div>
-            <div className="section-actions">
-              <OverlayTrigger placement="top" overlay={<Tooltip>Export data to CSV</Tooltip>}>
-                <Button variant="outline-light" size="sm" className="action-button">
-                  <i className="bi bi-download me-2"></i>Export
-                </Button>
-              </OverlayTrigger>
-              <OverlayTrigger placement="top" overlay={<Tooltip>Filter market data</Tooltip>}>
-                <Button variant="outline-light" size="sm" className="action-button ms-2">
-                  <i className="bi bi-funnel me-2"></i>Filter
-                </Button>
-              </OverlayTrigger>
-            </div>
-          </div>
-          
-          <div className="futuristic-card data-card">
-            <div className="card-glow"></div>
-            <div className="card-content p-0">
-              <StockTable stocks={allStocks} />
-            </div>
-          </div>
-        </div>
-        
-        {/* Market Intelligence Section */}
-        <div className="dashboard-section market-news-section mt-5 mb-5">
-          <div className="section-header">
-            <h2 className="section-title">Market Intelligence</h2>
-            <div className="section-subtitle">Latest news and market analysis</div>
-          </div>
-          
-          <div className="futuristic-card info-card">
-            <div className="card-glow"></div>
-            <div className="card-content">
-              <MarketNews />
-            </div>
-          </div>
-        </div>
-        
-        {/* Dashboard Footer */}
-        <div className="dashboard-footer">
-          <div className="footer-branding">
-            <span className="footer-logo"><i className="bi bi-graph-up-arrow"></i> NEXUS TRADE</span>
-            <span className="footer-tagline">Real-time market intelligence platform</span>
-          </div>
-          <div className="footer-status">
-            <Badge bg="success" pill className="status-badge">
-              <i className="bi bi-broadcast me-1"></i> Live Data
-            </Badge>
-            <span className="footer-timestamp">Last updated: {new Date().toLocaleTimeString()}</span>
-          </div>
-        </div>
-      </Container>
+        </Col>
+      </Row>
       
-      {/* Floating Action Button */}
-      <div className="floating-action-button">
-        <OverlayTrigger placement="left" overlay={<Tooltip>Quick actions</Tooltip>}>
-          <Button className="rounded-circle pulse-button">
-            <i className="bi bi-lightning-fill"></i>
-          </Button>
-        </OverlayTrigger>
-      </div>
-      
-      {/* Ambient Background Elements */}
-      <div className="ambient-elements">
-        <div className="ambient-circle circle-1"></div>
-        <div className="ambient-circle circle-2"></div>
-        <div className="ambient-circle circle-3"></div>
-        <div className="ambient-line line-1"></div>
-        <div className="ambient-line line-2"></div>
-        <div className="ambient-dot dot-grid"></div>
-      </div>
-    </div>
+      <Row>
+        {/* Top Gainers Card */}
+        <Col md={4} className="mb-4">
+          <Card className="shadow-sm h-100">
+            <Card.Header className="bg-white">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center">
+                  <div className="header-icon-circle bg-success text-white me-2">
+                    <FaRegChartBar />
+                  </div>
+                  <h5 className="mb-0">Top Gainers</h5>
+                </div>
+                <Badge bg="success" className="badge-interactive">
+                  <FaBolt className="me-1" />
+                  Rising
+                </Badge>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              {loading ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="stock-list">
+                  {topGainers && topGainers.length > 0 ? (
+                    topGainers.map((stock, index) => (
+                      <div key={`gainer-${index}`} className="stock-item">
+                        <div className="stock-name">
+                          <strong>{stock.symbol}</strong>
+                          <small>{stock.name}</small>
+                        </div>
+                        <div className="stock-price">
+                          <div>{formatCurrency(stock.price)}</div>
+                          <div className="text-success">+{stock.change}%</div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-muted">No data available</p>
+                  )}
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Top Losers Card */}
+        <Col md={4} className="mb-4">
+          <Card className="shadow-sm h-100">
+            <Card.Header className="bg-white">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center">
+                  <div className="header-icon-circle bg-danger text-white me-2">
+                    <FaRegChartBar />
+                  </div>
+                  <h5 className="mb-0">Top Losers</h5>
+                </div>
+                <Badge bg="danger" className="badge-interactive">
+                  <FaBolt className="me-1" />
+                  Falling
+                </Badge>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              {loading ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="stock-list">
+                  {topLosers && topLosers.length > 0 ? (
+                    topLosers.map((stock, index) => (
+                      <div key={`loser-${index}`} className="stock-item">
+                        <div className="stock-name">
+                          <strong>{stock.symbol}</strong>
+                          <small>{stock.name}</small>
+                        </div>
+                        <div className="stock-price">
+                          <div>{formatCurrency(stock.price)}</div>
+                          <div className="text-danger">{stock.change}%</div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-muted">No data available</p>
+                  )}
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Most Active Card */}
+        <Col md={4} className="mb-4">
+          <Card className="shadow-sm h-100">
+            <Card.Header className="bg-white">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center">
+                  <div className="header-icon-circle bg-info text-white me-2">
+                    <FaTable />
+                  </div>
+                  <h5 className="mb-0">Most Active</h5>
+                </div>
+                <Badge bg="info" className="badge-interactive">
+                  <FaBolt className="me-1" />
+                  Volume
+                </Badge>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              {loading ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="stock-list">
+                  {mostActive && mostActive.length > 0 ? (
+                    mostActive.map((stock, index) => (
+                      <div key={`active-${index}`} className="stock-item">
+                        <div className="stock-name">
+                          <strong>{stock.symbol}</strong>
+                          <small>{stock.name}</small>
+                        </div>
+                        <div className="stock-data">
+                          <div>{api.formatCurrency(stock.price)}</div>
+                          <div className={`${api.getValueColor(stock.change)}`}>
+                            {stock.change > 0 ? '+' : ''}{stock.change}%
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-muted">No data available</p>
+                  )}
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Stock List - Full Width */}
+      <Row>
+        <Col xs={12} className="mb-4">
+          <Card className="shadow-sm">
+            <Card.Header className="bg-white">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center">
+                  <div className="header-icon-circle bg-primary text-white me-2">
+                    <FaTable />
+                  </div>
+                  <h5 className="mb-0">Stock List</h5>
+                </div>
+                <Badge bg="secondary" className="badge-interactive">
+                  <FaBolt className="me-1" />
+                  Interactive
+                </Badge>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              <StockTable 
+                stocks={allStocks}
+                loading={loading}
+              />
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Market Intelligence */}
+      <Row>
+        <Col xs={12} className="mb-4">
+          <Card className="shadow-sm">
+            <Card.Header className="bg-white">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center">
+                  <div className="header-icon-circle bg-danger text-white me-2">
+                    <FaRegNewspaper />
+                  </div>
+                  <h5 className="mb-0">Market Intelligence</h5>
+                </div>
+                <Badge bg="primary">
+                  <FaBolt className="me-1" />
+                  Updated
+                </Badge>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              <MarketNews loading={loading} />
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Footer */}
+      <Row className="mt-4">
+        <Col xs={12}>
+          <div className="dashboard-footer">
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center">
+              <div className="mb-3 mb-md-0">
+                <p className="text-muted mb-0">© 2023 Zahaam Stock Prediction System. All rights reserved.</p>
+              </div>
+              <div className="d-flex">
+                <a href="#github" className="footer-social-link me-3">
+                  <FaGithub />
+                </a>
+                <a href="#twitter" className="footer-social-link me-3">
+                  <FaTwitter />
+                </a>
+                <a href="#linkedin" className="footer-social-link">
+                  <FaLinkedin />
+                </a>
+              </div>
+            </div>
+          </div>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
