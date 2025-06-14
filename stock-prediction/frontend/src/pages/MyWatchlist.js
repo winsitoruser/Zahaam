@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Container, Row, Col, Card, Table, Button, Form, Spinner, Modal, Alert, Tabs, Tab, Badge } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { formatCurrency, getValueColor } from '../services/api';
+import { Link, useNavigate } from 'react-router-dom';
+import * as api from '../services/apiIntegration';
+import { batchApi } from '../services/batchApi';
+import { AuthContext } from '../contexts/AuthContext';
 
 const MyWatchlist = () => {
   // State untuk menyimpan data
@@ -17,6 +18,11 @@ const MyWatchlist = () => {
   const [editItem, setEditItem] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState('stocks');
+  const [lastUpdated, setLastUpdated] = useState(null);
+  
+  // Authentication context
+  const { isAuthenticated, currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
   
   // Form state
   const [formData, setFormData] = useState({
@@ -29,135 +35,330 @@ const MyWatchlist = () => {
   
   // Inisialisasi data saat komponen di-mount
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/watchlist' } });
+      return;
+    }
+    
     fetchWatchlist();
     fetchStocks();
-  }, [refreshTrigger]);
+    
+    // Set up auto refresh interval for watchlist data (every 60 seconds if tab is visible)
+    const refreshInterval = setInterval(() => {
+      if (!document.hidden && isAuthenticated) {
+        setRefreshTrigger(prev => prev + 1);
+      }
+    }, 60000); // 1 minute refresh
+    
+    // Cleanup pada unmount
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated, navigate, fetchWatchlist]);
   
   // Effect untuk mengambil prediksi ketika tab aktif berubah
   useEffect(() => {
     if (activeTab === 'predictions') {
       fetchPredictions();
     }
-  }, [activeTab]);
+  }, [activeTab, fetchPredictions]);
   
-  // Fungsi untuk mengambil watchlist
-  const fetchWatchlist = async () => {
+  // Fungsi untuk mengambil watchlist dengan menggunakan API terintegrasi dengan authentication dan caching
+  const fetchWatchlist = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/watchlist');
-      setWatchlistItems(response.data.watchlist);
+      // Menggunakan API terintegrasi yang mendukung caching dan authentication
+      const result = await api.fetchWatchlist({
+        useCache: true,
+        cacheTTL: 300, // Cache selama 5 menit
+        priorityFresh: true, // Prioritaskan data segar
+        requireAuth: true // Memerlukan otentikasi
+      });
+      
+      if (result && result.watchlist && Array.isArray(result.watchlist)) {
+        setWatchlistItems(result.watchlist);
+        setLastUpdated(new Date());
+      } else {
+        // Fallback jika data tidak ada
+        setWatchlistItems([]);
+      }
     } catch (err) {
       console.error('Error fetching watchlist:', err);
-      setError('Failed to load watchlist data');
+      setError('Failed to load watchlist data. Please try again.');
+      setWatchlistItems([]); // Defensive programming: set empty array on error
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
   
-  // Fungsi untuk mengambil daftar saham
-  const fetchStocks = async () => {
+  // Fungsi untuk mengambil daftar saham dengan caching dan authentication
+  const fetchStocks = useCallback(async () => {
     try {
-      const response = await axios.get('/stocks/db');
-      setStocks(response.data.stocks);
+      // Menggunakan API terintegrasi dengan caching dan authentikasi
+      const result = await api.fetchStocks({
+        useCache: true,
+        cacheTTL: 900, // Cache selama 15 menit
+        requireAuth: false // Data saham dapat diakses tanpa auth
+      });
+      
+      if (result && result.stocks && Array.isArray(result.stocks)) {
+        setStocks(result.stocks);
+      } else {
+        // Fallback jika data tidak ada
+        setStocks([]);
+      }
     } catch (err) {
       console.error('Error fetching stocks:', err);
+      setStocks([]); // Defensive programming: set empty array on error
     }
-  };
+  }, []);
   
-  // Fungsi untuk mengambil prediksi
-  const fetchPredictions = async () => {
+  // Fungsi untuk mengambil prediksi dengan menggunakan batch API dan cache
+  const fetchPredictions = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/watchlist/predictions');
-      setPredictions(response.data.predictions);
+      // Cek apakah ada watchlist items
+      if (Array.isArray(watchlistItems) && watchlistItems.length > 0) {
+        // Dapatkan array symbol untuk batch request
+        const symbols = watchlistItems.map(item => item.symbol).filter(Boolean);
+        
+        if (symbols.length === 0) {
+          setPredictions([]);
+          return;
+        }
+        
+        // Gunakan batch API untuk mengambil semua prediksi sekaligus dengan authentication
+        // Memanfaatkan token refresh otomatis jika token kedaluwarsa
+        const batchResult = await batchApi.batchFetchWatchlistPredictions(symbols, {
+          useCache: true,
+          cacheTTL: 600, // Cache selama 10 menit
+          requireAuth: true
+        });
+        
+        if (!batchResult) {
+          throw new Error('Failed to fetch batch predictions');
+        }
+        
+        // Transform hasil batch menjadi format prediksi
+        const validPredictions = [];
+        
+        for (const symbol of symbols) {
+          if (batchResult[symbol] && batchResult[symbol].data) {
+            const data = batchResult[symbol].data;
+            // Sekarang ambil prediksi untuk masing-masing saham dengan defensive programming
+            try {
+              // Use the new integrated API with caching for predictions
+              const prediction = await api.fetchPrediction(symbol, 'default', {
+                useCache: true,
+                cacheTTL: 900, // Cache for 15 minutes
+                requireAuth: true
+              });
+              
+              if (prediction && typeof prediction === 'object') {
+                validPredictions.push({
+                  ticker: symbol,
+                  current_price: prediction.current_price || data.price || 0,
+                  predicted_price: prediction.predicted_price || data.price || 0,
+                  predicted_change_pct: prediction.predicted_change_pct || 0,
+                  confidence: prediction.confidence || 50,
+                  recommendation: prediction.recommendation || 'HOLD'
+                });
+              } else {
+                // Fallback jika prediksi gagal
+                validPredictions.push({
+                  ticker: symbol,
+                  current_price: data.price || 0,
+                  predicted_price: data.price || 0, // Default sama dengan harga saat ini
+                  predicted_change_pct: 0,
+                  confidence: 50,
+                  recommendation: 'HOLD'
+                });
+              }
+            } catch (predictErr) {
+              console.error(`Error fetching prediction for ${symbol}:`, predictErr);
+              // Fallback jika terjadi error
+              validPredictions.push({
+                ticker: symbol,
+                current_price: data.price || 0,
+                predicted_price: data.price || 0, // Default sama dengan harga saat ini
+                predicted_change_pct: 0,
+                confidence: 50,
+                recommendation: 'HOLD'
+              });
+            }
+          }
+        }
+        
+        setPredictions(validPredictions);
+        setLastUpdated(new Date());
+      } else {
+        setPredictions([]);
+      }
     } catch (err) {
       console.error('Error fetching predictions:', err);
       setError('Failed to load prediction data');
+      setPredictions([]); // Defensive programming: set empty array on error
     } finally {
       setLoading(false);
     }
-  };
+  }, [watchlistItems]);
   
-  // Handler untuk menambahkan item ke watchlist
+  // Handler untuk menambahkan item ke watchlist dengan authentication dan caching
   const handleAddToWatchlist = async (e) => {
     e.preventDefault();
+    
     if (!selectedTicker) {
       setError('Please select a stock');
       return;
     }
     
     try {
-      await axios.post('/watchlist', {
-        ticker: selectedTicker,
-        notes: formData.notes,
-        is_favorite: formData.is_favorite,
-        alert_price_high: formData.alert_price_high || null,
-        alert_price_low: formData.alert_price_low || null,
-        notification_enabled: formData.notification_enabled
-      });
+      setLoading(true);
+      setError(null);
       
-      setShowAddModal(false);
-      setSelectedTicker('');
-      setFormData({
-        notes: '',
-        is_favorite: false,
-        alert_price_high: '',
-        alert_price_low: '',
-        notification_enabled: true
-      });
+      // Find selected stock details
+      const stockDetails = stocks.find(stock => stock.symbol === selectedTicker);
+      if (!stockDetails) {
+        throw new Error('Selected stock not found');
+      }
       
-      setRefreshTrigger(prev => prev + 1);
+      // Prepare watchlist item data
+      const watchlistItem = {
+        symbol: selectedTicker,
+        name: stockDetails.name || 'Unknown',
+        notes: formData.notes || '',
+        is_favorite: formData.is_favorite || false,
+        alert_price_high: formData.alert_price_high ? parseFloat(formData.alert_price_high) : null,
+        alert_price_low: formData.alert_price_low ? parseFloat(formData.alert_price_low) : null,
+        notification_enabled: formData.notification_enabled || false,
+        userId: currentUser?.id, // Include user ID for authentication
+        created_at: new Date().toISOString()
+      };
+      
+      // Call API to add to watchlist with authentication
+      // The enhanced API service will automatically handle authentication and token refresh
+      const result = await api.addToWatchlist(watchlistItem);
+      
+      if (result && result.success) {
+        // Clear watchlist cache to ensure fresh data on next load
+        api.clearCacheByPattern('watchlist');
+        
+        // Refresh watchlist
+        fetchWatchlist();
+        
+        // Reset form and close modal
+        setSelectedTicker('');
+        setFormData({
+          notes: '',
+          is_favorite: false,
+          alert_price_high: '',
+          alert_price_low: '',
+          notification_enabled: true
+        });
+        setShowAddModal(false);
+      } else {
+        throw new Error(result?.message || 'Failed to add to watchlist');
+      }
     } catch (err) {
       console.error('Error adding to watchlist:', err);
-      setError('Failed to add to watchlist');
+      setError(err.message || 'Failed to add stock to watchlist. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
-  
-  // Handler untuk update item watchlist
-  const handleUpdateWatchlistItem = async (e) => {
-    e.preventDefault();
-    if (!editItem) {
+
+  // Handler untuk remove item dari watchlist dengan authentication dan cache invalidation
+  const handleRemoveFromWatchlist = async (itemId) => {
+    if (!itemId) return;
+    
+    if (!window.confirm('Are you sure you want to remove this item from your watchlist?')) {
       return;
     }
     
     try {
-      await axios.put(`/watchlist/${editItem.id}`, {
-        notes: formData.notes,
-        is_favorite: formData.is_favorite,
-        alert_price_high: formData.alert_price_high || null,
-        alert_price_low: formData.alert_price_low || null,
-        notification_enabled: formData.notification_enabled
+      setLoading(true);
+      
+      // Call API to remove from watchlist with authentication
+      // The enhanced API service will automatically handle authentication and token refresh
+      const result = await api.removeFromWatchlist(itemId, {
+        requireAuth: true, // Ensure authenticated API call
+        userId: currentUser?.id // Include user ID for verification
       });
       
-      setShowEditModal(false);
-      setEditItem(null);
-      setFormData({
-        notes: '',
-        is_favorite: false,
-        alert_price_high: '',
-        alert_price_low: '',
-        notification_enabled: true
-      });
+      if (result && result.success) {
+        // Clear watchlist cache
+        api.clearCacheByPattern('watchlist');
+        
+        // Refresh watchlist
+        fetchWatchlist();
+        
+        // If in predictions tab, also refresh predictions
+        if (activeTab === 'predictions') {
+          fetchPredictions();
+        }
+      } else {
+        throw new Error(result?.message || 'Failed to remove watchlist item');
+      }
+    } catch (err) {
+      console.error('Error removing watchlist item:', err);
+      setError('Failed to remove item from watchlist. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Handler untuk update item watchlist dengan authentication dan caching
+  const handleUpdateWatchlistItem = async (e) => {
+    if (e) e.preventDefault();
+    
+    if (!editItem) {
+      setError('No item selected for update');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
       
-      setRefreshTrigger(prev => prev + 1);
+      // Prepare update data
+      const updateData = {
+        ...editItem,
+        notes: formData.notes || '',
+        is_favorite: formData.is_favorite || false,
+        alert_price_high: formData.alert_price_high ? parseFloat(formData.alert_price_high) : null,
+        alert_price_low: formData.alert_price_low ? parseFloat(formData.alert_price_low) : null,
+        notification_enabled: formData.notification_enabled || false,
+        userId: currentUser?.id, // Include user ID for authentication
+        updated_at: new Date().toISOString()
+      };
+      
+      // Call API to update item with authentication
+      // The enhanced API service will automatically handle authentication and token refresh
+      const result = await api.updateWatchlistItem(editItem.id, updateData);
+      
+      if (result && result.success) {
+        // Clear watchlist cache to ensure fresh data on next load
+        api.clearCacheByPattern('watchlist');
+        
+        // Refresh watchlist
+        fetchWatchlist();
+        
+        // Reset state and close modal
+        setEditItem(null);
+        setShowEditModal(false);
+        setFormData({
+          notes: '',
+          is_favorite: false,
+          alert_price_high: '',
+          alert_price_low: '',
+          notification_enabled: true
+        });
+      } else {
+        throw new Error(result?.message || 'Failed to update watchlist item');
+      }
     } catch (err) {
       console.error('Error updating watchlist item:', err);
-      setError('Failed to update watchlist item');
-    }
-  };
-  
-  // Handler untuk remove item dari watchlist
-  const handleRemoveFromWatchlist = async (itemId) => {
-    if (!window.confirm('Are you sure you want to remove this stock from your watchlist?')) {
-      return;
-    }
-    
-    try {
-      await axios.delete(`/watchlist/${itemId}`);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (err) {
-      console.error('Error removing from watchlist:', err);
-      setError('Failed to remove from watchlist');
+      setError(err.message || 'Failed to update watchlist item. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -536,9 +737,9 @@ const MyWatchlist = () => {
                                   {prediction.ticker}
                                 </Link>
                               </td>
-                              <td>{formatCurrency(prediction.current_price)}</td>
-                              <td>{formatCurrency(prediction.predicted_price)}</td>
-                              <td className={getValueColor(prediction.predicted_change_pct)}>
+                              <td>{api.formatCurrency(prediction.current_price)}</td>
+                              <td>{api.formatCurrency(prediction.predicted_price)}</td>
+                              <td className={api.getValueColor(prediction.predicted_change_pct)}>
                                 {(prediction.predicted_change_pct > 0 ? '+' : '') + prediction.predicted_change_pct.toFixed(2)}%
                               </td>
                               <td>
@@ -556,10 +757,11 @@ const MyWatchlist = () => {
                                 </div>
                               </td>
                               <td>
-                                <Badge bg={prediction.predicted_change_pct > 2 ? 'success' : 
-                                          prediction.predicted_change_pct < -2 ? 'danger' : 'secondary'}>
-                                  {prediction.predicted_change_pct > 2 ? 'BUY' : 
-                                   prediction.predicted_change_pct < -2 ? 'SELL' : 'HOLD'}
+                                <Badge bg={prediction.recommendation === 'BUY' ? 'success' : 
+                                        prediction.recommendation === 'SELL' ? 'danger' : 'secondary'}>
+                                  {prediction.recommendation || 
+                                    (prediction.predicted_change_pct > 2 ? 'BUY' : 
+                                     prediction.predicted_change_pct < -2 ? 'SELL' : 'HOLD')}
                                 </Badge>
                               </td>
                             </tr>

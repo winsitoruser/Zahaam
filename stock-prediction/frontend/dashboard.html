@@ -102,6 +102,18 @@
         #marketChartContainer, #volumeChartContainer {
             height: 300px;
         }
+        
+        /* Live indicator pulse animation */
+        .blink {
+            font-size: 0.65rem;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -308,17 +320,49 @@
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">IDX Composite Performance</h5>
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn btn-outline-primary active">1D</button>
-                        <button type="button" class="btn btn-outline-primary">1W</button>
-                        <button type="button" class="btn btn-outline-primary">1M</button>
-                        <button type="button" class="btn btn-outline-primary">3M</button>
-                        <button type="button" class="btn btn-outline-primary">1Y</button>
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        IDX Composite Performance
+                        <span class="badge bg-danger-subtle text-danger ms-2" id="marketLiveIndicator">
+                            <i class="bi bi-circle-fill me-1 blink"></i>LIVE
+                        </span>
+                    </h5>
+                    <div class="btn-group btn-group-sm" role="group" id="timeRangeSelector">
+                        <button type="button" class="btn btn-outline-primary active" data-range="1D">1D</button>
+                        <button type="button" class="btn btn-outline-primary" data-range="1W">1W</button>
+                        <button type="button" class="btn btn-outline-primary" data-range="1M">1M</button>
+                        <button type="button" class="btn btn-outline-primary" data-range="3M">3M</button>
+                        <button type="button" class="btn btn-outline-primary" data-range="1Y">1Y</button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="marketChartContainer"></div>
+                    <div id="marketChartContainer" style="height: 300px;"></div>
+                    <div class="d-flex justify-content-between mt-2 small">
+                        <div>
+                            <span class="badge bg-light text-dark me-1">Open</span>
+                            <span id="marketOpenValue">0.00</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark me-1">High</span>
+                            <span id="marketHighValue">0.00</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark me-1">Low</span>
+                            <span id="marketLowValue">0.00</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark me-1">Change</span>
+                            <span id="marketChangeValue">0.00</span>
+                            <span id="marketChangePercent" class="ms-1">(0.00%)</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center small mb-2">
+                            <span class="text-muted">Volume</span>
+                            <span class="badge bg-secondary-subtle text-secondary">Billion IDR</span>
+                        </div>
+                        <div id="volumeChartContainer" style="height: 160px;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -492,40 +536,34 @@
     
     <!-- AI Predictions & Top Stocks -->
     <div class="row mt-4">
-        <!-- Multi-Timeframe Predictions -->
+        <!-- Top 5 Saham Bearish (Dipindahkan) -->
         <div class="col-lg-6">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">AI Predictions & Signals</h5>
-                    <div>
-                        <select id="dashboardPredictionSymbol" class="form-select form-select-sm d-inline-block me-2" style="width: auto;">
-                            <option value="BBRI">BBRI</option>
-                            <option value="BBCA">BBCA</option>
-                            <option value="TLKM">TLKM</option>
-                            <option value="ASII">ASII</option>
-                            <option value="UNVR">UNVR</option>
-                        </select>
-                        <button id="refreshDashboardPredictions" class="btn btn-sm btn-primary">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                    </div>
+                    <h5 class="mb-0">Top 5 Saham Bearish</h5>
+                    <span class="badge bg-danger">Strong Sell</span>
                 </div>
-                <div class="card-body">
-                    <div id="dashboardPredictionLoading" class="text-center py-4">
-                        <div class="spinner-zahaam mb-3"></div>
-                        <p class="text-muted">Loading prediction data...</p>
-                    </div>
-                    <div id="dashboardPredictionContent" style="display: none;">
-                        <!-- Chart for current prediction -->
-                        <div class="chart-container mb-3" style="height: 200px;">
-                            <div id="dashboardPredictionChart"></div>
-                        </div>
-                        
-                        <!-- Multi-timeframe signal cards -->
-                        <div class="row g-2" id="dashboardPredictionSignals">
-                            <!-- Will be populated by JS -->
-                        </div>
-                    </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 20%">Kode</th>
+                                <th style="width: 35%">Nama</th>
+                                <th style="width: 20%" class="text-end">Harga</th>
+                                <th style="width: 25%" class="text-end">Sinyal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topBearishTableBody">
+                            <tr>
+                                <td colspan="4" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="ms-2">Memuat data sinyal trading...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -574,36 +612,6 @@
                                     <span class="badge bg-success d-inline-flex align-items-center">
                                         <i class="bi bi-graph-up me-1"></i> Moderate
                                     </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Top 5 Saham Bearish</h5>
-                    <span class="badge bg-danger">Strong Sell</span>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 20%">Kode</th>
-                                <th style="width: 35%">Nama</th>
-                                <th style="width: 20%" class="text-end">Harga</th>
-                                <th style="width: 25%" class="text-end">Sinyal</th>
-                            </tr>
-                        </thead>
-                        <tbody id="topBearishTableBody">
-                            <tr>
-                                <td colspan="4" class="text-center py-3">
-                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                    <span class="ms-2">Memuat data sinyal trading...</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -1047,11 +1055,17 @@
 <script src="js/notifications.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <!-- Custom Scripts -->
 <script src="js/dashboard-predictions.js"></script>
+<script src="js/dashboard-trading-signals.js"></script>
 <!-- Stock Data and Table -->
 <script src="js/stocks-data.js"></script>
-<script src="js/stocks-table.js"></script>
+<script src="js/api-service.js"></script>
+<script src="js/currency-utils.js"></script>
+<script src="js/config.js?v=1.0.1"></script>
+<script src="js/stocks-table.js?v=1.0.1"></script>
 <!-- Translations -->
 <script src="js/translations.js"></script>
 
@@ -1079,12 +1093,15 @@
     updateDateTime();
     setInterval(updateDateTime, 1000);
     
-    // Market chart
+    // Market chart with Plotly and real-time data
     document.addEventListener('DOMContentLoaded', function() {
-        // Sample data
-        const marketData = {
-            dates: ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
-            values: [7088, 7102, 7115, 7090, 7105, 7120, 7115, 7129]
+        // Default state while loading
+        let ihsgData = {
+            timestamps: [],
+            values: [],
+            open: 0,
+            high: 0,
+            low: 0
         };
         
         const volumeData = {
@@ -1092,86 +1109,423 @@
             values: [1.2, 2.5, 1.8, 1.5, 2.8, 3.5, 3.2, 2.8]
         };
         
-        // Market chart options
-        const marketChartOptions = {
-            series: [{
-                name: 'IDX Composite',
-                data: marketData.values
-            }],
-            chart: {
-                type: 'area',
+        // Initialize market chart with Plotly
+        function initMarketChart() {
+            const container = document.getElementById('marketChartContainer');
+            
+            // Create the Plotly area chart
+            const trace = {
+                x: ihsgData.timestamps,
+                y: ihsgData.values,
+                type: 'scatter',
+                mode: 'lines',
+                fill: 'tozeroy',
+                name: 'IHSG',
+                line: {
+                    color: '#0d6efd',
+                    width: 2,
+                    shape: 'spline'
+                },
+                fillcolor: 'rgba(13, 110, 253, 0.2)'
+            };
+            
+            const layout = {
+                autosize: true,
                 height: 300,
-                toolbar: {
-                    show: false
+                margin: {l: 40, r: 10, t: 10, b: 30},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                xaxis: {
+                    showgrid: true,
+                    gridcolor: 'rgba(0,0,0,0.05)',
+                    tickformat: '%H:%M'
+                },
+                yaxis: {
+                    showgrid: true,
+                    gridcolor: 'rgba(0,0,0,0.05)',
+                    fixedrange: false
+                },
+                showlegend: false,
+                hovermode: 'closest'
+            };
+            
+            const config = {
+                displayModeBar: false,
+                responsive: true
+            };
+            
+            Plotly.newPlot(container, [trace], layout, config);
+        }
+        
+        // Function to update the chart with new data
+        function updateMarketChart(data) {
+            const container = document.getElementById('marketChartContainer');
+            
+            // Calculate change values
+            const lastValue = data.values[data.values.length - 1] || 0;
+            const firstValue = data.open || 0;
+            const change = lastValue - firstValue;
+            const changePercent = firstValue !== 0 ? (change / firstValue) * 100 : 0;
+            
+            // Determine if market is positive or negative
+            const isPositive = change >= 0;
+            
+            // Set colors based on market direction - using Zahaam's existing color scheme
+            const color = isPositive ? '#28a745' : '#dc3545';
+            const fillcolor = isPositive ? 'rgba(40, 167, 69, 0.2)' : 'rgba(220, 53, 69, 0.2)';
+            
+            // Create the trace for Plotly
+            const trace = {
+                x: data.timestamps,
+                y: data.values,
+                type: 'scatter',
+                mode: 'lines',
+                fill: 'tozeroy',
+                name: 'IHSG',
+                line: {
+                    color: color,
+                    width: 2,
+                    shape: 'spline'
+                },
+                fillcolor: fillcolor,
+                hoverinfo: 'x+y',
+                hoverlabel: {
+                    bgcolor: '#343a40',
+                    font: { color: 'white' }
                 }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                curve: 'smooth',
-                width: 2
-            },
-            xaxis: {
-                categories: marketData.dates
-            },
-            yaxis: {
-                labels: {
-                    formatter: function(val) {
-                        return val.toFixed(0);
+            };
+            
+            // Update the chart
+            Plotly.react(container, [trace], {
+                autosize: true,
+                height: 300,
+                margin: {l: 40, r: 10, t: 10, b: 30},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                xaxis: {
+                    showgrid: true,
+                    gridcolor: 'rgba(0,0,0,0.05)',
+                    tickformat: '%H:%M'
+                },
+                yaxis: {
+                    showgrid: true,
+                    gridcolor: 'rgba(0,0,0,0.05)',
+                    fixedrange: false
+                },
+                showlegend: false,
+                hovermode: 'closest'
+            }, {
+                displayModeBar: false,
+                responsive: true
+            });
+            
+            // Update indicators with defensive programming (null/undefined checks)
+            document.getElementById('marketOpenValue').textContent = (data.open || 0).toFixed(2);
+            document.getElementById('marketHighValue').textContent = (data.high || 0).toFixed(2);
+            document.getElementById('marketLowValue').textContent = (data.low || 0).toFixed(2);
+            
+            // Update change indicators
+            const marketChangeValue = document.getElementById('marketChangeValue');
+            const marketChangePercent = document.getElementById('marketChangePercent');
+            
+            // Format and display change values
+            marketChangeValue.textContent = change.toFixed(2);
+            marketChangePercent.textContent = `(${changePercent.toFixed(2)}%)`;
+            
+            // Apply styling based on change direction
+            if (isPositive) {
+                marketChangeValue.classList.remove('text-danger');
+                marketChangeValue.classList.add('text-success');
+                marketChangePercent.classList.remove('text-danger');
+                marketChangePercent.classList.add('text-success');
+                document.getElementById('marketLiveIndicator').classList.remove('bg-danger-subtle', 'text-danger');
+                document.getElementById('marketLiveIndicator').classList.add('bg-success-subtle', 'text-success');
+            } else {
+                marketChangeValue.classList.remove('text-success');
+                marketChangeValue.classList.add('text-danger');
+                marketChangePercent.classList.remove('text-success');
+                marketChangePercent.classList.add('text-danger');
+                document.getElementById('marketLiveIndicator').classList.remove('bg-success-subtle', 'text-success');
+                document.getElementById('marketLiveIndicator').classList.add('bg-danger-subtle', 'text-danger');
+            }
+        }
+        
+        // Function to fetch IHSG data from backend API
+        async function fetchIHSGData(timeRange = '1D') {
+            try {
+                // Show loading state
+                document.getElementById('marketChartContainer').classList.add('loading');
+                if (document.getElementById('marketLoadingIndicator')) {
+                    document.getElementById('marketLoadingIndicator').style.display = 'block';
+                }
+                
+                // Log API request
+                console.log(`Fetching IHSG data for range: ${timeRange}`);
+                
+                // Call API with appropriate time range - ensure correct endpoint and parameters
+                // Modified to use domain-relative API path for robustness
+                const apiUrl = window.location.origin.includes('localhost') 
+                    ? `http://localhost:8000/api/market/ihsg?range=${timeRange}` 
+                    : `/api/market/ihsg?range=${timeRange}`;
+                    
+                const response = await axios.get(apiUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Add authentication token if available
+                        ...localStorage.getItem('token') ? {
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        } : {}
+                    },
+                    timeout: 15000, // Extended timeout
+                    withCredentials: true // Include cookies for cross-domain requests
+                });
+                
+                console.log('IHSG API response:', response.data);
+                const responseData = response.data;
+                
+                // Remove loading state
+                document.getElementById('marketChartContainer').classList.remove('loading');
+                
+                // Extract data for plotting
+                if (responseData && responseData.data) {
+                    const data = responseData.data;
+                    
+                    // Format the IHSG data
+                    ihsgData = {
+                        timestamps: data.timestamps || [],
+                        values: data.values || [],
+                        open: data.open || 0,
+                        high: data.high || 0,
+                        low: data.low || 0,
+                        volumes: data.volumes || []
+                    };
+                    
+                    // Update charts with fetched data
+                    updateMarketChart(ihsgData);
+                    
+                    // If volume data exists, update volume chart
+                    if (Array.isArray(data.volumes) && data.volumes.length > 0) {
+                        updateVolumeChart({
+                            timestamps: data.timestamps || [],
+                            values: data.volumes || []
+                        });
                     }
+                    
+                    // Hide loading indicator
+                    if (document.getElementById('marketLoadingIndicator')) {
+                        document.getElementById('marketLoadingIndicator').style.display = 'none';
+                    }
+                    
+                    // Update chart timestamp
+                    document.getElementById('chartLastUpdated').textContent = new Date().toLocaleTimeString();
                 }
-            },
-            colors: ['#0d6efd'],
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.7,
-                    opacityTo: 0.2,
-                    stops: [0, 90, 100]
+            } catch (error) {
+                console.error('Error fetching IHSG data:', error);
+                
+                // Hide loading indicator on error
+                if (document.getElementById('marketLoadingIndicator')) {
+                    document.getElementById('marketLoadingIndicator').style.display = 'none';
                 }
-            },
-            tooltip: {
-                x: {
-                    format: 'HH:mm'
+                
+                // Use fallback data on error
+                const now = new Date();
+                const baseTime = new Date(now.setHours(9, 0, 0, 0));
+                
+                // Generate fallback timestamps
+                const timestamps = [...Array(8).keys()].map(i => {
+                    const time = new Date(baseTime);
+                    time.setHours(time.getHours() + i);
+                    return time;
+                });
+                
+                // Generate fallback data for IHSG
+                const fallbackData = {
+                    timestamps: timestamps,
+                    values: [7088, 7102, 7115, 7090, 7105, 7120, 7115, 7129],
+                    open: 7088,
+                    high: 7129,
+                    low: 7088,
+                    volumes: [1.2, 2.5, 1.8, 1.5, 2.8, 3.5, 3.2, 2.8]
+                };
+                
+                ihsgData = fallbackData;
+                
+                // Update charts with fallback data
+                updateMarketChart(fallbackData);
+                updateVolumeChart({
+                    timestamps: fallbackData.timestamps,
+                    values: fallbackData.volumes
+                });
+                
+                // Show error message if required
+                const errorContainer = document.createElement('div');
+                errorContainer.className = 'alert alert-warning small py-1 mt-2 mb-0';
+                errorContainer.innerHTML = 'Unable to fetch live market data. Showing sample data.';
+                errorContainer.id = 'market-error-message';
+                
+                // Only add if it doesn't exist already
+                if (!document.getElementById('market-error-message')) {
+                    document.getElementById('marketChartContainer').parentNode.appendChild(errorContainer);
+                    
+                    // Auto-hide error after 5 seconds
+                    setTimeout(() => {
+                        const message = document.getElementById('market-error-message');
+                        if (message) message.remove();
+                    }, 5000);
                 }
             }
-        };
+        }
         
-        // Volume chart options
-        const volumeChartOptions = {
-            series: [{
-                name: 'Volume (Billion IDR)',
-                data: volumeData.values
-            }],
-            chart: {
-                type: 'bar',
-                height: 230,
-                toolbar: {
-                    show: false
+        // Set up time range buttons
+        function setupTimeRangeButtons() {
+            const buttons = document.querySelectorAll('#timeRangeSelector button');
+            
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    buttons.forEach(b => b.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Fetch data for selected time range
+                    const range = this.getAttribute('data-range');
+                    fetchIHSGData(range);
+                });
+            });
+        }
+        
+        // Initialize chart
+        initMarketChart();
+        
+        // Set up time range selector
+        setupTimeRangeButtons();
+        
+        // Initial data fetch
+        fetchIHSGData('1D');
+        
+        // Set up auto-refresh (every 60 seconds)
+        setInterval(() => {
+            const activeButton = document.querySelector('#timeRangeSelector button.active');
+            const range = activeButton ? activeButton.getAttribute('data-range') : '1D';
+            fetchIHSGData(range);
+        }, 60000);
+        
+        // Function to update volume chart with new data
+        function updateVolumeChart(data) {
+            try {
+                // Skip if no container or no data
+                const container = document.getElementById('volumeChartContainer');
+                if (!container || !data || !data.values || !data.values.length) return;
+                
+                // Determine color based on market trend
+                const marketTrend = ihsgData.values[ihsgData.values.length - 1] >= ihsgData.open;
+                const color = marketTrend ? '#28a745' : '#dc3545';
+                const fillOpacity = 0.4;
+                
+                // Create the volume bar trace
+                const trace = {
+                    x: data.timestamps,
+                    y: data.values,
+                    type: 'bar',
+                    name: 'Volume',
+                    marker: {
+                        color: color,
+                        opacity: fillOpacity
+                    },
+                    hoverinfo: 'x+y',
+                    hoverlabel: {
+                        bgcolor: '#343a40',
+                        font: { color: 'white' }
+                    }
+                };
+                
+                // Volume chart layout
+                const layout = {
+                    autosize: true,
+                    height: 160,
+                    margin: {l: 40, r: 10, t: 5, b: 30},
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {
+                        showgrid: false,
+                        tickformat: '%H:%M',
+                        showticklabels: false
+                    },
+                    yaxis: {
+                        title: 'Volume (B)',
+                        titlefont: { size: 10 },
+                        showgrid: true,
+                        gridcolor: 'rgba(0,0,0,0.05)'
+                    },
+                    showlegend: false,
+                    bargap: 0.05
+                };
+                
+                // Plotly config
+                const config = {
+                    displayModeBar: false,
+                    responsive: true
+                };
+                
+                // Check if volume chart already exists
+                if (container._Plotly) {
+                    // Update existing chart
+                    Plotly.react(container, [trace], layout, config);
+                } else {
+                    // Create new chart
+                    Plotly.newPlot(container, [trace], layout, config);
                 }
-            },
-            colors: ['#20c997'],
-            plotOptions: {
-                bar: {
-                    borderRadius: 4
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            xaxis: {
-                categories: volumeData.dates
+            } catch (error) {
+                console.error('Error updating volume chart:', error);
             }
-        };
+        }
         
-        // Render charts
-        const marketChart = new ApexCharts(document.querySelector('#marketChartContainer'), marketChartOptions);
-        marketChart.render();
+        // Add last updated timestamp and loading indicator
+        const chartFooter = document.createElement('div');
+        chartFooter.className = 'small text-muted mt-2 d-flex justify-content-between';
+        chartFooter.innerHTML = `
+            <span>Last updated: <span id="chartLastUpdated">${new Date().toLocaleTimeString()}</span></span>
+            <span class="text-end">Data source: IDX</span>
+        `;
+        document.getElementById('volumeChartContainer').parentNode.appendChild(chartFooter);
         
-        const volumeChart = new ApexCharts(document.querySelector('#volumeChartContainer'), volumeChartOptions);
-        volumeChart.render();
+        // Add a loading indicator to the Market Chart container
+        function addLoadingIndicator() {
+            // Create loading indicator if it doesn't exist
+            if (!document.getElementById('marketLoadingIndicator')) {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'marketLoadingIndicator';
+                loadingDiv.className = 'position-absolute top-50 start-50 translate-middle';
+                loadingDiv.innerHTML = `
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="ms-2 small">Loading market data...</span>
+                `;
+                loadingDiv.style.display = 'none';
+                loadingDiv.style.zIndex = '10';
+                loadingDiv.style.backgroundColor = 'rgba(255,255,255,0.8)';
+                loadingDiv.style.padding = '0.5rem 1rem';
+                loadingDiv.style.borderRadius = '0.25rem';
+                
+                const container = document.getElementById('marketChartContainer');
+                if (container) {
+                    container.style.position = 'relative';
+                    container.appendChild(loadingDiv);
+                }
+            }
+        }
+        
+        // Create the loading indicator
+        addLoadingIndicator();
+        
+        // Initialize both charts
+        initMarketChart();
+        updateVolumeChart({
+            timestamps: volumeData.dates,
+            values: volumeData.values
+        });
     });
 </script>
 

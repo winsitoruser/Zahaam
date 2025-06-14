@@ -28,7 +28,7 @@ from app.data.indonesian_stocks import INDONESIAN_STOCKS
 from app.core.init_db import init_db
 
 # Import API routers
-from app.api import stocks, prediction, user_strategies as strategies, watchlist, big_data, notifications, admin, auth, ml_prediction, backtesting, ai_lab
+from app.api import stocks, prediction, user_strategies as strategies, watchlist, big_data, notifications, admin, auth, ml_prediction, backtesting, ai_lab, stock_management, market_depth
 from app.api.routers import news_sentiment_api
 
 # Import scheduler
@@ -190,6 +190,7 @@ except Exception as e:
     logger.error(f"Error setting up static files and templates: {str(e)}")
 
 # Register API routers
+app.include_router(stock_management.router, prefix="/api/admin/stocks", tags=["Admin", "Stock"])
 app.include_router(stocks.router, prefix="/api/stocks", tags=["stocks"])
 app.include_router(prediction.router, prefix="/api/prediction", tags=["prediction"])
 app.include_router(strategies.router, prefix="/api/strategies", tags=["strategies"])
@@ -206,6 +207,10 @@ app.include_router(ai_lab.router, prefix="/api/ai-lab", tags=["ai-lab"])
 # Import the tasks API router
 from app.api.tasks_api import router as tasks_router
 app.include_router(tasks_router, prefix="/api", tags=["tasks"])
+
+# Import and include market depth router
+from app.api.market_depth import router as market_depth_router
+app.include_router(market_depth_router, prefix="/api", tags=["market_depth"])
 
 # List of Indonesian stock tickers (from data/indonesian_stocks.py)
 

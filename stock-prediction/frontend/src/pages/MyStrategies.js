@@ -104,6 +104,34 @@ const MyStrategies = () => {
     }
   };
 
+  // Handler for toggling technical indicators
+  const handleIndicatorToggle = (indicator) => {
+    setFormData(prev => ({
+      ...prev,
+      indicators: {
+        ...prev.indicators,
+        [indicator]: {
+          ...prev.indicators[indicator],
+          enabled: !prev.indicators[indicator].enabled
+        }
+      }
+    }));
+  };
+
+  // Handler for changing indicator parameters
+  const handleIndicatorParamChange = (indicator, param, value) => {
+    setFormData(prev => ({
+      ...prev,
+      indicators: {
+        ...prev.indicators,
+        [indicator]: {
+          ...prev.indicators[indicator],
+          [param]: parseInt(value) || 0
+        }
+      }
+    }));
+  };
+
   const handleCreateStrategy = async (e) => {
     e.preventDefault();
     try {

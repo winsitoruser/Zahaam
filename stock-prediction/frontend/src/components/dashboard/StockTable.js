@@ -2,26 +2,41 @@ import React, { useState, useEffect } from 'react';
 import { Table, Form, InputGroup, Button, Pagination, Dropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-const StockTable = ({ stocks }) => {
+const StockTable = ({ stocks = [] }) => {
   const [filteredStocks, setFilteredStocks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortField, setSortField] = useState('ticker');
+  const [sortField, setSortField] = useState('symbol');
   const [sortDirection, setSortDirection] = useState('asc');
   
   useEffect(() => {
-    // Filter stocks based on search term
-    const filtered = stocks.filter(stock => 
-      stock.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      stock.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      stock.sector.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    if (!Array.isArray(stocks)) {
+      setFilteredStocks([]);
+      return;
+    }
     
-    // Sort the filtered stocks
+    // Filter stocks based on search term with safe property access
+    const filtered = stocks.filter(stock => {
+      if (!stock) return false;
+      
+      const ticker = stock.symbol || stock.ticker || '';
+      const name = stock.name || '';
+      const sector = stock.sector || '';
+      
+      return ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             sector.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+    
+    // Sort the filtered stocks safely
     const sorted = [...filtered].sort((a, b) => {
-      if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
-      if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1;
+      // Map sortField to the correct property name
+      const fieldA = sortField === 'ticker' ? (a.symbol || a.ticker || '') : (a[sortField] || '');
+      const fieldB = sortField === 'ticker' ? (b.symbol || b.ticker || '') : (b[sortField] || '');
+      
+      if (fieldA < fieldB) return sortDirection === 'asc' ? -1 : 1;
+      if (fieldA > fieldB) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
     
@@ -154,11 +169,11 @@ const StockTable = ({ stocks }) => {
           <thead className="table-light">
             <tr>
               <th 
-                onClick={() => handleSort('ticker')}
+                onClick={() => handleSort('symbol')}
                 className="sortable-header"
               >
                 Kode 
-                {sortField === 'ticker' && (
+                {sortField === 'symbol' && (
                   <i className={`bi bi-sort-${sortDirection === 'asc' ? 'up' : 'down'} ms-1`}></i>
                 )}
               </th>
@@ -203,34 +218,42 @@ const StockTable = ({ stocks }) => {
           </thead>
           <tbody>
             {currentItems.length > 0 ? (
-              currentItems.map((stock, index) => (
-                <tr key={stock.ticker}>
-                  <td><strong>{stock.ticker}</strong></td>
-                  <td>{stock.name}</td>
-                  <td>{stock.price ? stock.price.toLocaleString('id-ID') : 0}</td>
-                  <td>
-                    <span className={`badge ${stock.change >= 0 ? 'bg-success' : 'bg-danger'}`}>
-                      {stock.change >= 0 ? '+' : ''}{stock.change ? stock.change.toFixed(2) : '0.00'}%
-                    </span>
-                  </td>
-                  <td>{stock.sector}</td>
-                  <td className="text-center">
-                    <Link 
-                      to={`/stocks/${stock.ticker}`} 
-                      className="btn btn-sm btn-primary me-1"
-                    >
-                      <i className="bi bi-graph-up"></i> Detail
-                    </Link>
-                    <Button 
-                      variant="outline-secondary" 
-                      size="sm"
-                      onClick={() => alert(`Menambahkan ${stock.ticker} ke watchlist`)}
-                    >
-                      <i className="bi bi-bookmark-plus"></i>
-                    </Button>
-                  </td>
-                </tr>
-              ))
+              currentItems.map((stock, index) => {
+                const symbol = stock.symbol || stock.ticker || 'N/A';
+                const name = stock.name || 'Unknown';
+                const price = stock.price || 0;
+                const change = typeof stock.change === 'number' ? stock.change : 0;
+                const sector = stock.sector || 'N/A';
+                
+                return (
+                  <tr key={`${symbol}-${index}`}>
+                    <td><strong>{symbol}</strong></td>
+                    <td>{name}</td>
+                    <td>{price ? price.toLocaleString('id-ID') : 0}</td>
+                    <td>
+                      <span className={`badge ${change >= 0 ? 'bg-success' : 'bg-danger'}`}>
+                        {change >= 0 ? '+' : ''}{typeof change === 'number' ? change.toFixed(2) : '0.00'}%
+                      </span>
+                    </td>
+                    <td>{sector}</td>
+                    <td className="text-center">
+                      <Link 
+                        to={`/stocks/${symbol}`} 
+                        className="btn btn-sm btn-primary me-1"
+                      >
+                        <i className="bi bi-graph-up"></i> Detail
+                      </Link>
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => alert(`Menambahkan ${symbol} ke watchlist`)}
+                      >
+                        <i className="bi bi-bookmark-plus"></i>
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan="6" className="text-center py-3">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Row, Col, Badge, ProgressBar, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import Chart from 'react-apexcharts';
+import Plot from 'react-plotly.js';
 
 const MarketOverview = ({ ihsgData, marketSummary }) => {
   // Memastikan data valid
@@ -37,66 +37,7 @@ const MarketOverview = ({ ihsgData, marketSummary }) => {
     return num.toFixed(2);
   };
   
-  // Chart options untuk area chart
-  const chartOptions = {
-    chart: {
-      type: 'area',
-      height: 180,
-      sparkline: {
-        enabled: true
-      },
-      toolbar: {
-        show: false
-      },
-      background: 'transparent'
-    },
-    colors: [safeMarketSummary.change >= 0 ? '#28a745' : '#dc3545'],
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.7,
-        opacityTo: 0.3,
-        stops: [0, 90, 100]
-      }
-    },
-    stroke: {
-      curve: 'smooth',
-      width: 2
-    },
-    grid: {
-      padding: {
-        left: 0,
-        right: 0,
-        top: 10,
-        bottom: 0
-      }
-    },
-    tooltip: {
-      fixed: {
-        enabled: false
-      },
-      x: {
-        show: false
-      },
-      y: {
-        title: {
-          formatter: function() {
-            return 'IHSG:';
-          }
-        },
-        formatter: function(value) {
-          return value.toLocaleString('id-ID');
-        }
-      },
-      marker: {
-        show: true
-      }
-    },
-    dataLabels: {
-      enabled: false
-    }
-  };
+  // Data untuk plotting (tidak lagi memerlukan chartOptions)
 
   return (
     <Card className="h-100 border-0 shadow-sm">
@@ -173,15 +114,44 @@ const MarketOverview = ({ ihsgData, marketSummary }) => {
           <Col lg={7} md={12} className="p-3">
             <div className="mb-3">
               <h6 className="small text-muted mb-2">IHSG Performance</h6>
-              <div className="position-relative" style={{ height: '170px' }}>
-                <Chart 
-                  options={chartOptions}
-                  series={[{
-                    name: 'IHSG',
-                    data: ihsgData || [7150, 7180, 7220, 7200, 7250, 7240, 7230, 7260, 7300, 7280, 7260, 7250]
-                  }]}
-                  type="area"
-                  height={170}
+              <div className="position-relative">
+                <Plot
+                  data={[
+                    {
+                      x: [...Array(12).keys()],
+                      y: ihsgData || [7150, 7180, 7220, 7200, 7250, 7240, 7230, 7260, 7300, 7280, 7260, 7250],
+                      type: 'scatter',
+                      mode: 'lines',
+                      fill: 'tozeroy',
+                      name: 'IHSG',
+                      line: { color: safeMarketSummary.change >= 0 ? '#28a745' : '#dc3545', width: 2, shape: 'spline' },
+                      fillcolor: safeMarketSummary.change >= 0 ? 'rgba(40, 167, 69, 0.2)' : 'rgba(220, 53, 69, 0.2)'
+                    }
+                  ]}
+                  layout={{
+                    autosize: true,
+                    height: 170,
+                    margin: {l: 30, r: 15, t: 5, b: 20},
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {
+                      showgrid: false,
+                      showticklabels: false,
+                      zeroline: false
+                    },
+                    yaxis: {
+                      showgrid: true,
+                      gridcolor: 'rgba(0,0,0,0.05)',
+                      zeroline: false
+                    },
+                    showlegend: false,
+                    hovermode: 'closest'
+                  }}
+                  config={{
+                    displayModeBar: false,
+                    responsive: true
+                  }}
+                  style={{width: '100%'}}
                 />
               </div>
               <div className="d-flex justify-content-between mt-2 small">

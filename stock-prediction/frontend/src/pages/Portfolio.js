@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Container, Row, Col, Card, Table, Button, Form, Badge, Modal, Spinner, Alert } from 'react-bootstrap';
-import axios from 'axios';
-import Chart from 'react-apexcharts';
-import { formatCurrency, formatNumber, getValueColor } from '../services/api';
+import Plot from 'react-plotly.js';
+import { AuthContext } from '../contexts/AuthContext';
+import * as api from '../services/apiIntegration';
+import { batchApi } from '../services/batchApi';
+import { useNavigate } from 'react-router-dom';
 
 const Portfolio = () => {
   const [portfolio, setPortfolio] = useState([]);
@@ -16,46 +18,116 @@ const Portfolio = () => {
     buyDate: ''
   });
   const [error, setError] = useState('');
+  const [marketData, setMarketData] = useState([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { isAuthenticated, currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
   
-  // Load portfolio from localStorage on component mount
-  useEffect(() => {
-    const loadPortfolio = async () => {
-      try {
-        setLoading(true);
+  const loadPortfolio = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Get portfolio data from API with caching support
+      // This uses the enhanced API integration service with token refresh
+      const result = await api.fetchPortfolio({
+        useCache: true,
+        cacheTTL: 300, // Cache for 5 minutes
+        priorityFresh: true // Prioritize fresh data
+      });
+      
+      if (result && result.portfolio) {
+        // Transform API data to match our component's expected format
+        const transformedPortfolio = result.portfolio.map((item, index) => ({
+          id: index + 1,
+          ticker: item.symbol,
+          name: item.name,
+          buyPrice: item.avgPrice,
+          currentPrice: item.currentPrice,
+          quantity: item.shares,
+          buyDate: item.buyDate || new Date().toISOString().split('T')[0], // Use API date or today as fallback
+          value: item.value,
+          gain: item.gain,
+          gainPercent: item.gainPercent
+        }));
         
-        // In a real app, this would come from an API or database
-        const response = await axios.get('/stocks/db');
+        setPortfolio(transformedPortfolio);
         
-        if (response.data) {
-          setPortfolio(response.data);
-        } else {
-          // Sample portfolio data
-          const samplePortfolio = [
-            { id: 1, ticker: 'BBCA.JK', name: 'Bank Central Asia', buyPrice: 9200, currentPrice: 9525, quantity: 100, buyDate: '2025-01-15' },
-            { id: 2, ticker: 'TLKM.JK', name: 'Telkom Indonesia', buyPrice: 4000, currentPrice: 4120, quantity: 250, buyDate: '2025-02-10' },
-            { id: 3, ticker: 'ASII.JK', name: 'Astra International', buyPrice: 5600, currentPrice: 5475, quantity: 150, buyDate: '2025-03-05' },
-            { id: 4, ticker: 'BMRI.JK', name: 'Bank Mandiri', buyPrice: 6100, currentPrice: 6250, quantity: 75, buyDate: '2025-04-20' }
-          ];
-          
-          setPortfolio(samplePortfolio);
-          localStorage.setItem('stockPortfolio', JSON.stringify(samplePortfolio));
+        // If portfolio has stocks, fetch additional market data using batch API
+        if (transformedPortfolio.length > 0) {
+          fetchMarketData(transformedPortfolio.map(item => item.ticker));
         }
-      } catch (error) {
-        console.error('Error loading portfolio:', error);
-        setError('Failed to load portfolio data. Please try again.');
-      } finally {
-        setLoading(false);
+      } else {
+        // Handle empty portfolio case
+        setPortfolio([]);
       }
-    };
-    
-    loadPortfolio();
+    } catch (error) {
+      console.error('Error loading portfolio:', error);
+      setError('Failed to load portfolio data. Please try again.');
+      // Defensive programming: set empty array on error
+      setPortfolio([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
   
-  // Save portfolio to localStorage whenever it changes
-  useEffect(() => {
-    if (portfolio.length > 0) {
-      localStorage.setItem('stockPortfolio', JSON.stringify(portfolio));
+  // Fetch additional market data for portfolio stocks using batch API
+  const fetchMarketData = async (symbols) => {
+    if (!Array.isArray(symbols) || symbols.length === 0) return;
+    
+    try {
+      // Use batch API to efficiently fetch data for multiple stocks in one request
+      const batchResponse = await batchApi.batchFetchMultipleStocks(symbols);
+      
+      if (batchResponse && Object.keys(batchResponse).length > 0) {
+        const marketDataArray = [];
+        
+        for (const symbol of symbols) {
+          if (batchResponse[symbol] && batchResponse[symbol].data) {
+            marketDataArray.push({
+              symbol,
+              ...batchResponse[symbol].data
+            });
+          }
+        }
+        
+        setMarketData(marketDataArray);
+      }
+    } catch (error) {
+      console.error('Error fetching market data:', error);
     }
+  };
+  
+  // Check authentication and load portfolio on component mount
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/portfolio' } });
+      return;
+    }
+    loadPortfolio();
+    
+    // Set up a refresh interval for market data (every 1 minute if tab is visible)
+    const refreshInterval = setInterval(() => {
+      if (!document.hidden && isAuthenticated) {
+        setRefreshTrigger(prev => prev + 1);
+      }
+    }, 60000); // 1 minute refresh
+    
+    return () => clearInterval(refreshInterval); // Cleanup on unmount
+  }, [isAuthenticated, navigate, loadPortfolio]);
+  
+  // Refresh data when refreshTrigger changes
+  useEffect(() => {
+    if (isAuthenticated && portfolio.length > 0) {
+      // Only update market data, not full portfolio
+      fetchMarketData(portfolio.map(item => item.ticker));
+    }
+  }, [refreshTrigger, isAuthenticated, portfolio]);
+  
+  // Update UI when portfolio changes
+  useEffect(() => {
+    // This would be a good place to sync with backend if needed
+    // But for now we just update the UI
   }, [portfolio]);
   
   // Handle form input changes
@@ -68,7 +140,7 @@ const Portfolio = () => {
   };
   
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validate form
@@ -77,35 +149,86 @@ const Portfolio = () => {
       return;
     }
     
-    // Create new portfolio item
-    const newItem = {
-      id: Date.now(),
-      ticker: formData.ticker,
-      name: formData.name,
-      buyPrice: parseFloat(formData.buyPrice),
-      currentPrice: parseFloat(formData.buyPrice), // Initially set to buy price
-      quantity: parseInt(formData.quantity),
-      buyDate: formData.buyDate
-    };
-    
-    // Add to portfolio
-    setPortfolio([...portfolio, newItem]);
-    
-    // Reset form and close modal
-    setFormData({
-      ticker: '',
-      name: '',
-      buyPrice: '',
-      quantity: '',
-      buyDate: ''
-    });
-    setShowAddModal(false);
-    setError('');
+    try {
+      setLoading(true);
+      
+      // Create transaction data for API
+      const transaction = {
+        symbol: formData.ticker,
+        name: formData.name,
+        price: parseFloat(formData.buyPrice),
+        shares: parseInt(formData.quantity),
+        date: formData.buyDate,
+        type: 'buy',
+        userId: currentUser?.id // Include user ID if available
+      };
+      
+      // Call API to add transaction to portfolio with authentication
+      // The enhanced API service will automatically handle authentication and token refresh
+      const result = await api.addPortfolioTransaction(transaction);
+      
+      if (result && result.success) {
+        // Invalidate portfolio cache to ensure fresh data
+        api.clearCacheByPattern('portfolio');
+        
+        // Refresh portfolio data from API to get updated portfolio
+        await loadPortfolio();
+        
+        // Reset form and close modal
+        setFormData({
+          ticker: '',
+          name: '',
+          buyPrice: '',
+          quantity: '',
+          buyDate: ''
+        });
+        setShowAddModal(false);
+        setError('');
+      } else {
+        setError(result?.message || 'Failed to add transaction. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error adding portfolio item:', error);
+      setError('Failed to add stock to portfolio. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
   
   // Handle delete portfolio item
-  const handleDelete = (id) => {
-    setPortfolio(portfolio.filter(item => item.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      const itemToDelete = portfolio.find(item => item.id === id);
+      if (!itemToDelete) return;
+      
+      // Create transaction for deletion (sell all shares)
+      const transaction = {
+        symbol: itemToDelete.ticker,
+        name: itemToDelete.name,
+        price: itemToDelete.currentPrice,
+        shares: itemToDelete.quantity,
+        date: new Date().toISOString().split('T')[0],
+        type: 'sell',
+        userId: currentUser?.id // Include user ID if available
+      };
+      
+      // Call API to add sell transaction with authentication
+      // The enhanced API service will automatically handle authentication and token refresh
+      const result = await api.addPortfolioTransaction(transaction);
+      
+      if (result && result.success) {
+        // Invalidate portfolio cache
+        api.clearCacheByPattern('portfolio');
+        
+        // Refresh portfolio data
+        await loadPortfolio();
+      } else {
+        setError('Failed to delete portfolio item. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error deleting portfolio item:', error);
+      setError('Failed to delete stock from portfolio. Please try again.');
+    }
   };
   
   // Calculate portfolio summary
@@ -127,93 +250,21 @@ const Portfolio = () => {
   
   const summary = calculateSummary();
   
-  // Prepare chart data
-  const portfolioDistributionOptions = {
-    chart: {
-      type: 'donut',
-      height: 350
-    },
-    labels: portfolio.map(item => item.name),
-    legend: {
-      position: 'bottom'
-    },
-    responsive: [{
-      breakpoint: 480,
-      options: {
-        chart: {
-          width: 300
-        },
-        legend: {
-          position: 'bottom'
-        }
-      }
-    }],
-    colors: ['#3f51b5', '#f44336', '#ff9800', '#4caf50', '#2196f3', '#9c27b0', '#607d8b', '#e91e63', '#00bcd4', '#8bc34a']
-  };
-  
-  const portfolioDistributionSeries = portfolio.map(item => item.currentPrice * item.quantity);
-  
-  // Prepare performance chart data
-  const performanceChartOptions = {
-    chart: {
-      type: 'bar',
-      height: 350,
-      toolbar: {
-        show: false
-      }
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '55%',
-        endingShape: 'rounded'
-      }
-    },
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      show: true,
-      width: 2,
-      colors: ['transparent']
-    },
-    xaxis: {
-      categories: portfolio.map(item => item.ticker)
-    },
-    yaxis: {
-      title: {
-        text: 'Return (%)'
-      },
-      labels: {
-        formatter: function (value) {
-          return value.toFixed(2) + '%';
-        }
-      }
-    },
-    fill: {
-      opacity: 1
-    },
-    tooltip: {
-      y: {
-        formatter: function (value) {
-          return value.toFixed(2) + '%';
-        }
-      }
-    },
-    colors: portfolio.map(item => {
-      const returnPercent = ((item.currentPrice - item.buyPrice) / item.buyPrice) * 100;
-      return returnPercent >= 0 ? '#4caf50' : '#f44336';
-    })
-  };
-  
-  const performanceChartSeries = [
-    {
-      name: 'Return',
-      data: portfolio.map(item => {
-        return parseFloat(((item.currentPrice - item.buyPrice) / item.buyPrice * 100).toFixed(2));
-      })
-    }
-  ];
+  // Process data for charts
+  const stockLabels = portfolio.map(item => item.name);
+  const stockValues = portfolio.map(item => item.currentPrice * item.quantity);
+  const stockReturns = portfolio.map(item => {
+    return parseFloat(((item.currentPrice - item.buyPrice) / item.buyPrice * 100).toFixed(2));
+  });
+  const stockColors = portfolio.map(item => {
+    const returnPercent = ((item.currentPrice - item.buyPrice) / item.buyPrice) * 100;
+    return returnPercent >= 0 ? '#4caf50' : '#f44336';
+  });
+  // Stock colors with opacity for hover effect
+  const stockColorsWithOpacity = portfolio.map(item => {
+    const returnPercent = ((item.currentPrice - item.buyPrice) / item.buyPrice) * 100;
+    return returnPercent >= 0 ? 'rgba(76, 175, 80, 0.7)' : 'rgba(244, 67, 54, 0.7)';
+  });
   
   if (loading) {
     return (
@@ -288,11 +339,34 @@ const Portfolio = () => {
             </Card.Header>
             <Card.Body>
               {portfolio.length > 0 ? (
-                <Chart
-                  options={portfolioDistributionOptions}
-                  series={portfolioDistributionSeries}
-                  type="donut"
-                  height={350}
+                <Plot
+                  data={[
+                    {
+                      type: 'pie',
+                      labels: stockLabels,
+                      values: stockValues,
+                      textinfo: 'percent',
+                      hoverinfo: 'label+percent+value',
+                      marker: {
+                        colors: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#5a5c69', '#858796']
+                      },
+                      hovertemplate: '%{label}: %{percent} (%{value:,.0f} IDR)<extra></extra>'
+                    }
+                  ]}
+                  layout={{
+                    autosize: true,
+                    margin: { l: 10, r: 10, t: 10, b: 10 },
+                    height: 350,
+                    showlegend: true,
+                    legend: { orientation: 'h', y: -0.1 },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)'
+                  }}
+                  config={{
+                    displayModeBar: false,
+                    responsive: true
+                  }}
+                  style={{ width: '100%' }}
                 />
               ) : (
                 <div className="text-center py-5 text-muted">
@@ -312,11 +386,40 @@ const Portfolio = () => {
             </Card.Header>
             <Card.Body>
               {portfolio.length > 0 ? (
-                <Chart
-                  options={performanceChartOptions}
-                  series={performanceChartSeries}
-                  type="bar"
-                  height={350}
+                <Plot
+                  data={[
+                    {
+                      type: 'bar',
+                      x: portfolio.map(item => item.ticker),
+                      y: stockReturns,
+                      marker: {
+                        color: stockColors
+                      },
+                      hovertemplate: '%{x}: %{y:.2f}%<extra></extra>'
+                    }
+                  ]}
+                  layout={{
+                    autosize: true,
+                    height: 350,
+                    margin: { l: 50, r: 20, t: 10, b: 50 },
+                    xaxis: {
+                      title: 'Stock',
+                      titlefont: { size: 12 }
+                    },
+                    yaxis: {
+                      title: 'Return (%)',
+                      titlefont: { size: 12 },
+                      ticksuffix: '%',
+                      gridcolor: '#e7e7e7'
+                    },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)'
+                  }}
+                  config={{
+                    displayModeBar: false,
+                    responsive: true
+                  }}
+                  style={{ width: '100%' }}
                 />
               ) : (
                 <div className="text-center py-5 text-muted">
@@ -343,9 +446,9 @@ const Portfolio = () => {
                   <th>Quantity</th>
                   <th>Buy Price</th>
                   <th>Current Price</th>
-                  <th>Total Value</th>
+                  <th>Current Value</th>
                   <th>Profit/Loss</th>
-                  <th>Return</th>
+                  <th>Return %</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -364,10 +467,10 @@ const Portfolio = () => {
                       <td>{formatCurrency(item.buyPrice, 'IDR')}</td>
                       <td>{formatCurrency(item.currentPrice, 'IDR')}</td>
                       <td>{formatCurrency(item.currentPrice * item.quantity, 'IDR')}</td>
-                      <td className={getValueColor(profit)}>
-                        {formatCurrency(profit, 'IDR')}
+                      <td className={api.getValueColor(profit)}>
+                        {api.formatCurrency(profit, 'IDR')}
                       </td>
-                      <td className={getValueColor(returnPercent)}>
+                      <td className={api.getValueColor(returnPercent)}>
                         {returnPercent.toFixed(2)}%
                       </td>
                       <td>

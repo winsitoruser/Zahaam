@@ -139,9 +139,10 @@
         </div>
     </div>
     
+    <!-- Main Content Row 1: Price Chart full column -->
     <div class="row">
-        <!-- Chart Section -->
-        <div class="col-lg-8">
+        <!-- Price Chart (full width) -->
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Price Chart</h5>
@@ -175,75 +176,289 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Technical Analysis -->
-            <div class="card">
+        </div>
+    </div>
+    
+    <!-- Main Content Row 2: Technical Analysis and Info/Fundamental side by side -->
+    <div class="row">
+        <!-- Technical Analysis -->
+        <div class="col-lg-8">
+            <div class="card h-100 overflow-auto">
                 <div class="card-header">
-                    <h5 class="mb-0">Technical Analysis</h5>
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="indicators-tab" data-bs-toggle="tab" data-bs-target="#indicators-content" type="button" role="tab" aria-controls="indicators-content" aria-selected="true">Indicators</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="motion-tab" data-bs-toggle="tab" data-bs-target="#motion-content" type="button" role="tab" aria-controls="motion-content" aria-selected="false">Motion</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="sentiment-tab" data-bs-toggle="tab" data-bs-target="#sentiment-content" type="button" role="tab" aria-controls="sentiment-content" aria-selected="false">News Sentiment</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="market-depth-tab" data-bs-toggle="tab" data-bs-target="#market-depth-content" type="button" role="tab" aria-controls="market-depth-content" aria-selected="false">Market Depth</button>
+                        </li>
+                    </ul>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 text-center mb-3">
-                            <h6>Overall Signal</h6>
-                            <div class="d-inline-block p-3 rounded-circle" style="background-color: #198754; color: white;">
-                                <h4 class="mb-0">BUY</h4>
+                    <div class="tab-content">
+                        <!-- Technical Indicators Tab -->
+                        <div class="tab-pane fade show active" id="indicators-content" role="tabpanel" aria-labelledby="indicators-tab">
+                            <div class="row">
+                                <div class="col-md-4 text-center mb-3">
+                                    <h6>Overall Signal</h6>
+                                    <div class="d-inline-block p-3 rounded-circle" id="overall-signal" style="background-color: #198754; color: white;">
+                                        <h4 class="mb-0">BUY</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <table class="table table-sm" id="indicator-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Indicator</th>
+                                                <th>Value</th>
+                                                <th>Signal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>MA (20)</td>
+                                                <td>4,525</td>
+                                                <td><span class="badge bg-success">BUY</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>MA (50)</td>
+                                                <td>4,420</td>
+                                                <td><span class="badge bg-success">BUY</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>RSI (14)</td>
+                                                <td>58.25</td>
+                                                <td><span class="badge bg-warning text-dark">NEUTRAL</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>MACD</td>
+                                                <td>12.35</td>
+                                                <td><span class="badge bg-success">BUY</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-8">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Indicator</th>
-                                        <th>Value</th>
-                                        <th>Signal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>MA (20)</td>
-                                        <td>4,525</td>
-                                        <td><span class="badge bg-success">BUY</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>MA (50)</td>
-                                        <td>4,420</td>
-                                        <td><span class="badge bg-success">BUY</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>RSI (14)</td>
-                                        <td>58.25</td>
-                                        <td><span class="badge bg-warning text-dark">NEUTRAL</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>MACD</td>
-                                        <td>12.35</td>
-                                        <td><span class="badge bg-success">BUY</span></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        
+                        <!-- Motion Analysis Tab -->
+                        <div class="tab-pane fade" id="motion-content" role="tabpanel" aria-labelledby="motion-tab">
+                            <div class="row">
+                                <div class="col-md-4 text-center mb-3">
+                                    <h6>Trend Direction</h6>
+                                    <div class="d-inline-block p-3 rounded-circle" id="trend-direction" style="background-color: #0dcaf0; color: white;">
+                                        <h4 class="mb-0"><i class="bi bi-arrow-up"></i></h4>
+                                    </div>
+                                    <p class="mt-2" id="trend-strength">Strength: <span class="fw-bold">Medium</span></p>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <h6 class="border-bottom pb-1">Support & Resistance</h6>
+                                        <div id="support-resistance-data">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Resistance 2:</span>
+                                                <span class="fw-bold text-danger">4,850</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Resistance 1:</span>
+                                                <span class="fw-bold text-danger">4,720</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="fw-bold">Current Price:</span>
+                                                <span class="fw-bold">4,650</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Support 1:</span>
+                                                <span class="fw-bold text-success">4,580</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Support 2:</span>
+                                                <span class="fw-bold text-success">4,450</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="border-bottom pb-1">Price Action</h6>
+                                        <div id="price-action-data">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Pattern:</span>
+                                                <span class="fw-bold">Bullish Flag</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Momentum:</span>
+                                                <span class="fw-bold text-success">Increasing</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Volatility:</span>
+                                                <span class="fw-bold">Medium</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- News Sentiment Tab -->
+                        <div class="tab-pane fade" id="sentiment-content" role="tabpanel" aria-labelledby="sentiment-tab">
+                            <div class="row">
+                                <div class="col-md-4 text-center mb-3">
+                                    <h6>Sentiment Score</h6>
+                                    <div class="d-inline-block p-3 rounded-circle" id="sentiment-score-circle" style="background-color: #198754; color: white;">
+                                        <h4 class="mb-0" id="sentiment-score-value">+0.65</h4>
+                                    </div>
+                                    <p class="mt-2">Confidence: <span class="fw-bold" id="sentiment-confidence">78%</span></p>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <h6 class="border-bottom pb-1">Distribution</h6>
+                                        <div class="sentiment-distribution mb-2">
+                                            <div class="progress" style="height: 24px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 35%" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">35%</div>
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                                <div class="progress-bar bg-secondary" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">20%</div>
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100">15%</div>
+                                                <div class="progress-bar bg-danger" role="progressbar" style="width: 5%" aria-valuenow="5" aria-valuemin="0" aria-valuemax="100">5%</div>
+                                            </div>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <span class="small">Very Positive</span>
+                                                <span class="small">Very Negative</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="border-bottom pb-1">Recent News Impact</h6>
+                                        <div id="news-impact-container">
+                                            <div class="news-impact-item mb-2 p-2 border-start border-4 border-success">
+                                                <h6 class="small fw-bold mb-1">Strong Quarterly Results</h6>
+                                                <p class="small mb-0">Company exceeded analyst expectations with 15% revenue growth</p>
+                                                <div class="d-flex justify-content-between mt-1">
+                                                    <span class="small text-muted">2 days ago</span>
+                                                    <span class="badge bg-success">+0.85</span>
+                                                </div>
+                                            </div>
+                                            <div class="news-impact-item mb-2 p-2 border-start border-4 border-warning">
+                                                <h6 class="small fw-bold mb-1">New Product Launch</h6>
+                                                <p class="small mb-0">Market reception mixed on innovative but unproven technology</p>
+                                                <div class="d-flex justify-content-between mt-1">
+                                                    <span class="small text-muted">5 days ago</span>
+                                                    <span class="badge bg-warning text-dark">+0.12</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Market Depth Tab -->
+                        <div class="tab-pane fade" id="market-depth-content" role="tabpanel" aria-labelledby="market-depth-tab">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-end mb-2">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="realTimeDepth">
+                                            <label class="form-check-label" for="realTimeDepth">Real-time</label>
+                                        </div>
+                                    </div>
+                                    <div id="marketDepthChart" style="height: 300px;"></div>
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <div class="small text-muted">Bid Volume: <span class="fw-bold">25.8M</span></div>
+                                        <div class="small text-muted">Ask Volume: <span class="fw-bold">18.2M</span></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Market Depth Chart -->
-            <div class="card mt-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Market Depth</h5>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="realTimeDepth">
-                        <label class="form-check-label" for="realTimeDepth">Real-time</label>
-                    </div>
+        </div>
+        
+        <!-- Combined Stock Information and Fundamental Data with tabs -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-content" type="button" role="tab" aria-controls="info-content" aria-selected="true">Info</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="fundamental-tab" data-bs-toggle="tab" data-bs-target="#fundamental-content" type="button" role="tab" aria-controls="fundamental-content" aria-selected="false">Fundamental</button>
+                        </li>
+                    </ul>
                 </div>
-                <div class="card-body">
-                    <div id="marketDepthChart" style="height: 300px;"></div>
-                    <div class="d-flex justify-content-between mt-3">
-                        <div class="small text-muted">Bid Volume: <span class="fw-bold">25.8M</span></div>
-                        <div class="small text-muted">Ask Volume: <span class="fw-bold">18.2M</span></div>
+                <div class="card-body tab-content">
+                    <!-- Stock Information Tab Content -->
+                    <div class="tab-pane fade show active" id="info-content" role="tabpanel" aria-labelledby="info-tab">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td>Previous Close</td>
+                                    <td class="text-end">4,545</td>
+                                </tr>
+                                <tr>
+                                    <td>Open</td>
+                                    <td class="text-end">4,550</td>
+                                </tr>
+                                <tr>
+                                    <td>Day's Range</td>
+                                    <td class="text-end">4,520 - 4,585</td>
+                                </tr>
+                                <tr>
+                                    <td>52 Week Range</td>
+                                    <td class="text-end">4,100 - 4,750</td>
+                                </tr>
+                                <tr>
+                                    <td>Volume</td>
+                                    <td class="text-end">25,450,200</td>
+                                </tr>
+                                <tr>
+                                    <td>Market Cap</td>
+                                    <td class="text-end">556.23T</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Fundamental Data Tab Content -->
+                    <div class="tab-pane fade" id="fundamental-content" role="tabpanel" aria-labelledby="fundamental-tab">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td>P/E Ratio</td>
+                                    <td class="text-end">15.42</td>
+                                </tr>
+                                <tr>
+                                    <td>EPS</td>
+                                    <td class="text-end">297.01</td>
+                                </tr>
+                                <tr>
+                                    <td>Dividend Yield</td>
+                                    <td class="text-end">3.25%</td>
+                                </tr>
+                                <tr>
+                                    <td>ROE</td>
+                                    <td class="text-end">18.75%</td>
+                                </tr>
+                                <tr>
+                                    <td>Revenue (TTM)</td>
+                                    <td class="text-end">125.7T</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-            
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-12">
             <!-- Trading Signals -->
             <div class="card mt-4">
                 <div class="card-header">
@@ -462,75 +677,8 @@
         
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Stock Info -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Stock Information</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table">
-                        <tbody>
-                            <tr>
-                                <td>Previous Close</td>
-                                <td class="text-end">4,545</td>
-                            </tr>
-                            <tr>
-                                <td>Open</td>
-                                <td class="text-end">4,550</td>
-                            </tr>
-                            <tr>
-                                <td>Day's Range</td>
-                                <td class="text-end">4,520 - 4,585</td>
-                            </tr>
-                            <tr>
-                                <td>52 Week Range</td>
-                                <td class="text-end">4,100 - 4,750</td>
-                            </tr>
-                            <tr>
-                                <td>Volume</td>
-                                <td class="text-end">25,450,200</td>
-                            </tr>
-                            <tr>
-                                <td>Market Cap</td>
-                                <td class="text-end">556.23T</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
             
-            <!-- Fundamental Data -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Fundamental Data</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table">
-                        <tbody>
-                            <tr>
-                                <td>P/E Ratio</td>
-                                <td class="text-end">15.42</td>
-                            </tr>
-                            <tr>
-                                <td>EPS</td>
-                                <td class="text-end">297.01</td>
-                            </tr>
-                            <tr>
-                                <td>Dividend Yield</td>
-                                <td class="text-end">3.25%</td>
-                            </tr>
-                            <tr>
-                                <td>ROE</td>
-                                <td class="text-end">18.75%</td>
-                            </tr>
-                            <tr>
-                                <td>Revenue (TTM)</td>
-                                <td class="text-end">125.7T</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+
             
             <!-- Related News -->
             <div class="card">
@@ -675,6 +823,7 @@
 <script src="js/stock-history.js"></script>
 <script src="js/config.js"></script>
 <script src="js/stock-multi-timeframe.js"></script>
+<script src="js/advanced-analysis.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Variables to store chart and stock data

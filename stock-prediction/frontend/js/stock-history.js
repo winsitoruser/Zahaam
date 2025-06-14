@@ -297,6 +297,12 @@ function generateMockStockHistory(symbol, range) {
         case 'TLKM': basePrice = 3750; break;
         case 'ASII': basePrice = 5900; break;
         case 'BMRI': basePrice = 5200; break;
+        case 'UNVR': basePrice = 4120; break;
+        case 'HMSP': basePrice = 1505; break;
+        case 'INDF': basePrice = 6750; break;
+        case 'EXCL': basePrice = 2310; break;
+        case 'BBNI': basePrice = 4870; break;
+        case 'ICBP': basePrice = 8230; break;
         default: basePrice = 5000;
     }
     

@@ -1,65 +1,98 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { FaChartLine, FaTachometerAlt, FaChartBar, FaWallet, FaList, FaRegChartBar, FaTable, FaTasks, FaRegUser, FaServer, FaQuestionCircle } from 'react-icons/fa';
 
 const Sidebar = () => {
   const location = useLocation();
   
   const isActive = (path) => {
-    return location.pathname === path;
+    // Improve active state detection to work with nested routes
+    if (path === '/dashboard') {
+      return location.pathname === path;
+    }
+    // For stock analysis/detail pages
+    if (path === '/stocks' && location.pathname.startsWith('/stocks')) {
+      return true;
+    }
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
   return (
     <div className="sidebar">
-      <div className="sidebar-sticky">
+      <div className="sidebar-brand">
+        <FaChartLine className="sidebar-brand-icon" />
+        <div className="sidebar-logo">ZAHAAM</div>
+      </div>
+      
+      <div className="sidebar-menu">
+        <div className="menu-title">MAIN</div>
         <ul className="nav flex-column" id="sidebarMenu">
-          <li className="nav-item">
+          <li className="sidebar-menu-item">
             <Link className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`} to="/dashboard">
-              <i className="bi bi-speedometer2"></i> Dashboard
+              <FaTachometerAlt />
+              <span>Dashboard</span>
             </Link>
           </li>
-          <li className="nav-item">
-            <Link className={`nav-link ${isActive('/stock-details') ? 'active' : ''}`} to="/stock-details">
-              <i className="bi bi-graph-up"></i> Stock Details
+          <li className="sidebar-menu-item">
+            <Link className={`nav-link ${isActive('/stocks') ? 'active' : ''}`} to="/stocks">
+              <FaChartBar />
+              <span>Stock Analysis</span>
             </Link>
           </li>
-          <li className="nav-item">
-            <Link className={`nav-link ${isActive('/stock-list') ? 'active' : ''}`} to="/stock-list">
-              <i className="bi bi-table"></i> Stock List
+          <li className="sidebar-menu-item">
+            <Link className={`nav-link ${isActive('/portfolio') ? 'active' : ''}`} to="/portfolio">
+              <FaWallet />
+              <span>Portfolio</span>
             </Link>
           </li>
-          <li className="nav-item">
+        </ul>
+        
+        <div className="menu-title">STOCKS</div>
+        <ul className="nav flex-column">
+          <li className="sidebar-menu-item">
             <Link className={`nav-link ${isActive('/watchlist') ? 'active' : ''}`} to="/watchlist">
-              <i className="bi bi-star"></i> Watchlist
+              <FaList />
+              <span>Watchlist</span>
             </Link>
           </li>
-          <li className="nav-item">
+          <li className="sidebar-menu-item">
             <Link className={`nav-link ${isActive('/prediction') ? 'active' : ''}`} to="/prediction">
-              <i className="bi bi-robot"></i> AI Predictions
+              <FaRegChartBar />
+              <span>Predictions</span>
             </Link>
           </li>
-          <li className="nav-item">
-            <Link className={`nav-link ${isActive('/strategy') ? 'active' : ''}`} to="/strategy">
-              <i className="bi bi-gear"></i> Strategies
+          <li className="sidebar-menu-item">
+            <Link className={`nav-link ${isActive('/market-data') ? 'active' : ''}`} to="/market-data">
+              <FaTable />
+              <span>Market Data</span>
             </Link>
           </li>
-          <li className="nav-item">
-            <Link className={`nav-link ${isActive('/alerts') ? 'active' : ''}`} to="/alerts">
-              <i className="bi bi-bell"></i> Alerts
+        </ul>
+        
+        <div className="menu-title">TOOLS</div>
+        <ul className="nav flex-column">
+          <li className="sidebar-menu-item">
+            <Link className={`nav-link ${isActive('/strategies') ? 'active' : ''}`} to="/strategies">
+              <FaTasks />
+              <span>Strategies</span>
             </Link>
           </li>
-          <li className="nav-item">
-            <Link className={`nav-link ${isActive('/reports') ? 'active' : ''}`} to="/reports">
-              <i className="bi bi-file-text"></i> Reports
-            </Link>
-          </li>
-          <li className="nav-item">
+          <li className="sidebar-menu-item">
             <Link className={`nav-link ${isActive('/profile') ? 'active' : ''}`} to="/profile">
-              <i className="bi bi-person"></i> Profile
+              <FaRegUser />
+              <span>Account</span>
             </Link>
           </li>
-          <li className="nav-item">
+          <li className="sidebar-menu-item">
+            <Link className={`nav-link ${isActive('/admin') ? 'active' : ''}`} to="/admin">
+              <FaServer />
+              <span>Admin</span>
+            </Link>
+          </li>
+          <li className="sidebar-menu-item">
             <Link className={`nav-link ${isActive('/help') ? 'active' : ''}`} to="/help">
-              <i className="bi bi-question-circle"></i> Help
+              <FaQuestionCircle />
+              <span>Help</span>
             </Link>
           </li>
         </ul>
